@@ -1708,18 +1708,10 @@ class RCTDetailedReport:
             )
             file.write("</html>")
 
-
-if __name__ == "__main__":
-    simcheck_detailed_report = RCTDetailedReport(
-        r"C:\Users\JacksonJarboe\Documents\Development\SIMcheck Report Viewer\examples\ASHRAE9012019DetailReport.json",
-        [
-            r"C:\Users\JacksonJarboe\Documents\Development\SIMcheck Report Viewer\examples\Training 203 Demo.json"
-        ],
-        r"C:\Users\JacksonJarboe\Documents\Development\SIMcheck Report Viewer\examples\ASHRAE9012019DetailReport.html",
-    )
-    simcheck_detailed_report.load_files()
-    simcheck_detailed_report.extract_evaluation_data()
-    simcheck_detailed_report.extract_model_data()
-    simcheck_detailed_report.perform_analytic_calculations()
-    simcheck_detailed_report.convert_model_data_units()
-    simcheck_detailed_report.write_html_file()
+    def run(self):
+        self.load_files()
+        self.extract_evaluation_data()
+        self.extract_model_data()
+        self.perform_analytic_calculations()
+        self.convert_model_data_units()
+        self.write_html_file()
