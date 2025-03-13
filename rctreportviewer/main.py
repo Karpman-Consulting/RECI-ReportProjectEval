@@ -159,6 +159,10 @@ class RCTDetailedReport:
             "average_miscellaneous_equipment_power_by_space_type": {},
             "total_fan_power_by_fan_control_by_fan_type": {},
             "total_air_flow_by_fan_control_by_fan_type": {},
+            "other_fan_power_by_fan_type": {},
+            "other_air_flow_by_fan_type": {},
+            "total_fan_power_by_fan_type": {},
+            "total_air_flow_by_fan_type": {},
             "total_floor_area": 0,
             "total_exterior_wall_area": 0,
             "total_roof_area": 0,
@@ -485,6 +489,13 @@ class RCTDetailedReport:
                     "fan_control",
                     "Undefined"
                 )
+                if supply_fan_controls == "CONSTANT":
+                    occupied_operation = hvac_fan_system.get(
+                        "operation_during_occupied", "Undefined"
+                    )
+                    if occupied_operation == "CYCLING":
+                        supply_fan_controls = "Constant Cycling"
+
                 if supply_fan_controls not in rmd_building_summary[
                     "total_fan_power_by_fan_control_by_fan_type"
                 ]:
@@ -502,7 +513,13 @@ class RCTDetailedReport:
                 ]:
                     rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                         supply_fan_controls
-                    ] = 0
+                    ] = {
+                        "Supply": 0,
+                        "Return/Relief": 0,
+                        "Exhaust": 0,
+                        "Zonal Exhaust": 0,
+                        "Terminal Unit": 0,
+                    }
 
                 for fan in hvac_fan_system.get("supply_fans", []):
                     fan_power = self.determine_fan_power(fan)
@@ -513,7 +530,7 @@ class RCTDetailedReport:
                     if "design_airflow" in fan:
                         rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                             supply_fan_controls
-                        ] += fan["design_airflow"]
+                        ]["Supply"] += fan["design_airflow"]
 
                 for fan in hvac_fan_system.get("return_fans", []) + hvac_fan_system.get(
                         "relief_fans", []):
@@ -525,7 +542,7 @@ class RCTDetailedReport:
                     if "design_airflow" in fan:
                         rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                             supply_fan_controls
-                        ] += fan["design_airflow"]
+                        ]["Return/Relief"] += fan["design_airflow"]
 
                 for fan in hvac_fan_system.get("exhaust_fans", []):
                     fan_power = self.determine_fan_power(fan)
@@ -536,7 +553,7 @@ class RCTDetailedReport:
                     if "design_airflow" in fan:
                         rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                             supply_fan_controls
-                        ] += fan["design_airflow"]
+                        ]["Exhaust"] += fan["design_airflow"]
 
     def load_files(self):
         """
@@ -794,6 +811,174 @@ class RCTDetailedReport:
                     ][lighting_space_type]
             )
 
+        # Calculate the Other and Total fan summary details
+        self.baseline_model_summary["total_fan_power_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+        self.baseline_model_summary["total_air_flow_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+        self.proposed_model_summary["total_fan_power_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+        self.proposed_model_summary["total_air_flow_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+
+        for fan_control in self.baseline_model_summary[
+            "total_fan_power_by_fan_control_by_fan_type"
+        ]:
+            for fan_type in self.baseline_model_summary[
+                "total_fan_power_by_fan_control_by_fan_type"
+            ][fan_control]:
+                self.baseline_model_summary["total_fan_power_by_fan_type"][
+                    fan_type
+                ] += self.baseline_model_summary[
+                    "total_fan_power_by_fan_control_by_fan_type"
+                ][fan_control][fan_type]
+                self.baseline_model_summary["total_fan_power"] += self.baseline_model_summary[
+                    "total_fan_power_by_fan_control_by_fan_type"
+                ][fan_control][fan_type]
+
+        for fan_control in self.baseline_model_summary[
+            "total_air_flow_by_fan_control_by_fan_type"
+        ]:
+            for fan_type in self.baseline_model_summary[
+                "total_air_flow_by_fan_control_by_fan_type"
+            ][fan_control]:
+                self.baseline_model_summary["total_air_flow_by_fan_type"][
+                    fan_type
+                ] += self.baseline_model_summary[
+                    "total_air_flow_by_fan_control_by_fan_type"
+                ][fan_control][fan_type]
+
+        for fan_control in self.proposed_model_summary[
+            "total_fan_power_by_fan_control_by_fan_type"
+        ]:
+            for fan_type in self.proposed_model_summary[
+                "total_fan_power_by_fan_control_by_fan_type"
+            ][fan_control]:
+                self.proposed_model_summary["total_fan_power_by_fan_type"][
+                    fan_type
+                ] += self.proposed_model_summary[
+                    "total_fan_power_by_fan_control_by_fan_type"
+                ][fan_control][fan_type]
+                self.proposed_model_summary["total_fan_power"] += self.proposed_model_summary[
+                    "total_fan_power_by_fan_control_by_fan_type"
+                ][fan_control][fan_type]
+
+        for fan_control in self.proposed_model_summary[
+            "total_air_flow_by_fan_control_by_fan_type"
+        ]:
+            for fan_type in self.proposed_model_summary[
+                "total_air_flow_by_fan_control_by_fan_type"
+            ][fan_control]:
+                self.proposed_model_summary["total_air_flow_by_fan_type"][
+                    fan_type
+                ] += self.proposed_model_summary[
+                    "total_air_flow_by_fan_control_by_fan_type"
+                ][fan_control][fan_type]
+
+        self.baseline_model_summary["other_fan_power_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+
+        self.baseline_model_summary["other_air_flow_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+
+        self.proposed_model_summary["other_fan_power_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+
+        self.proposed_model_summary["other_air_flow_by_fan_type"] = {
+            "Supply": 0,
+            "Return/Relief": 0,
+            "Exhaust": 0,
+            "Zonal Exhaust": 0,
+            "Terminal Unit": 0,
+        }
+
+        for fan_control in self.baseline_model_summary[
+            "total_fan_power_by_fan_control_by_fan_type"
+        ]:
+            if fan_control in ["Undefined", "INLET_VANE", "DISCHARGE_DAMPER", "OTHER"]:
+                for fan_type in self.baseline_model_summary[
+                    "total_fan_power_by_fan_control_by_fan_type"
+                ][fan_control]:
+                    self.baseline_model_summary["other_fan_power_by_fan_type"][
+                        fan_type
+                    ] += self.baseline_model_summary[
+                        "total_fan_power_by_fan_control_by_fan_type"
+                    ][fan_control][fan_type]
+
+        for fan_control in self.baseline_model_summary[
+            "total_air_flow_by_fan_control_by_fan_type"
+        ]:
+            if fan_control in ["Undefined", "INLET_VANE", "DISCHARGE_DAMPER", "OTHER"]:
+                for fan_type in self.baseline_model_summary[
+                    "total_air_flow_by_fan_control_by_fan_type"
+                ][fan_control]:
+                    self.baseline_model_summary["other_air_flow_by_fan_type"][
+                        fan_type
+                    ] += self.baseline_model_summary[
+                        "total_air_flow_by_fan_control_by_fan_type"
+                    ][fan_control][fan_type]
+
+        for fan_control in self.proposed_model_summary[
+            "total_fan_power_by_fan_control_by_fan_type"
+        ]:
+            if fan_control in ["Undefined", "INLET_VANE", "DISCHARGE_DAMPER", "OTHER"]:
+                for fan_type in self.proposed_model_summary[
+                    "total_fan_power_by_fan_control_by_fan_type"
+                ][fan_control]:
+                    self.proposed_model_summary["other_fan_power_by_fan_type"][
+                        fan_type
+                    ] += self.proposed_model_summary[
+                        "total_fan_power_by_fan_control_by_fan_type"
+                    ][fan_control][fan_type]
+
+        for fan_control in self.proposed_model_summary[
+            "total_air_flow_by_fan_control_by_fan_type"
+        ]:
+            if fan_control in ["Undefined", "INLET_VANE", "DISCHARGE_DAMPER", "OTHER"]:
+                for fan_type in self.proposed_model_summary[
+                    "total_air_flow_by_fan_control_by_fan_type"
+                ][fan_control]:
+                    self.proposed_model_summary["other_air_flow_by_fan_type"][
+                        fan_type
+                    ] += self.proposed_model_summary[
+                        "total_air_flow_by_fan_control_by_fan_type"
+                    ][fan_control][fan_type]
+
     def convert_model_data_units(self):
         """
         Converts the model data from the JSON files to the desired units.
@@ -832,6 +1017,7 @@ class RCTDetailedReport:
             "total_zone_minimum_oa_flow": ("L / s", "cfm"),
             "total_infiltration": ("L / s", "cfm"),
             "total_air_flow_by_fan_control_by_fan_type": ("L / s", "cfm"),
+            "total_air_flow_by_fan_type": ("L / s", "cfm"),
         }
 
         # Convert baseline model summary values
@@ -839,11 +1025,19 @@ class RCTDetailedReport:
             if key in units_dict:
                 if isinstance(self.baseline_model_summary[key], dict):
                     for sub_key in self.baseline_model_summary[key]:
-                        self.baseline_model_summary[key][sub_key] = self.convert_unit(
-                            self.baseline_model_summary[key][sub_key],
-                            units_dict[key][0],
-                            units_dict[key][1],
-                        )
+                        if isinstance(self.baseline_model_summary[key][sub_key], dict):
+                            for sub_sub_key in self.baseline_model_summary[key][sub_key]:
+                                self.baseline_model_summary[key][sub_key][sub_sub_key] = self.convert_unit(
+                                    self.baseline_model_summary[key][sub_key][sub_sub_key],
+                                    units_dict[key][0],
+                                    units_dict[key][1],
+                                )
+                        else:
+                            self.baseline_model_summary[key][sub_key] = self.convert_unit(
+                                self.baseline_model_summary[key][sub_key],
+                                units_dict[key][0],
+                                units_dict[key][1],
+                            )
                 else:
                     self.baseline_model_summary[key] = self.convert_unit(
                         self.baseline_model_summary[key],
@@ -856,11 +1050,19 @@ class RCTDetailedReport:
             if key in units_dict:
                 if isinstance(self.proposed_model_summary[key], dict):
                     for sub_key in self.proposed_model_summary[key]:
-                        self.proposed_model_summary[key][sub_key] = self.convert_unit(
-                            self.proposed_model_summary[key][sub_key],
-                            units_dict[key][0],
-                            units_dict[key][1],
-                        )
+                        if isinstance(self.proposed_model_summary[key][sub_key], dict):
+                            for sub_sub_key in self.proposed_model_summary[key][sub_key]:
+                                self.proposed_model_summary[key][sub_key][sub_sub_key] = self.convert_unit(
+                                    self.proposed_model_summary[key][sub_key][sub_sub_key],
+                                    units_dict[key][0],
+                                    units_dict[key][1],
+                                )
+                        else:
+                            self.proposed_model_summary[key][sub_key] = self.convert_unit(
+                                self.proposed_model_summary[key][sub_key],
+                                units_dict[key][0],
+                                units_dict[key][1],
+                            )
                 else:
                     self.proposed_model_summary[key] = self.convert_unit(
                         self.proposed_model_summary[key],
@@ -1016,43 +1218,43 @@ class RCTDetailedReport:
                 if building_segment_id in self.baseline_model_summary["total_roof_area_by_building_segment"]:
                     file.write(
                         f"""
-                            <tr style="font-size: 12px;" class="lh-1">
-                                <td class="text-end">{building_segment_id}</td>
-                                <td class="text-center">Roof</td>
-                                <td class="text-center">{round(self.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round((self.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / self.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / self.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round((self.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / self.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / self.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                            </tr>
+                                        <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>{building_segment_id}</td>
+                                            <td style="border-right: 2px solid black;">Roof</td>
+                                            <td>{round(self.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
+                                            <td>{round((self.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / self.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td>{round(self.baseline_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                            <td>{round(self.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / self.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                            <td>{round(self.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
+                                            <td>{round((self.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / self.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td>{round(self.proposed_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                            <td>{round(self.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / self.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td>{round(self.proposed_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                        </tr>
                         """
                     )
                 if building_segment_id in self.baseline_model_summary["total_wall_area_by_building_segment"]:
                     file.write(
                         f"""
-                            <tr style="font-size: 12px;" class="lh-1">
-                                <td class="text-end">{building_segment_id}</td>
-                                <td class="text-center">Ext. Wall</td>
-                                <td class="text-center">{round(self.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round((self.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / self.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / self.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.baseline_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round((self.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / self.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / self.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                <td class="text-center">{round(self.proposed_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                            </tr>
+                                        <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>{building_segment_id}</td>
+                                            <td style="border-right: 2px solid black;">Ext. Wall</td>
+                                            <td>{round(self.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
+                                            <td>{round((self.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / self.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td>{round(self.baseline_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                            <td>{round(self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / self.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                            <td>{round(self.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
+                                            <td>{round((self.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / self.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td>{round(self.proposed_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                            <td>{round(self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / self.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                            <td>{round(self.proposed_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
+                                        </tr>
                         """
                     )
 
@@ -1094,31 +1296,31 @@ class RCTDetailedReport:
             for space_type in self.baseline_model_summary["total_floor_area_by_space_type"]:
                 file.write(
                     f"""
-                        <tr style="font-size: 12px;" class="lh-1 text-center">
-                            <td>{space_type.replace("_", " ").title()}</td>
-                            <td>{round(self.baseline_model_summary['total_floor_area_by_space_type'].get(space_type, 0)):,}</td>
-                            <td>{round(self.baseline_model_summary['total_floor_area_by_space_type'][space_type] / self.baseline_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
-                            <td>{round(self.baseline_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                            <td>{round(self.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                            <td>{round(self.baseline_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                            <td>{round(self.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / self.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                            <td>{round(self.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / self.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                            <td>{round(self.proposed_model_summary['total_floor_area_by_space_type'][space_type] / self.proposed_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
-                        </tr>
+                                        <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>{space_type.replace("_", " ").title()}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_floor_area_by_space_type'].get(space_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_floor_area_by_space_type'][space_type] / self.baseline_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
+                                            <td>{round(self.baseline_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                            <td>{round(self.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                            <td>{round(self.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / self.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                            <td>{round(self.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / self.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                            <td>{round(self.proposed_model_summary['total_floor_area_by_space_type'][space_type] / self.proposed_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
+                                        </tr>
                     """
                 )
             file.write(f"""
-            <tr  style="font-size: 12px; border-top: 1px solid black;" class="lh-1 fw-bold text-center">
-                <td>Total</td>
-                <td>{round(self.baseline_model_summary['total_floor_area']):,}</td>
-                <td>{round(self.baseline_model_summary['total_floor_area'] / self.baseline_model_summary['total_occupants'], 2)}</td>
-                <td>{round(self.baseline_model_summary['total_equipment_power'] / self.baseline_model_summary['total_floor_area'], 2)}</td>
-                <td>{round(self.baseline_total_lighting_power_allowance / self.baseline_model_summary['total_floor_area'], 2)}</td>
-                <td>{round(self.baseline_model_summary['total_lighting_power'] / self.baseline_model_summary['total_floor_area'], 2)}</td>
-                <td>{round(self.proposed_model_summary['total_lighting_power'] / self.proposed_model_summary['total_floor_area'], 2)}</td>
-                <td>{round(self.proposed_model_summary['total_equipment_power'] / self.proposed_model_summary['total_floor_area'], 2)}</td>
-                <td>{round(self.proposed_model_summary['total_floor_area'] / self.proposed_model_summary['total_occupants'], 2)}</td>
-            </tr>
+                                        <tr  style="font-size: 12px; border-top: 1px solid black;" class="lh-1 fw-bold text-center">
+                                            <td>Total</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_floor_area']):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_floor_area'] / self.baseline_model_summary['total_occupants'], 2)}</td>
+                                            <td>{round(self.baseline_model_summary['total_equipment_power'] / self.baseline_model_summary['total_floor_area'], 2)}</td>
+                                            <td>{round(self.baseline_total_lighting_power_allowance / self.baseline_model_summary['total_floor_area'], 2)}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_lighting_power'] / self.baseline_model_summary['total_floor_area'], 2)}</td>
+                                            <td>{round(self.proposed_model_summary['total_lighting_power'] / self.proposed_model_summary['total_floor_area'], 2)}</td>
+                                            <td>{round(self.proposed_model_summary['total_equipment_power'] / self.proposed_model_summary['total_floor_area'], 2)}</td>
+                                            <td>{round(self.proposed_model_summary['total_floor_area'] / self.proposed_model_summary['total_occupants'], 2)}</td>
+                                        </tr>
             """)
             file.write(f"""
                                     </tbody>
@@ -1134,18 +1336,18 @@ class RCTDetailedReport:
 
                         <div id="collapse-hvac-summary" class="accordion-collapse collapse">
                             <div class="accordion-body">
-                                <h3>Baseline Model</h3>
+                                <h3>Baseline HVAC Fan Summary</h3>
                                 <p><strong>Outdoor Airflow:</strong> {round(self.baseline_model_summary['total_zone_minimum_oa_flow']):,} CFM</p>
-                                <table class="table table-sm table-borderless" style="width: 800px;">
+                                <table class="table table-sm table-borderless fan-summary" style="width: 1250px;">
                                     <thead>
                                         <tr class="text-center">
-                                            <th style="border: 2px solid black;" rowspan="2">Fan Type</th>
-                                            <th style="border: 2px solid black;" colspan="3">Constant Volume</th>
-                                            <th style="border: 2px solid black;" colspan="3">Variable Volume</th>
-                                            <th style="border: 2px solid black;" colspan="3">Multispeed</th>
-                                            <th style="border: 2px solid black;" colspan="3">Mechanical Throttle</th>
-                                            <th style="border: 2px solid black;" colspan="3">Constant Volume, Cycling</th>
-                                            <th style="border: 2px solid black;" colspan="4">Total</th>
+                                            <th style="border: 2px solid black; width: 12%;" rowspan="2">Fan Type</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Variable Volume</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Multispeed</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume, Cycling</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Other</th>
+                                            <th style="border: 2px solid black; width: 18%;" colspan="4">Total</th>
                                         </tr>
                                         <tr class="text-center">
                                             <th style="border: 2px solid black;">CFM</th>
@@ -1169,22 +1371,102 @@ class RCTDetailedReport:
                                             <th style="border: 2px solid black;">% of Subtotal kW</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody style="border: 2px solid black;">
+            """)
+
+            for fan_type in ["Supply", "Return/Relief", "Exhaust", "Zonal Exhaust"]:
+                file.write(
+                    f"""
+                                        <tr style="font-size: 12px;" class="text-center">
+                                            <td style="border-right: 2px solid black;">{fan_type}</td>
+                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0) / (self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.baseline_model_summary['other_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0) / (self.baseline_model_summary['other_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(100 * self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / sum(self.baseline_model_summary["total_fan_power_by_fan_type"].values()))}</td>
+                                        </tr>
+                    """
+                )
+            # ------------------------- Subtotal Row --------------------------------
+            file.write(f"""
+                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
+                                            <td style="border-right: 2px solid black;">Subtotal</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>0</td>
+                                        </tr>
+                        """)
+            # ------------------------- Terminal Units Row --------------------------------
+            file.write(f"""
+                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
+                                            <td style="border-right: 2px solid black;">Terminal Units</td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                        </tr>
+            """)
+            file.write(f"""
                                     </tbody>
                                 </table>
                                 
-                                <h3>Proposed Model</h3>
+                                <h3>Proposed HVAC Fan Summary</h3>
                                 <p><strong>Outdoor Airflow:</strong> {round(self.baseline_model_summary['total_zone_minimum_oa_flow']):,} CFM</p>
-                                <table class="table table-sm table-borderless" style="width: 800px;">
+                                <table class="table table-sm table-borderless fan-summary" style="width: 1250px;">
                                     <thead>
                                         <tr class="text-center">
-                                            <th style="border: 2px solid black;" rowspan="2">Fan Type</th>
-                                            <th style="border: 2px solid black;" colspan="3">Constant Volume</th>
-                                            <th style="border: 2px solid black;" colspan="3">Variable Volume</th>
-                                            <th style="border: 2px solid black;" colspan="3">Multispeed</th>
-                                            <th style="border: 2px solid black;" colspan="3">Mechanical Throttle</th>
-                                            <th style="border: 2px solid black;" colspan="3">Constant Volume, Cycling</th>
-                                            <th style="border: 2px solid black;" colspan="4">Total</th>
+                                            <th style="border: 2px solid black; width: 12%;" rowspan="2">Fan Type</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Variable Volume</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Multispeed</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume, Cycling</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Other</th>
+                                            <th style="border: 2px solid black; width: 18%;" colspan="4">Total</th>
                                         </tr>
                                         <tr class="text-center">
                                             <th style="border: 2px solid black;">CFM</th>
@@ -1208,7 +1490,87 @@ class RCTDetailedReport:
                                             <th style="border: 2px solid black;">% of Subtotal kW</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody style="border: 2px solid black;">
+            """)
+
+            for fan_type in ["Supply", "Return/Relief", "Exhaust", "Zonal Exhaust"]:
+                file.write(
+                    f"""
+                                        <tr style="font-size: 12px;" class="text-center">
+                                            <td style="border-right: 2px solid black;">{fan_type}</td>
+                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0) / (self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.proposed_model_summary['other_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0) / (self.proposed_model_summary['other_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
+                                            <td>{round(100 * self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / sum(self.proposed_model_summary["total_fan_power_by_fan_type"].values()))}</td>
+                                        </tr>
+                    """
+                )
+            # ------------------------- Subtotal Row --------------------------------
+            file.write(f"""
+                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
+                                            <td style="border-right: 2px solid black;">Subtotal</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td style="border-right: 2px solid black;"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>0</td>
+                                        </tr>
+            """)
+            # ------------------------- Terminal Units Row --------------------------------
+            file.write(f"""
+                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
+                                            <td>Terminal Units</td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
+                                            <td style="border-right: 2px solid black; background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                        </tr>
+                        """)
+            file.write(f"""
                                     </tbody>
                                 </table>
                             </div>
@@ -1703,6 +2065,46 @@ class RCTDetailedReport:
                     behavior: 'smooth'
                 });
             }
+            
+            function calculateSubtotals() {
+                document.querySelectorAll(".fan-summary").forEach(table => {
+                    let columnSums = [];
+                    let columnPrecisions = [];
+            
+                    table.querySelectorAll("tr").forEach(row => {
+                        if (row.classList.contains("subtotal")) {
+                            // Populate the subtotal row with column sums
+                            row.querySelectorAll("td").forEach((td, colIndex) => {
+                                if (colIndex === 0) return;
+                                let sum = columnSums[colIndex] || 0;
+                                let precision = columnPrecisions[colIndex] || 0;
+                                td.textContent = sum.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision });
+                            });
+            
+                            // Reset the column sums and precisions after each subtotal row
+                            columnSums = [];
+                            columnPrecisions = [];
+                        } else {
+                            // Sum values in the current row and track precision
+                            row.querySelectorAll("td").forEach((td, colIndex) => {
+                                let cleanedText = td.textContent.replace(/,/g, "").trim();
+                                let value = parseFloat(cleanedText) || 0;
+            
+                                // Determine decimal precision
+                                let decimalPlaces = (cleanedText.split(".")[1] || "").length;
+                                columnPrecisions[colIndex] = Math.max(columnPrecisions[colIndex] || 0, decimalPlaces);
+            
+                                // Sum values
+                                columnSums[colIndex] = (columnSums[colIndex] || 0) + value;
+                            });
+                        }
+                    });
+                });
+            }
+            
+            document.addEventListener("DOMContentLoaded", () => {
+                calculateSubtotals();
+            });
             </script>
             """
             )
