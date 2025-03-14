@@ -1352,22 +1352,22 @@ class RCTDetailedReport:
                                         <tr class="text-center">
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">% of Subtotal kW</th>
                                         </tr>
                                     </thead>
@@ -1380,22 +1380,22 @@ class RCTDetailedReport:
                                         <tr style="font-size: 12px;" class="text-center">
                                             <td style="border-right: 2px solid black;">{fan_type}</td>
                                             <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0) / (self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.baseline_model_summary['other_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0) / (self.baseline_model_summary['other_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.baseline_model_summary['total_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
                                             <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(100 * self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / sum(self.baseline_model_summary["total_fan_power_by_fan_type"].values()))}</td>
                                         </tr>
@@ -1471,22 +1471,22 @@ class RCTDetailedReport:
                                         <tr class="text-center">
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">CFM</th>
                                             <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">kW/CFM<sub>s</sub></th>
+                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
                                             <th style="border: 2px solid black;">% of Subtotal kW</th>
                                         </tr>
                                     </thead>
@@ -1499,22 +1499,22 @@ class RCTDetailedReport:
                                         <tr style="font-size: 12px;" class="text-center">
                                             <td style="border-right: 2px solid black;">{fan_type}</td>
                                             <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0) / (self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.proposed_model_summary['other_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
                                             <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0) / (self.proposed_model_summary['other_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(self.proposed_model_summary['total_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)):,}</td>
+                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
                                             <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
                                             <td>{round(100 * self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / sum(self.proposed_model_summary["total_fan_power_by_fan_type"].values()))}</td>
                                         </tr>
