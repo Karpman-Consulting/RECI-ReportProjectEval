@@ -1,7 +1,8 @@
 import json
 import pint
 import os
-import math
+
+from rctreportviewer.write_html import write_html_file
 
 path_to_ureg = os.path.join(
     os.path.dirname(__file__),
@@ -43,23 +44,23 @@ class RCTDetailedReport:
         self.output_file_path = output_file_path
         self.rpd_data = None
         self.evaluation_data = None
+
         self.model_types = set()
+        self.space_areas = {}
+        self.baseline_space_space_types = {}
+        self.space_lpd_allowances = {}
+        self.baseline_total_lighting_power_allowance = 0
+        self.baseline_lighting_power_allowance_by_space_type = {}
+        self.proposed_model_summary = {}
+        self.baseline_model_summary = {}
+
         self.rules_passed = []  # ALL outcomes are PASS or N/A
         self.rules_failed = []  # ANY outcome is FAIL
         self.full_eval_rules_undetermined = []  # ANY outcome is UNDETERMINED
         self.appl_eval_rules_undetermined = []  # ANY outcome is UNDETERMINED
         self.rules_not_applicable = []  # ALL outcomes are N/A
-        self.space_areas = {}
-        self.baseline_space_space_types = {}
-        self.space_lpd_allowances = {}
-
         self.rule_evaluation_outcome_counts = {}
         self.rule_evaluation_message_counts = {}
-
-        self.baseline_total_lighting_power_allowance = 0
-        self.baseline_lighting_power_allowance_by_space_type = {}
-        self.proposed_model_summary = {}
-        self.baseline_model_summary = {}
 
     @staticmethod
     def load_file(file_path):
@@ -163,6 +164,14 @@ class RCTDetailedReport:
             "other_air_flow_by_fan_type": {},
             "total_fan_power_by_fan_type": {},
             "total_air_flow_by_fan_type": {},
+            "energy_by_fuel_type": {},
+            "cost_by_fuel_type": {},
+            "energy_by_end_use": {},
+            "elec_by_end_use": {},
+            "gas_by_end_use": {},
+            "energy_by_end_use_eui": {},
+            "elec_by_end_use_eui": {},
+            "gas_by_end_use_eui": {},
             "total_floor_area": 0,
             "total_exterior_wall_area": 0,
             "total_roof_area": 0,
@@ -174,8 +183,16 @@ class RCTDetailedReport:
             "total_pump_power": 0,
             "total_fan_power": 0,
             "total_zone_minimum_oa_flow": 0,
-            "total_infiltration": 0
+            "total_infiltration": 0,
+            "unmet_heating_hours": 0,
+            "unmet_cooling_hours": 0,
+            "total_energy": 0,
+            "total_cost": 0,
         }
+
+        output = rmd_data.get("output")
+        if output is not None:
+            self.summarize_output_data(output, rmd_building_summary)
 
         for building in rmd_data.get("buildings", []):
             rmd_building_summary["building_segment_count"] += len(
@@ -190,6 +207,54 @@ class RCTDetailedReport:
                 rmd_building_summary["total_pump_power"] += pump_power
 
         return rmd_building_summary
+
+    @staticmethod
+    def summarize_output_data(output, rmd_building_summary):
+        output_instance = output.get("output_instance")
+        if output_instance is not None:
+            rmd_building_summary["unmet_heating_hours"] += output_instance.get(
+                "unmet_heating_hours", 0
+            )
+            rmd_building_summary["unmet_cooling_hours"] += output_instance.get(
+                "unmet_cooling_hours", 0
+            )
+
+            source_results = output_instance.get("annual_source_results", [])
+            for source_result in source_results:
+                source = source_result.get("energy_source")
+
+                rmd_building_summary["total_energy"] += source_result.get("annual_consumption", 0)
+                rmd_building_summary["total_cost"] += source_result.get("annual_cost", 0)
+                rmd_building_summary["energy_by_fuel_type"][source] = (
+                    rmd_building_summary["energy_by_fuel_type"].get(source, 0)
+                    + source_result.get("annual_consumption", 0)
+                )
+                rmd_building_summary["cost_by_fuel_type"][source] = (
+                    rmd_building_summary["cost_by_fuel_type"].get(source, 0)
+                    + source_result.get("annual_cost", 0)
+                )
+
+            end_use_results = output_instance.get("annual_end_use_results", [])
+            for end_use in end_use_results:
+                end_use_name = end_use.get("type")
+
+                rmd_building_summary["total_energy"] += end_use.get("annual_site_energy_use", 0)
+                rmd_building_summary["energy_by_end_use"][end_use_name] = (
+                    rmd_building_summary["energy_by_end_use"].get(end_use_name, 0)
+                    + end_use.get("annual_site_energy_use", 0)
+                )
+
+                source = end_use.get("energy_source")
+                if source == "ELECTRICITY":
+                    rmd_building_summary["elec_by_end_use"][end_use_name] = (
+                        rmd_building_summary["elec_by_end_use"].get(end_use_name, 0)
+                        + end_use.get("annual_site_energy_use", 0)
+                    )
+                elif source == "NATURAL_GAS":
+                    rmd_building_summary["gas_by_end_use"][end_use_name] = (
+                        rmd_building_summary["gas_by_end_use"].get(end_use_name, 0)
+                        + end_use.get("annual_site_energy_use", 0)
+                    )
 
     def summarize_building_segment_data(self, building, rmd_building_summary):
         for building_segment in building.get(
@@ -1018,6 +1083,11 @@ class RCTDetailedReport:
             "total_infiltration": ("L / s", "cfm"),
             "total_air_flow_by_fan_control_by_fan_type": ("L / s", "cfm"),
             "total_air_flow_by_fan_type": ("L / s", "cfm"),
+            "total_energy": ("Btu", "kBtu"),
+            "energy_by_fuel_type": ("Btu", "kBtu"),
+            "energy_by_end_use": ("Btu", "kBtu"),
+            "elec_by_end_use": ("Btu", "kWh"),
+            "gas_by_end_use": ("Btu", "therm"),
         }
 
         # Convert baseline model summary values
@@ -1070,1045 +1140,19 @@ class RCTDetailedReport:
                         units_dict[key][1],
                     )
 
-    def write_html_file(self):
-        """
-        Writes the extracted data to an HTML file for easy viewing with Bootstrap styling.
-        """
-        section_titles_with_colors = {
-            1: ("Design Model and Compliance Calculations", "#D8BFD8"),
-            2: ("Additions and Alterations", "#66b3ff"),
-            3: ("Space Use Classification", "#99ff99"),
-            4: ("Schedules", "#ffcc99"),
-            5: ("Envelope", "#f4a460"),
-            6: ("Lighting", "#ffd700"),
-            7: ("Thermal Blocks - HVAC Zones Designed", "#c2f0c2"),
-            8: ("Thermal Blocks - HVAC Zones Not Designed", "#f0c2c2"),
-            9: ("Thermal Blocks - Multifamily Residential Buildings", "#f0e68c"),
-            10: ("HVAC Systems", "#4682b4"),
-            11: ("Service Water Heating Systems", "#E97451"),
-            12: ("Receptacles and Other Loads", "#d3d3d3"),
-            13: ("Modeling Limitations to the Simulation Program", "#f4cccc"),
-            14: ("Exterior Conditions", "#87ceeb"),
-            15: ("Distribution Transformers", "#d9ead3"),
-            16: ("Elevators", "#c0c0c0"),
-            17: ("Refrigeration", "#5f9ea0"),
-            18: ("Baseline HVAC Selection", "#ead1dc"),
-            19: ("General Baseline HVAC System Requirements", "#778899"),
-            20: ("System-Specific Baseline HVAC System Requirements", "#ffdab9"),
-            21: ("Baseline HVAC - Water Side Requirements: Hot Water", "#ff6347"),
-            22: ("Baseline HVAC - Water Side Requirements: Chilled Water", "#6495ED"),
-            23: ("Baseline HVAC - Air Side Requirements", "#F0FFFF"),
-        }
-
-        with open(self.output_file_path, "w", encoding="utf-8") as file:
-            file.write(
-                """
-            <html style="scrollbar-gutter: stable;">
-            <head>
-                <meta charset="UTF-8">
-                <title>SIMcheck Detailed Evaluation Report</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-                <style>
-                    td.rule-id { white-space: nowrap; }
-                    td.outcome-summary { white-space: pre-wrap; }
-                    .sticky-top-2 {
-                        top: 37px;
-                        z-index: 1029;
-                    }
-                </style>
-            </head>
-            """
-            )
-            file.write(
-                f"""
-            <body class="mt-2 ms-2">
-                <div class="d-flex flex-nowrap">
-                    
-                    <div class="flex-grow-1">
-                        <h1 class="text-center mb-4">RECI - Project Evaluation Report</h1>
-                        <div class="mb-3">
-                            <p><strong>Ruleset:</strong> {self.evaluation_data["ruleset"]}</p>
-                            <p><strong>Generated on:</strong> {self.evaluation_data["date_run"]}</p>
-                            <p><strong>Models Analyzed:</strong> {", ".join(self.model_types)}</p>
-                        </div>
-                    
-            """
-            )
-
-            rule_categories = {
-                "Failing": self.rules_failed,
-                "Passing": self.rules_passed,
-                "Undetermined": self.full_eval_rules_undetermined + self.appl_eval_rules_undetermined,
-                "N/A": self.rules_not_applicable,
-            }
-
-            file.write(
-                f"""
-                    <div class="mb-3 me-4">
-                        <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-component-summary" aria-expanded="false">
-                            Model Component Summary
-                        </button>
-
-                        <div id="collapse-model-component-summary" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-borderless" style="width: 400px;">
-                                    <thead>
-                                        <tr style="border-bottom: 2px solid black;"><th class="col-4 text-end"></th><th class="col-4 text-center">Baseline</th><th class="col-4 text-center">Proposed</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Qty</td><td class="col-4 text-center">{self.baseline_model_summary["building_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["building_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Total Floor Area</td><td class="col-4 text-center">{round(self.baseline_model_summary['total_floor_area']):,}</td><td class="col-4 text-center">{round(self.proposed_model_summary["total_floor_area"]):,}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Area Qty</td><td class="col-4 text-center">{self.baseline_model_summary["building_segment_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["building_segment_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">System Qty</td><td class="col-4 text-center">{self.baseline_model_summary["system_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["system_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Zone Qty</td><td class="col-4 text-center">{self.baseline_model_summary["zone_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["zone_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Space Qty</td><td class="col-4 text-center">{self.baseline_model_summary["space_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["space_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Fluid Loops</td><td class="col-4 text-center">{", ".join(s.title() for s in self.baseline_model_summary["fluid_loop_types"])}</td><td class="col-4 text-center">{", ".join(s.title() for s in self.proposed_model_summary["fluid_loop_types"])}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Pump Qty</td><td class="col-4 text-center">{self.baseline_model_summary["pump_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["pump_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Boiler Qty</td><td class="col-4 text-center">{self.baseline_model_summary["boiler_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["boiler_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Chiller Qty</td><td class="col-4 text-center">{self.baseline_model_summary["chiller_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["chiller_count"]}</td></tr>
-                                        <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Heat Rejection Qty</td><td class="col-4 text-center">{self.baseline_model_summary["heat_rejection_count"]}</td><td class="col-4 text-center">{self.proposed_model_summary["heat_rejection_count"]}</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 me-4">
-                        <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-envelope-summary" aria-expanded="false">
-                            Envelope Summary
-                        </button>
-
-                        <div id="collapse-envelope-summary" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-borderless" style="width: 1200px;">
-                                    <thead>
-                                        <tr class="text-center">
-                                            <th colspan="2"></th>
-                                            <th colspan="6" style="border: 2px solid black;">Baseline</th>
-                                            <th colspan="6" style="border: 2px solid black;">Proposed</th>
-                                        </tr>
-                                        <tr class="text-center">
-                                            <th rowspan="2" style="border: 2px solid black;">Building Area</th>
-                                            <th rowspan="2" style="border: 2px solid black;">Surface Type</th>
-                                            <th colspan="3" style="border: 2px solid black;">Opaque Surface</th>
-                                            <th colspan="3" style="border: 2px solid black;">Fenestration</th>
-                                            <th colspan="3" style="border: 2px solid black;">Opaque Surface</th>
-                                            <th colspan="3" style="border: 2px solid black;">Fenestration</th>
-                                        </tr>
-                                        <tr class="text-center">
-                                            <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;"> % </th>
-                                            <th style="border: 2px solid black;"> U-Factor </th>
-                                            <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;"> % </th>
-                                            <th style="border: 2px solid black;"> U-Factor </th>
-                                            <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;"> % </th>
-                                            <th style="border: 2px solid black;"> U-Factor </th>
-                                            <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;"> % </th>
-                                            <th style="border: 2px solid black;"> U-Factor </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="border: 2px solid black;">
-                """)
-
-            for building_segment_id in self.baseline_model_summary["total_floor_area_by_building_segment"]:
-                if building_segment_id in self.baseline_model_summary["total_roof_area_by_building_segment"]:
-                    file.write(
-                        f"""
-                                        <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td>{building_segment_id}</td>
-                                            <td style="border-right: 2px solid black;">Roof</td>
-                                            <td>{round(self.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                            <td>{round((self.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / self.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td>{round(self.baseline_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                            <td>{round(self.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / self.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                            <td>{round(self.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                            <td>{round((self.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / self.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td>{round(self.proposed_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                            <td>{round(self.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / self.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td>{round(self.proposed_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                        </tr>
-                        """
-                    )
-                if building_segment_id in self.baseline_model_summary["total_wall_area_by_building_segment"]:
-                    file.write(
-                        f"""
-                                        <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td>{building_segment_id}</td>
-                                            <td style="border-right: 2px solid black;">Ext. Wall</td>
-                                            <td>{round(self.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                            <td>{round((self.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / self.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td>{round(self.baseline_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                            <td>{round(self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / self.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                            <td>{round(self.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                            <td>{round((self.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / self.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td>{round(self.proposed_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                            <td>{round(self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / self.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
-                                            <td>{round(self.proposed_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                        </tr>
-                        """
-                    )
-
-            file.write("""          </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 me-4">
-                        <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-internal-loads-summary" aria-expanded="false">
-                            Internal Loads Summary
-                        </button>
-
-                        <div id="collapse-internal-loads-summary" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                <table class="table table-sm table-borderless" style="width: 900px;">
-                                    <thead>
-                                        <tr class="text-center">
-                                            <th colspan="2" class="col-4"></th>
-                                            <th colspan="4" class="col-4" style="border: 2px solid black;">Baseline</th>
-                                            <th colspan="3" class="col-4" style="border: 2px solid black;">Proposed</th>
-                                        </tr>
-                                        <tr class="text-center">
-                                            <th style="border: 2px solid black;">Space Type</th>
-                                            <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;">Occupancy Density (ft<sup>2</sup>/person)</th>
-                                            <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;">Allowed Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
-                                            <th style="border: 2px solid black;">Occupancy Density (ft<sup>2</sup>/person)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="border: 2px solid black;">
-            """)
-
-            for space_type in self.baseline_model_summary["total_floor_area_by_space_type"]:
-                file.write(
-                    f"""
-                                        <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td>{space_type.replace("_", " ").title()}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_floor_area_by_space_type'].get(space_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_floor_area_by_space_type'][space_type] / self.baseline_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
-                                            <td>{round(self.baseline_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                            <td>{round(self.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / self.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                            <td>{round(self.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / self.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                            <td>{round(self.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / self.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                            <td>{round(self.proposed_model_summary['total_floor_area_by_space_type'][space_type] / self.proposed_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
-                                        </tr>
-                    """
-                )
-            file.write(f"""
-                                        <tr  style="font-size: 12px; border-top: 1px solid black;" class="lh-1 fw-bold text-center">
-                                            <td>Total</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_floor_area']):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_floor_area'] / self.baseline_model_summary['total_occupants'], 2)}</td>
-                                            <td>{round(self.baseline_model_summary['total_equipment_power'] / self.baseline_model_summary['total_floor_area'], 2)}</td>
-                                            <td>{round(self.baseline_total_lighting_power_allowance / self.baseline_model_summary['total_floor_area'], 2)}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_lighting_power'] / self.baseline_model_summary['total_floor_area'], 2)}</td>
-                                            <td>{round(self.proposed_model_summary['total_lighting_power'] / self.proposed_model_summary['total_floor_area'], 2)}</td>
-                                            <td>{round(self.proposed_model_summary['total_equipment_power'] / self.proposed_model_summary['total_floor_area'], 2)}</td>
-                                            <td>{round(self.proposed_model_summary['total_floor_area'] / self.proposed_model_summary['total_occupants'], 2)}</td>
-                                        </tr>
-            """)
-            file.write(f"""
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 me-4">
-                        <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-hvac-summary" aria-expanded="false">
-                            HVAC Summary
-                        </button>
-
-                        <div id="collapse-hvac-summary" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                <h3>Baseline HVAC Fan Summary</h3>
-                                <p><strong>Outdoor Airflow:</strong> {round(self.baseline_model_summary['total_zone_minimum_oa_flow']):,} CFM</p>
-                                <table class="table table-sm table-borderless fan-summary" style="width: 1250px;">
-                                    <thead>
-                                        <tr class="text-center">
-                                            <th style="border: 2px solid black; width: 12%;" rowspan="2">Fan Type</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Variable Volume</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Multispeed</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume, Cycling</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Other</th>
-                                            <th style="border: 2px solid black; width: 18%;" colspan="4">Total</th>
-                                        </tr>
-                                        <tr class="text-center">
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">% of Subtotal kW</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="border: 2px solid black;">
-            """)
-
-            for fan_type in ["Supply", "Return/Relief", "Exhaust", "Zonal Exhaust"]:
-                file.write(
-                    f"""
-                                        <tr style="font-size: 12px;" class="text-center">
-                                            <td style="border-right: 2px solid black;">{fan_type}</td>
-                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0) / (self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.baseline_model_summary['other_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0) / (self.baseline_model_summary['other_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.baseline_model_summary['total_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / (self.baseline_model_summary['total_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(100 * self.baseline_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / sum(self.baseline_model_summary["total_fan_power_by_fan_type"].values()))}</td>
-                                        </tr>
-                    """
-                )
-            # ------------------------- Subtotal Row --------------------------------
-            file.write(f"""
-                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
-                                            <td style="border-right: 2px solid black;">Subtotal</td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td>0</td>
-                                        </tr>
-                        """)
-            # ------------------------- Terminal Units Row --------------------------------
-            file.write(f"""
-                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
-                                            <td style="border-right: 2px solid black;">Terminal Units</td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.baseline_model_summary['other_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.baseline_model_summary['total_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
-                                            <td style="background: black;"></td>
-                                            <td style="background: black;"></td>
-                                        </tr>
-            """)
-            file.write(f"""
-                                    </tbody>
-                                </table>
-                                
-                                <h3>Proposed HVAC Fan Summary</h3>
-                                <p><strong>Outdoor Airflow:</strong> {round(self.baseline_model_summary['total_zone_minimum_oa_flow']):,} CFM</p>
-                                <table class="table table-sm table-borderless fan-summary" style="width: 1250px;">
-                                    <thead>
-                                        <tr class="text-center">
-                                            <th style="border: 2px solid black; width: 12%;" rowspan="2">Fan Type</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Variable Volume</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Multispeed</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Constant Volume, Cycling</th>
-                                            <th style="border: 2px solid black; width: 14%;" colspan="3">Other</th>
-                                            <th style="border: 2px solid black; width: 18%;" colspan="4">Total</th>
-                                        </tr>
-                                        <tr class="text-center">
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">CFM</th>
-                                            <th style="border: 2px solid black;">kW</th>
-                                            <th style="border: 2px solid black;">W/CFM<sub>s</sub></th>
-                                            <th style="border: 2px solid black;">% of Subtotal kW</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="border: 2px solid black;">
-            """)
-
-            for fan_type in ["Supply", "Return/Relief", "Exhaust", "Zonal Exhaust"]:
-                file.write(
-                    f"""
-                                        <tr style="font-size: 12px;" class="text-center">
-                                            <td style="border-right: 2px solid black;">{fan_type}</td>
-                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get(fan_type, 0) / (self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.proposed_model_summary['other_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
-                                            <td style="border-right: 2px solid black;">{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get(fan_type, 0) / (self.proposed_model_summary['other_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(self.proposed_model_summary['total_air_flow_by_fan_type'].get(fan_type, 0)):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0)/1000, 2):,}</td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / (self.proposed_model_summary['total_air_flow_by_fan_type'].get("Supply", 99999999) or 99999999), 4)}</td>
-                                            <td>{round(100 * self.proposed_model_summary['total_fan_power_by_fan_type'].get(fan_type, 0) / sum(self.proposed_model_summary["total_fan_power_by_fan_type"].values()))}</td>
-                                        </tr>
-                    """
-                )
-            # ------------------------- Subtotal Row --------------------------------
-            file.write(f"""
-                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
-                                            <td style="border-right: 2px solid black;">Subtotal</td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style="border-right: 2px solid black;"></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td>0</td>
-                                        </tr>
-            """)
-            # ------------------------- Terminal Units Row --------------------------------
-            file.write(f"""
-                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
-                                            <td>Terminal Units</td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("CONSTANT", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("VARIABLE_SPEED_DRIVE", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("MULTISPEED", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_control_by_fan_type'].get("Constant Cycling", {}).get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.proposed_model_summary['other_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
-                                            <td style="border-right: 2px solid black; background: black;"></td>
-                                            <td style="background: black;"></td>
-                                            <td>{round(self.proposed_model_summary['total_fan_power_by_fan_type'].get("Terminal Unit", 0)):,}</td>
-                                            <td style="background: black;"></td>
-                                            <td style="background: black;"></td>
-                                        </tr>
-                        """)
-            file.write(f"""
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                """
-                       )
-
-            for category, rules in rule_categories.items():
-                btn_class = (
-                    "btn-danger"
-                    if category == "Failing"
-                    else "btn-warning"
-                    if category == "Undetermined"
-                    else "btn-success"
-                    if category == "Passing"
-                    else "btn-secondary"
-                )
-                file.write(
-                    f"""
-                        <div class="mb-3 me-4">
-                            <button class="btn {btn_class} w-100 text-start sticky-top" 
-                                type="button" data-bs-toggle="collapse" data-bs-target="#collapse_fully_{category.replace(' ', '_')}">
-                                <strong>{category} Rules ({len(rules)})</strong>
-                            </button>
-                            <div class="collapse mx-4" id="collapse_fully_{category.replace(' ', '_')}">
-                                <h3 class="mt-4">Rules Fully Evaluated</h3>
-                                <table class="table table-bordered table-striped mt-2">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th rowspan='2'>Rule ID</th>
-                                            <th>Description</th>
-                                            <th>Standard Section</th>
-                                            <th>Outcome Counts</th>
-                                        </tr>
-                                        <tr><th colspan='3'>Evaluations</th></tr>
-                                    </thead>
-                                    <tbody>
-                        """
-                )
-
-                if category == "Undetermined":
-                    sections_seen = set()
-                    for rule_id in self.full_eval_rules_undetermined:
-                        rule_data = next(
-                            rule
-                            for rule in self.evaluation_data["rules"]
-                            if rule["rule_id"] == rule_id
-                        )
-                        section = rule_id.split("-")[0]
-                        if section not in sections_seen:
-                            sections_seen.add(section)
-                            section_title = section_titles_with_colors.get(
-                                int(section)
-                            )[0]
-                            section_color = section_titles_with_colors.get(
-                                int(section)
-                            )[1]
-                            file.write(
-                                f"""
-                                </tbody>
-                                    <thead class="table-group-divider">
-                                        <tr>
-                                            <td colspan="4" class="section-title sticky-top sticky-top-2" style="background-color: {section_color} !important;">{section_title}</td>
-                                        </tr>
-                                    </thead>
-                                <tbody>
-                                """
-                            )
-
-                        description = rule_data.get("description", "N/A")
-                        standard_section = rule_data.get("standard_section", "N/A")
-                        outcome_summary = " | ".join([f"{k}: {v}" for k, v in self.rule_evaluation_outcome_counts[rule_id].items()])
-
-                        file.write(
-                            f"""
-                                <tr>
-                                    <td class="rule-id" rowspan='2'>{rule_id}</td>
-                                    <td>{description}</td>
-                                    <td>{standard_section}</td>
-                                    <td class="outcome-summary">{outcome_summary}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan='3'>
-                                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#eval_{rule_id}">
-                                            View Evaluations
-                                        </button>
-                                        <div class="collapse" id="eval_{rule_id}">
-                                            <ul>
-                            """
-                        )
-                        outcome_order = {
-                            "FAILED": 0,
-                            "UNDETERMINED": 1,
-                            "PASS": 2,
-                            "NOT_APPLICABLE": 3,
-                        }
-
-                        # Sort evaluations based on outcome priority
-                        sorted_evaluations = sorted(
-                            rule_data["evaluations"],
-                            key=lambda e: outcome_order.get(e["outcome"], 3),
-                        )
-
-                        for evaluation in sorted_evaluations:
-                            has_any_units = False
-                            styles = {
-                                "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                                "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                                "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                                "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                            }
-
-                            # Select the appropriate style based on outcome
-                            li_style = styles.get(
-                                evaluation["outcome"], styles["DEFAULT"]
-                            )
-                            file.write(
-                                f"""
-                                    <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
-                                        <ul>
-                                            <li><strong>Outcome:</strong> {evaluation['outcome']}</li>
-                                    """
-                            )
-                            if evaluation["messages"]:
-                                messages = set()
-                                if isinstance(evaluation["messages"], str):
-                                    messages.add(evaluation["messages"])
-                                if isinstance(evaluation["messages"], dict):
-                                    for key, message in evaluation["messages"].items():
-                                        messages.add(f"{key}: {message}")
-                                if isinstance(evaluation["messages"], list):
-                                    for message in evaluation["messages"]:
-                                        messages.add(message)
-                                file.write(
-                                    f"<li><strong>Messages:</strong> {', '.join(messages)}</li>"
-                                )
-                            if evaluation["calculated_values"]:
-                                file.write(
-                                    """
-                                        <li><strong>Calculated Values:</strong>
-                                            <table class="mb-2 me-2 table table-sm table-bordered">
-                                                <thead>
-                                                    <tr><th>Variable</th><th>Value</th>
-                                    """
-                                )
-                                if any(
-                                        cv.get("unit")
-                                        for cv in evaluation["calculated_values"]
-                                ):
-                                    has_any_units = True
-                                    file.write("<th>Unit</th>")
-                                file.write("</tr></thead><tbody>")
-
-                                for calculated_value in evaluation["calculated_values"]:
-                                    file.write(
-                                        f"""
-                                        <tr>
-                                        <td>{calculated_value['variable']}</td>
-                                        <td>{calculated_value['value'][0] if len(calculated_value['value']) == 1
-                                        else calculated_value['value']}
-                                        </td>
-                                        """
-                                    )
-                                    if calculated_value.get("unit"):
-                                        file.write(
-                                            f"<td>{calculated_value['unit']}</td>"
-                                        )
-                                    elif has_any_units:
-                                        file.write("<td></td>")
-                                    file.write("</tr>")
-                                file.write("</tbody></table></li>")
-                            file.write("</ul></li>")
-                        file.write("</ul></div></td></tr>")
-                    file.write(
-                        f"""
-                            </tbody>
-                            </table>
-                            <h3 class="mt-4">Rules Evaluated for Applicability Only</h3>
-                            <table class="table table-bordered table-striped mt-2">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th rowspan='2'>Rule ID</th>
-                                        <th>Description</th>
-                                        <th>Standard Section</th>
-                                        <th>Outcome Counts</th>
-                                    </tr>
-                                    <tr><th colspan='3'>Evaluations</th></tr>
-                                </thead>
-                                <tbody>
-                        """
-                    )
-                    sections_seen = set()
-                    for rule_id in self.appl_eval_rules_undetermined:
-                        rule_data = next(
-                            rule
-                            for rule in self.evaluation_data["rules"]
-                            if rule["rule_id"] == rule_id
-                        )
-                        section = rule_id.split("-")[0]
-                        if section not in sections_seen:
-                            sections_seen.add(section)
-                            section_title = section_titles_with_colors.get(
-                                int(section)
-                            )[0]
-                            section_color = section_titles_with_colors.get(
-                                int(section)
-                            )[1]
-                            file.write(
-                                f"""
-                                </tbody>
-                                    <thead class="table-group-divider">
-                                        <tr>
-                                            <td colspan="4" class="section-title sticky-top sticky-top-2" style="background-color: {section_color} !important;">{section_title}</td>
-                                        </tr>
-                                    </thead>
-                                <tbody>
-                                """
-                            )
-
-                        description = rule_data.get("description", "N/A")
-                        standard_section = rule_data.get("standard_section", "N/A")
-                        outcome_summary = " | ".join([f"{k}: {v}" for k, v in self.rule_evaluation_outcome_counts[rule_id].items()])
-
-                        file.write(
-                            f"""
-                                <tr>
-                                    <td class="rule-id" rowspan='2'>{rule_id}</td>
-                                    <td>{description}</td>
-                                    <td>{standard_section}</td>
-                                    <td class="outcome-summary">{outcome_summary}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan='3'>
-                                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#eval_{rule_id}">
-                                            View Evaluations
-                                        </button>
-                                        <div class="collapse" id="eval_{rule_id}">
-                                            <ul>
-                                """
-                        )
-                        outcome_order = {
-                            "FAILED": 0,
-                            "UNDETERMINED": 1,
-                            "PASS": 2,
-                            "NOT_APPLICABLE": 3,
-                        }
-
-                        # Sort evaluations based on outcome priority
-                        sorted_evaluations = sorted(
-                            rule_data["evaluations"],
-                            key=lambda e: outcome_order.get(e["outcome"], 3),
-                        )
-
-                        for evaluation in sorted_evaluations:
-                            has_any_units = False
-                            styles = {
-                                "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                                "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                                "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                                "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                            }
-
-                            # Select the appropriate style based on outcome
-                            li_style = styles.get(
-                                evaluation["outcome"], styles["DEFAULT"]
-                            )
-                            file.write(
-                                f"""
-                                    <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
-                                        <ul>
-                                            <li><strong>Outcome:</strong> {evaluation['outcome']}</li>
-                                    """
-                            )
-                            if evaluation["messages"]:
-                                messages = set()
-                                if isinstance(evaluation["messages"], str):
-                                    messages.add(evaluation["messages"])
-                                if isinstance(evaluation["messages"], dict):
-                                    for key, message in evaluation["messages"].items():
-                                        messages.add(f"{key}: {message}")
-                                if isinstance(evaluation["messages"], list):
-                                    for message in evaluation["messages"]:
-                                        messages.add(message)
-                                file.write(
-                                    f"<li><strong>Messages:</strong> {', '.join(messages)}</li>"
-                                )
-                            if evaluation["calculated_values"]:
-                                file.write(
-                                    """
-                                        <li><strong>Calculated Values:</strong>
-                                            <table class="mb-2 me-2 table table-sm table-bordered">
-                                                <thead>
-                                                    <tr><th>Variable</th><th>Value</th>
-                                    """
-                                )
-                                if any(
-                                        cv.get("unit")
-                                        for cv in evaluation["calculated_values"]
-                                ):
-                                    has_any_units = True
-                                    file.write("<th>Unit</th>")
-                                file.write("</tr></thead><tbody>")
-
-                                for calculated_value in evaluation["calculated_values"]:
-                                    file.write(
-                                        f"""
-                                        <tr>
-                                        <td>{calculated_value['variable']}</td>
-                                        <td>{calculated_value['value'][0] if len(calculated_value['value']) == 1
-                                        else calculated_value['value']}
-                                        </td>
-                                        """
-                                    )
-                                    if calculated_value.get("unit"):
-                                        file.write(
-                                            f"<td>{calculated_value['unit']}</td>"
-                                        )
-                                    elif has_any_units:
-                                        file.write("<td></td>")
-                                    file.write("</tr>")
-                                file.write("</tbody></table></li>")
-                            file.write("</ul></li>")
-                        file.write("</ul></div></td></tr>")
-                else:
-                    sections_seen = set()
-                    for rule_id in rules:
-                        rule_data = next(
-                            rule
-                            for rule in self.evaluation_data["rules"]
-                            if rule["rule_id"] == rule_id
-                        )
-                        section = rule_id.split("-")[0]
-                        if section not in sections_seen:
-                            sections_seen.add(section)
-                            section_title = section_titles_with_colors.get(
-                                int(section)
-                            )[0]
-                            section_color = section_titles_with_colors.get(
-                                int(section)
-                            )[1]
-                            file.write(
-                                f"""
-                                </tbody>
-                                    <thead class="table-group-divider">
-                                        <tr>
-                                            <th colspan="4" class="section-title sticky-top sticky-top-2" style="background-color: {section_color} !important;">{section_title}</th>
-                                        </tr>
-                                    </thead>
-                                <tbody>
-                                """
-                            )
-
-                        description = rule_data.get("description", "N/A")
-                        standard_section = rule_data.get("standard_section", "N/A")
-                        outcome_summary = " | ".join([f"{k}: {v}" for k, v in self.rule_evaluation_outcome_counts[rule_id].items()])
-
-                        file.write(
-                            f"""
-                                <tr>
-                                    <td class="rule-id" rowspan='2'>{rule_id}</td>
-                                    <td>{description}</td>
-                                    <td>{standard_section}</td>
-                                    <td class="outcome-summary">{outcome_summary}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan='3'>
-                                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#eval_{rule_id}">
-                                            View Evaluations
-                                        </button>
-                                        <div class="collapse" id="eval_{rule_id}">
-                                            <ul>
-                            """
-                        )
-                        outcome_order = {
-                            "FAILED": 0,
-                            "UNDETERMINED": 1,
-                            "PASS": 2,
-                            "NOT_APPLICABLE": 3,
-                        }
-
-                        # Sort evaluations based on outcome priority
-                        sorted_evaluations = sorted(
-                            rule_data["evaluations"],
-                            key=lambda e: outcome_order.get(e["outcome"], 3),
-                        )
-
-                        for evaluation in sorted_evaluations:
-                            has_any_units = False
-                            styles = {
-                                "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                                "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                                "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                                "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                            }
-
-                            # Select the appropriate style based on outcome
-                            li_style = styles.get(
-                                evaluation["outcome"], styles["DEFAULT"]
-                            )
-                            file.write(
-                                f"""
-                                    <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
-                                        <ul>
-                                            <li><strong>Outcome:</strong> {evaluation['outcome']}</li>
-                                    """
-                            )
-                            if evaluation["messages"]:
-                                messages = set()
-                                if isinstance(evaluation["messages"], str):
-                                    messages.add(evaluation["messages"])
-                                if isinstance(evaluation["messages"], dict):
-                                    for key, message in evaluation["messages"].items():
-                                        messages.add(f"{key}: {message}")
-                                if isinstance(evaluation["messages"], list):
-                                    for message in evaluation["messages"]:
-                                        messages.add(message)
-                                file.write(
-                                    f"<li><strong>Messages:</strong> {', '.join(messages)}</li>"
-                                )
-                            if evaluation["calculated_values"]:
-                                file.write(
-                                    """
-                                        <li><strong>Calculated Values:</strong>
-                                            <table class="mb-2 me-2 table table-sm table-bordered">
-                                                <thead>
-                                                    <tr><th>Variable</th><th>Value</th>
-                                    """
-                                )
-                                if any(
-                                        cv.get("unit")
-                                        for cv in evaluation["calculated_values"]
-                                ):
-                                    has_any_units = True
-                                    file.write("<th>Unit</th>")
-                                file.write("</tr></thead><tbody>")
-
-                                for calculated_value in evaluation["calculated_values"]:
-                                    file.write(
-                                        f"""
-                                        <tr>
-                                        <td>{calculated_value['variable']}</td>
-                                        <td>{calculated_value['value'][0] if len(calculated_value['value']) == 1
-                                        else calculated_value['value']}
-                                        </td>
-                                        """
-                                    )
-                                    if calculated_value.get("unit"):
-                                        file.write(
-                                            f"<td>{calculated_value['unit']}</td>"
-                                        )
-                                    elif has_any_units:
-                                        file.write("<td></td>")
-                                    file.write("</tr>")
-                                file.write("</tbody></table></li>")
-                            file.write("</ul></li>")
-                        file.write("</ul></div></td></tr>")
-
-                file.write("</tbody></table></div></div>")
-
-            file.write("</div></div>")
-            file.write(
-                """
-            <div class="position-fixed bottom-0 end-0 mb-2 me-2" style="z-index: 1050;">
-                <button id="back-to-top" class="btn btn-primary" onclick="scrollToTop()" style="opacity: 0; visibility: hidden;"> ↑ </button>
-            </div>
-            """
-            )
-            file.write("</body>")
-            file.write(
-                """
-            <script>
-            window.onscroll = function() {
-                toggleBackToTopButton();
-            };
-            
-            function toggleBackToTopButton() {
-                const backToTopButton = document.getElementById("back-to-top");
-                if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
-                    backToTopButton.style.opacity = "1";
-                    backToTopButton.style.visibility = "visible";
-                }    
-                else {
-                    backToTopButton.style.opacity = "0";
-                    backToTopButton.style.visibility = "hidden";
-                }
-            }
-            
-            function scrollToTop() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            }
-            
-            function calculateSubtotals() {
-                document.querySelectorAll(".fan-summary").forEach(table => {
-                    let columnSums = [];
-                    let columnPrecisions = [];
-            
-                    table.querySelectorAll("tr").forEach(row => {
-                        if (row.classList.contains("subtotal")) {
-                            // Populate the subtotal row with column sums
-                            row.querySelectorAll("td").forEach((td, colIndex) => {
-                                if (colIndex === 0) return;
-                                let sum = columnSums[colIndex] || 0;
-                                let precision = columnPrecisions[colIndex] || 0;
-                                td.textContent = sum.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision });
-                            });
-            
-                            // Reset the column sums and precisions after each subtotal row
-                            columnSums = [];
-                            columnPrecisions = [];
-                        } else {
-                            // Sum values in the current row and track precision
-                            row.querySelectorAll("td").forEach((td, colIndex) => {
-                                let cleanedText = td.textContent.replace(/,/g, "").trim();
-                                let value = parseFloat(cleanedText) || 0;
-            
-                                // Determine decimal precision
-                                let decimalPlaces = (cleanedText.split(".")[1] || "").length;
-                                columnPrecisions[colIndex] = Math.max(columnPrecisions[colIndex] || 0, decimalPlaces);
-            
-                                // Sum values
-                                columnSums[colIndex] = (columnSums[colIndex] || 0) + value;
-                            });
-                        }
-                    });
-                });
-            }
-            
-            document.addEventListener("DOMContentLoaded", () => {
-                calculateSubtotals();
-            });
-            </script>
-            """
-            )
-            file.write("</html>")
+        # Convert each end use by fuel type to EUI
+        for end_use in self.baseline_model_summary["elec_by_end_use"]:
+            self.baseline_model_summary["elec_by_end_use_eui"][end_use] = self.baseline_model_summary["elec_by_end_use"][end_use] * 3.412 / self.baseline_model_summary["total_floor_area"]
+        for end_use in self.baseline_model_summary["gas_by_end_use"]:
+            self.baseline_model_summary["gas_by_end_use_eui"][end_use] = self.baseline_model_summary["gas_by_end_use"][end_use] * 100 / self.baseline_model_summary["total_floor_area"]
+        for end_use in self.baseline_model_summary["energy_by_end_use"]:
+            self.baseline_model_summary["energy_by_end_use_eui"][end_use] = self.baseline_model_summary["energy_by_end_use"][end_use] / self.baseline_model_summary["total_floor_area"]
+        for end_use in self.proposed_model_summary["elec_by_end_use"]:
+            self.proposed_model_summary["elec_by_end_use_eui"][end_use] = self.proposed_model_summary["elec_by_end_use"][end_use] * 3.412 / self.proposed_model_summary["total_floor_area"]
+        for end_use in self.proposed_model_summary["gas_by_end_use"]:
+            self.proposed_model_summary["gas_by_end_use_eui"][end_use] = self.proposed_model_summary["gas_by_end_use"][end_use] * 100 / self.proposed_model_summary["total_floor_area"]
+        for end_use in self.proposed_model_summary["energy_by_end_use"]:
+            self.proposed_model_summary["energy_by_end_use_eui"][end_use] = self.proposed_model_summary["energy_by_end_use"][end_use] / self.proposed_model_summary["total_floor_area"]
 
     def run(self):
         self.load_files()
@@ -2116,4 +1160,4 @@ class RCTDetailedReport:
         self.extract_model_data()
         self.perform_analytic_calculations()
         self.convert_model_data_units()
-        self.write_html_file()
+        write_html_file(self)
