@@ -43,23 +43,23 @@ class RCTDetailedReport:
         self.output_file_path = output_file_path
         self.rpd_data = None
         self.evaluation_data = None
+
         self.model_types = set()
+        self.space_areas = {}
+        self.baseline_space_space_types = {}
+        self.space_lpd_allowances = {}
+        self.baseline_total_lighting_power_allowance = 0
+        self.baseline_lighting_power_allowance_by_space_type = {}
+        self.proposed_model_summary = {}
+        self.baseline_model_summary = {}
+
         self.rules_passed = []  # ALL outcomes are PASS or N/A
         self.rules_failed = []  # ANY outcome is FAIL
         self.full_eval_rules_undetermined = []  # ANY outcome is UNDETERMINED
         self.appl_eval_rules_undetermined = []  # ANY outcome is UNDETERMINED
         self.rules_not_applicable = []  # ALL outcomes are N/A
-        self.space_areas = {}
-        self.baseline_space_space_types = {}
-        self.space_lpd_allowances = {}
-
         self.rule_evaluation_outcome_counts = {}
         self.rule_evaluation_message_counts = {}
-
-        self.baseline_total_lighting_power_allowance = 0
-        self.baseline_lighting_power_allowance_by_space_type = {}
-        self.proposed_model_summary = {}
-        self.baseline_model_summary = {}
 
     @staticmethod
     def load_file(file_path):
@@ -163,6 +163,14 @@ class RCTDetailedReport:
             "other_air_flow_by_fan_type": {},
             "total_fan_power_by_fan_type": {},
             "total_air_flow_by_fan_type": {},
+            "energy_by_fuel_type": {},
+            "cost_by_fuel_type": {},
+            "energy_by_end_use": {},
+            "elec_by_end_use": {},
+            "gas_by_end_use": {},
+            "energy_by_end_use_eui": {},
+            "elec_by_end_use_eui": {},
+            "gas_by_end_use_eui": {},
             "total_floor_area": 0,
             "total_exterior_wall_area": 0,
             "total_roof_area": 0,
@@ -174,8 +182,16 @@ class RCTDetailedReport:
             "total_pump_power": 0,
             "total_fan_power": 0,
             "total_zone_minimum_oa_flow": 0,
-            "total_infiltration": 0
+            "total_infiltration": 0,
+            "unmet_heating_hours": 0,
+            "unmet_cooling_hours": 0,
+            "total_energy": 0,
+            "total_cost": 0,
         }
+
+        output = rmd_data.get("output")
+        if output is not None:
+            self.summarize_output_data(output, rmd_building_summary)
 
         for building in rmd_data.get("buildings", []):
             rmd_building_summary["building_segment_count"] += len(
@@ -190,6 +206,54 @@ class RCTDetailedReport:
                 rmd_building_summary["total_pump_power"] += pump_power
 
         return rmd_building_summary
+
+    @staticmethod
+    def summarize_output_data(output, rmd_building_summary):
+        output_instance = output.get("output_instance")
+        if output_instance is not None:
+            rmd_building_summary["unmet_heating_hours"] += output_instance.get(
+                "unmet_heating_hours", 0
+            )
+            rmd_building_summary["unmet_cooling_hours"] += output_instance.get(
+                "unmet_cooling_hours", 0
+            )
+
+            source_results = output_instance.get("annual_source_results", [])
+            for source_result in source_results:
+                source = source_result.get("energy_source")
+
+                rmd_building_summary["total_energy"] += source_result.get("annual_consumption", 0)
+                rmd_building_summary["total_cost"] += source_result.get("annual_cost", 0)
+                rmd_building_summary["energy_by_fuel_type"][source] = (
+                    rmd_building_summary["energy_by_fuel_type"].get(source, 0)
+                    + source_result.get("annual_consumption", 0)
+                )
+                rmd_building_summary["cost_by_fuel_type"][source] = (
+                    rmd_building_summary["cost_by_fuel_type"].get(source, 0)
+                    + source_result.get("annual_cost", 0)
+                )
+
+            end_use_results = output_instance.get("annual_end_use_results", [])
+            for end_use in end_use_results:
+                end_use_name = end_use.get("type")
+
+                rmd_building_summary["total_energy"] += end_use.get("annual_site_energy_use", 0)
+                rmd_building_summary["energy_by_end_use"][end_use_name] = (
+                    rmd_building_summary["energy_by_end_use"].get(end_use_name, 0)
+                    + end_use.get("annual_site_energy_use", 0)
+                )
+
+                source = end_use.get("energy_source")
+                if source == "ELECTRICITY":
+                    rmd_building_summary["elec_by_end_use"][end_use_name] = (
+                        rmd_building_summary["elec_by_end_use"].get(end_use_name, 0)
+                        + end_use.get("annual_site_energy_use", 0)
+                    )
+                elif source == "NATURAL_GAS":
+                    rmd_building_summary["gas_by_end_use"][end_use_name] = (
+                        rmd_building_summary["gas_by_end_use"].get(end_use_name, 0)
+                        + end_use.get("annual_site_energy_use", 0)
+                    )
 
     def summarize_building_segment_data(self, building, rmd_building_summary):
         for building_segment in building.get(
@@ -1018,6 +1082,11 @@ class RCTDetailedReport:
             "total_infiltration": ("L / s", "cfm"),
             "total_air_flow_by_fan_control_by_fan_type": ("L / s", "cfm"),
             "total_air_flow_by_fan_type": ("L / s", "cfm"),
+            "total_energy": ("Btu", "kBtu"),
+            "energy_by_fuel_type": ("Btu", "kBtu"),
+            "energy_by_end_use": ("Btu", "kBtu"),
+            "elec_by_end_use": ("Btu", "kWh"),
+            "gas_by_end_use": ("Btu", "therm"),
         }
 
         # Convert baseline model summary values
@@ -1070,6 +1139,20 @@ class RCTDetailedReport:
                         units_dict[key][1],
                     )
 
+        # Convert each end use by fuel type to EUI
+        for end_use in self.baseline_model_summary["elec_by_end_use"]:
+            self.baseline_model_summary["elec_by_end_use_eui"][end_use] = self.baseline_model_summary["elec_by_end_use"][end_use] * 3.412 / self.baseline_model_summary["total_floor_area"]
+        for end_use in self.baseline_model_summary["gas_by_end_use"]:
+            self.baseline_model_summary["gas_by_end_use_eui"][end_use] = self.baseline_model_summary["gas_by_end_use"][end_use] * 100 / self.baseline_model_summary["total_floor_area"]
+        for end_use in self.baseline_model_summary["energy_by_end_use"]:
+            self.baseline_model_summary["energy_by_end_use_eui"][end_use] = self.baseline_model_summary["energy_by_end_use"][end_use] / self.baseline_model_summary["total_floor_area"]
+        for end_use in self.proposed_model_summary["elec_by_end_use"]:
+            self.proposed_model_summary["elec_by_end_use_eui"][end_use] = self.proposed_model_summary["elec_by_end_use"][end_use] * 3.412 / self.proposed_model_summary["total_floor_area"]
+        for end_use in self.proposed_model_summary["gas_by_end_use"]:
+            self.proposed_model_summary["gas_by_end_use_eui"][end_use] = self.proposed_model_summary["gas_by_end_use"][end_use] * 100 / self.proposed_model_summary["total_floor_area"]
+        for end_use in self.proposed_model_summary["energy_by_end_use"]:
+            self.proposed_model_summary["energy_by_end_use_eui"][end_use] = self.proposed_model_summary["energy_by_end_use"][end_use] / self.proposed_model_summary["total_floor_area"]
+
     def write_html_file(self):
         """
         Writes the extracted data to an HTML file for easy viewing with Bootstrap styling.
@@ -1109,6 +1192,7 @@ class RCTDetailedReport:
                 <title>SIMcheck Detailed Evaluation Report</title>
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <style>
                     td.rule-id { white-space: nowrap; }
                     td.outcome-summary { white-space: pre-wrap; }
@@ -1173,6 +1257,49 @@ class RCTDetailedReport:
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="mb-3 me-4">
+                        <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
+                            Results Summary
+                        </button>
+
+                        <div id="collapse-model-results-summary" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div style="position: relative; left: 360px;" class="mb-3">
+                                    <div class="btn-group" role="group" aria-label="Chart toggle">
+                                        <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
+                                        <label style="width: 95px;" class="btn btn-outline-primary" for="btn-elec" onclick="showChart('elec')">Electricity</label>
+                                
+                                        <input type="radio" class="btn-check" name="chartOptions" id="btn-gas" autocomplete="off">
+                                        <label style="width: 95px;" class="btn btn-outline-danger" for="btn-gas" onclick="showChart('gas')">Gas</label>
+                                    
+                                        <input type="radio" class="btn-check" name="chartOptions" id="btn-energy" autocomplete="off">
+                                        <label style="width: 95px;" class="btn btn-outline-success" for="btn-energy" onclick="showChart('energy')">Total</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check form-switch mb-3" style="margin-left: 725px;">
+                                  <input class="form-check-input" type="checkbox" id="unitToggle" onchange="toggleUnits()">
+                                  <label class="form-check-label" for="unitToggle">Show EUI (kBtu/ft²)</label>
+                                </div>
+                                
+                                <div class="mb-3" style="position: relative; left: 260px;">
+                                  <span id="baselineTotal" class="me-4 fw-bold">Baseline Total: </span>
+                                  <span id="proposedTotal" class="fw-bold">Proposed Total: </span>
+                                </div>
+                                
+                                <div id="elecChartContainer" style="width: 900px; height: 500px;">
+                                  <canvas id="elecByEndUse"></canvas>
+                                </div>
+                                <div id="gasChartContainer" style="width: 900px; height: 500px; display: none;">
+                                  <canvas id="gasByEndUse"></canvas>
+                                </div>
+                                <div id="energyChartContainer" style="width: 900px; height: 500px; display: none;">
+                                  <canvas id="energyByEndUse"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="mb-3 me-4">
                         <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-envelope-summary" aria-expanded="false">
@@ -1181,7 +1308,7 @@ class RCTDetailedReport:
 
                         <div id="collapse-envelope-summary" class="accordion-collapse collapse">
                             <div class="accordion-body">
-                                <table class="table table-sm table-borderless" style="width: 1200px;">
+                                <table class="table table-sm table-borderless mb-0" style="width: 1300px;">
                                     <thead>
                                         <tr class="text-center">
                                             <th colspan="2"></th>
@@ -1260,6 +1387,7 @@ class RCTDetailedReport:
 
             file.write("""          </tbody>
                                 </table>
+                                <p style="font-size: 0.75rem;" class="ms-2">*U-Factors represent area-weighted averages for the corresponding Building Area & Surface Type</p>
                             </div>
                         </div>
                     </div>
@@ -1597,7 +1725,16 @@ class RCTDetailedReport:
                                 <strong>{category} Rules ({len(rules)})</strong>
                             </button>
                             <div class="collapse mx-4" id="collapse_fully_{category.replace(' ', '_')}">
-                                <h3 class="mt-4">Rules Fully Evaluated</h3>
+                    """
+                )
+                if category == "Undetermined":
+                    file.write(
+                        f"""
+                        <h3 class="mt-4">Rules Fully Evaluated</h3>
+                        """
+                    )
+                file.write(
+                    f"""
                                 <table class="table table-bordered table-striped mt-2">
                                     <thead class="table-dark">
                                         <tr>
@@ -2041,74 +2178,395 @@ class RCTDetailedReport:
             )
             file.write("</body>")
             file.write(
+                f"""
+                <script>
+                window.onscroll = function() {{
+                    toggleBackToTopButton();
+                }};
+
+                function toggleBackToTopButton() {{
+                    const backToTopButton = document.getElementById("back-to-top");
+                    if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {{
+                        backToTopButton.style.opacity = "1";
+                        backToTopButton.style.visibility = "visible";
+                    }}  
+                    else {{
+                        backToTopButton.style.opacity = "0";
+                        backToTopButton.style.visibility = "hidden";
+                    }}
+                }}
+
+                function scrollToTop() {{
+                    window.scrollTo({{
+                        top: 0,
+                        behavior: 'smooth'
+                    }});
+                }}
+
+                function calculateSubtotals() {{
+                    document.querySelectorAll(".fan-summary").forEach(table => {{
+                        let columnSums = [];
+                        let columnPrecisions = [];
+
+                        table.querySelectorAll("tr").forEach(row => {{
+                            if (row.classList.contains("subtotal")) {{
+                                row.querySelectorAll("td").forEach((td, colIndex) => {{
+                                    if (colIndex === 0) return;
+                                    let sum = columnSums[colIndex] || 0;
+                                    let precision = columnPrecisions[colIndex] || 0;
+                                    td.textContent = sum.toLocaleString(undefined, {{ minimumFractionDigits: precision, maximumFractionDigits: precision }});
+                                }});
+                                columnSums = [];
+                                columnPrecisions = [];
+                            }} else {{
+                                row.querySelectorAll("td").forEach((td, colIndex) => {{
+                                    let cleanedText = td.textContent.replace(/,/g, "").trim();
+                                    let value = parseFloat(cleanedText) || 0;
+                                    let decimalPlaces = (cleanedText.split(".")[1] || "").length;
+                                    columnPrecisions[colIndex] = Math.max(columnPrecisions[colIndex] || 0, decimalPlaces);
+                                    columnSums[colIndex] = (columnSums[colIndex] || 0) + value;
+                                }});
+                            }}
+                        }});
+                    }});
+                }}
+
+                document.addEventListener("DOMContentLoaded", () => {{
+                    calculateSubtotals();
+
+                    // Chart labels
+                    const labels = {[label.replace('_', ' ').title() for label in self.baseline_model_summary["elec_by_end_use"].keys()]};
+                    
+                    const elecDataRaw = {{
+                      consumption: {{
+                        baseline: {list(self.baseline_model_summary["elec_by_end_use"].values())},
+                        proposed: {list(self.proposed_model_summary["elec_by_end_use"].values())}
+                      }},
+                      eui: {{
+                        baseline: {list(self.baseline_model_summary["elec_by_end_use_eui"].values())},
+                        proposed: {list(self.proposed_model_summary["elec_by_end_use_eui"].values())}
+                      }}
+                    }};
+                    
+                    const gasDataRaw = {{
+                      consumption: {{
+                        baseline: {list(self.baseline_model_summary["gas_by_end_use"].values())},
+                        proposed: {list(self.proposed_model_summary["gas_by_end_use"].values())}
+                      }},
+                      eui: {{
+                        baseline: {list(self.baseline_model_summary["gas_by_end_use_eui"].values())},
+                        proposed: {list(self.proposed_model_summary["gas_by_end_use_eui"].values())}
+                      }}
+                    }};
+                    
+                    const energyDataRaw = {{
+                      consumption: {{
+                        baseline: {list(self.baseline_model_summary["energy_by_end_use"].values())},
+                        proposed: {list(self.proposed_model_summary["energy_by_end_use"].values())}
+                      }},
+                      eui: {{
+                        baseline: {list(self.baseline_model_summary["energy_by_end_use_eui"].values())},
+                        proposed: {list(self.proposed_model_summary["energy_by_end_use_eui"].values())}
+                      }}
+                    }};
+
+                    // Electricity Datasets
+                    const elecData = {{
+                        labels: labels,
+                        datasets: [
+                            {{
+                                label: 'Baseline',
+                                data: {list(self.baseline_model_summary["elec_by_end_use"].values())},
+                                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                            }},
+                            {{
+                                label: 'Proposed',
+                                data: {list(self.proposed_model_summary["elec_by_end_use"].values())},
+                                backgroundColor: 'rgba(75, 192, 75, 0.7)'
+                            }}
+                        ]
+                    }};
+
+                    const elecConfig = {{
+                        type: 'bar',
+                        data: elecData,
+                        options: {{
+                            responsive: true,
+                            plugins: {{
+                                title: {{
+                                    display: true,
+                                    text: 'Electricity By End Use'
+                                }},
+                                tooltip: {{
+                                    mode: 'index',
+                                    intersect: false
+                                }}
+                            }},
+                            interaction: {{
+                                mode: 'index',
+                                intersect: false
+                            }},
+                            scales: {{
+                                x: {{
+                                    stacked: false,
+                                    ticks: {{
+                                        minRotation: 60,
+                                        maxRotation: 60
+                                    }}
+                                }},
+                                y: {{
+                                    beginAtZero: true,
+                                    title: {{
+                                        display: true,
+                                        text: 'kWh',
+                                        font: {{
+                                            size: 14
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }};
+
+                    const gasData = {{
+                        labels: labels,
+                        datasets: [
+                            {{
+                                label: 'Baseline',
+                                data: {list(self.baseline_model_summary["gas_by_end_use"].values())},
+                                backgroundColor: 'rgba(255, 180, 80, 0.5)'
+                            }},
+                            {{
+                                label: 'Proposed',
+                                data: {list(self.proposed_model_summary["gas_by_end_use"].values())},
+                                backgroundColor: 'rgba(255, 100, 100, 0.5)'
+                            }}
+                        ]
+                    }};
+
+                    const gasConfig = {{
+                        type: 'bar',
+                        data: gasData,
+                        options: {{
+                            responsive: true,
+                            plugins: {{
+                                title: {{
+                                    display: true,
+                                    text: 'Natural Gas By End Use'
+                                }},
+                                tooltip: {{
+                                    mode: 'index',
+                                    intersect: false
+                                }}
+                            }},
+                            interaction: {{
+                                mode: 'index',
+                                intersect: false
+                            }},
+                            scales: {{
+                                x: {{
+                                    stacked: false,
+                                    ticks: {{
+                                        minRotation: 60,
+                                        maxRotation: 60
+                                    }}
+                                }},
+                                y: {{
+                                    beginAtZero: true,
+                                    title: {{
+                                        display: true,
+                                        text: 'Therms',
+                                        font: {{
+                                            size: 14
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }};
+                    
+                    const energyData = {{
+                        labels: labels,
+                        datasets: [
+                            {{
+                                label: 'Baseline',
+                                data: {list(self.baseline_model_summary["energy_by_end_use"].values())},
+                                backgroundColor: 'rgba(128, 0, 64, 0.6)'
+                            }},
+                            {{
+                                label: 'Proposed',
+                                data: {list(self.proposed_model_summary["energy_by_end_use"].values())},
+                                backgroundColor: 'rgba(0, 128, 128, 0.6)'
+                            }}
+                        ]
+                    }};
+
+                    const energyConfig = {{
+                        type: 'bar',
+                        data: energyData,
+                        options: {{
+                            responsive: true,
+                            plugins: {{
+                                title: {{
+                                    display: true,
+                                    text: 'Total Site Energy By End Use'
+                                }},
+                                tooltip: {{
+                                    mode: 'index',
+                                    intersect: false
+                                }}
+                            }},
+                            interaction: {{
+                                mode: 'index',
+                                intersect: false
+                            }},
+                            scales: {{
+                                x: {{
+                                    stacked: false,
+                                    ticks: {{
+                                        minRotation: 60,
+                                        maxRotation: 60
+                                    }}
+                                }},
+                                y: {{
+                                    beginAtZero: true,
+                                    title: {{
+                                        display: true,
+                                        text: 'kBtu',
+                                        font: {{
+                                            size: 14
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }};
+
+                    const elecChart = new Chart(document.getElementById('elecByEndUse'), elecConfig);
+                    const gasChart = new Chart(document.getElementById('gasByEndUse'), gasConfig);
+                    const energyChart = new Chart(document.getElementById('energyByEndUse'), energyConfig);
+
+                    function updateCharts(unitType) {{
+                      // Update Electricity
+                      elecChart.data.datasets[0].data = elecDataRaw[unitType].baseline;
+                      elecChart.data.datasets[1].data = elecDataRaw[unitType].proposed;
+                      elecChart.options.scales.y.title.text = unitType === 'consumption' ? 'kWh' : 'kBtu/ft²';
+                      elecChart.update();
+                    
+                      // Update Gas
+                      gasChart.data.datasets[0].data = gasDataRaw[unitType].baseline;
+                      gasChart.data.datasets[1].data = gasDataRaw[unitType].proposed;
+                      gasChart.options.scales.y.title.text = unitType === 'consumption' ? 'Therms' : 'kBtu/ft²';
+                      gasChart.update();
+                      
+                      // Update Total Energy
+                      energyChart.data.datasets[0].data = energyDataRaw[unitType].baseline;
+                      energyChart.data.datasets[1].data = energyDataRaw[unitType].proposed;
+                      energyChart.options.scales.y.title.text = unitType === 'consumption' ? 'kBtu' : 'kBtu/ft²';
+                      energyChart.update();
+                    }}
+                    
+                    function sumArray(arr) {{
+                      return arr.reduce((acc, val) => acc + val, 0);
+                    }}
+                    
+                    function getUnitLabel(source, unitType) {{
+                      if (unitType === 'eui') {{
+                        return 'kBtu/ft²';
+                      }} else {{
+                        return source === 'elec' ? 'kWh' : source === 'gas' ? 'Therms' : 'kBtu';
+                      }}
+                    }}
+                    
+                    function updateTotalColors(source) {{
+                      console.log(source);
+                      const baselineEl = document.getElementById('baselineTotal');
+                      const proposedEl = document.getElementById('proposedTotal');
+                    
+                      if (source === 'elec') {{
+                        baselineEl.style.color = 'rgb(54, 162, 235)'; // Blue
+                        proposedEl.style.color = 'rgb(75, 192, 75)';  // Green
+                      }} else if (source === 'gas') {{
+                        baselineEl.style.color = 'rgb(255, 180, 80)'; // Orange
+                        proposedEl.style.color = 'rgb(255, 100, 100)'; // Red
+                      }} else if (source === 'energy') {{
+                          baselineEl.style.color = 'rgb(128, 0, 64)';   // Maroon
+                          proposedEl.style.color = 'rgb(0, 128, 128)';  // Teal
+                        }}
+                    }}
+
+                    function updateTotals(source, unitType) {{
+                      console.log(source);
+                      let baseline, proposed;
+                    
+                      if (source === 'elec') {{
+                        baseline = unitType === 'eui'
+                          ? {list(self.baseline_model_summary["elec_by_end_use_eui"].values())}
+                          : {list(self.baseline_model_summary["elec_by_end_use"].values())};
+                    
+                        proposed = unitType === 'eui'
+                          ? {list(self.proposed_model_summary["elec_by_end_use_eui"].values())}
+                          : {list(self.proposed_model_summary["elec_by_end_use"].values())};
+                    
+                      }} else if (source === 'gas') {{
+                        baseline = unitType === 'eui'
+                          ? {list(self.baseline_model_summary["gas_by_end_use_eui"].values())}
+                          : {list(self.baseline_model_summary["gas_by_end_use"].values())};
+                    
+                        proposed = unitType === 'eui'
+                          ? {list(self.proposed_model_summary["gas_by_end_use_eui"].values())}
+                          : {list(self.proposed_model_summary["gas_by_end_use"].values())};
+                      
+                      }} else if (source === 'energy') {{
+                        baseline = unitType === 'eui'
+                          ? {list(self.baseline_model_summary["energy_by_end_use_eui"].values())}
+                          : {list(self.baseline_model_summary["energy_by_end_use"].values())};
+                    
+                        proposed = unitType === 'eui'
+                          ? {list(self.proposed_model_summary["energy_by_end_use_eui"].values())}
+                          : {list(self.proposed_model_summary["energy_by_end_use"].values())};
+                      }}
+                    
+                      const unit = getUnitLabel(source, unitType);
+                      const baselineSum = sumArray(baseline).toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
+                      const proposedSum = sumArray(proposed).toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
+                    
+                      document.getElementById('baselineTotal').textContent = `Baseline Total: ${{baselineSum}} ${{unit}}`;
+                      document.getElementById('proposedTotal').textContent = `Proposed Total: ${{proposedSum}} ${{unit}}`;
+                    }}
+                    
+                    let currentChart = 'elec';
+                    
+                    window.toggleUnits = function() {{
+                      const useEUI = document.getElementById('unitToggle').checked;
+                      const unitType = useEUI ? 'eui' : 'consumption';
+                      updateCharts(unitType);
+                      updateTotals(currentChart, unitType);
+                    }};
+                    
+                    window.showChart = function(type) {{
+                      const elecContainer = document.getElementById('elecChartContainer');
+                      const gasContainer = document.getElementById('gasChartContainer');
+                      const energyContainer = document.getElementById('energyChartContainer');
+                      elecContainer.style.display = type === 'elec' ? 'block' : 'none';
+                      gasContainer.style.display = type === 'gas' ? 'block' : 'none';
+                      energyContainer.style.display = type === 'energy' ? 'block' : 'none';
+                      currentChart = type;
+                      const useEUI = document.getElementById('unitToggle').checked;
+                      const unitType = useEUI ? 'eui' : 'consumption';
+                      updateTotals(type, unitType);
+                      updateTotalColors(type);
+                    }};
+                    
+                    // Initial total update
+                    updateTotals(currentChart, 'consumption');
+                    updateTotalColors(currentChart);
+                    
+                }});
+                </script>
+                </html>
                 """
-            <script>
-            window.onscroll = function() {
-                toggleBackToTopButton();
-            };
-            
-            function toggleBackToTopButton() {
-                const backToTopButton = document.getElementById("back-to-top");
-                if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
-                    backToTopButton.style.opacity = "1";
-                    backToTopButton.style.visibility = "visible";
-                }    
-                else {
-                    backToTopButton.style.opacity = "0";
-                    backToTopButton.style.visibility = "hidden";
-                }
-            }
-            
-            function scrollToTop() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            }
-            
-            function calculateSubtotals() {
-                document.querySelectorAll(".fan-summary").forEach(table => {
-                    let columnSums = [];
-                    let columnPrecisions = [];
-            
-                    table.querySelectorAll("tr").forEach(row => {
-                        if (row.classList.contains("subtotal")) {
-                            // Populate the subtotal row with column sums
-                            row.querySelectorAll("td").forEach((td, colIndex) => {
-                                if (colIndex === 0) return;
-                                let sum = columnSums[colIndex] || 0;
-                                let precision = columnPrecisions[colIndex] || 0;
-                                td.textContent = sum.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision });
-                            });
-            
-                            // Reset the column sums and precisions after each subtotal row
-                            columnSums = [];
-                            columnPrecisions = [];
-                        } else {
-                            // Sum values in the current row and track precision
-                            row.querySelectorAll("td").forEach((td, colIndex) => {
-                                let cleanedText = td.textContent.replace(/,/g, "").trim();
-                                let value = parseFloat(cleanedText) || 0;
-            
-                                // Determine decimal precision
-                                let decimalPlaces = (cleanedText.split(".")[1] || "").length;
-                                columnPrecisions[colIndex] = Math.max(columnPrecisions[colIndex] || 0, decimalPlaces);
-            
-                                // Sum values
-                                columnSums[colIndex] = (columnSums[colIndex] || 0) + value;
-                            });
-                        }
-                    });
-                });
-            }
-            
-            document.addEventListener("DOMContentLoaded", () => {
-                calculateSubtotals();
-            });
-            </script>
-            """
             )
-            file.write("</html>")
 
     def run(self):
         self.load_files()
