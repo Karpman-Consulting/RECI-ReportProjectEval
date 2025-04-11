@@ -138,6 +138,20 @@ class RCTDetailedReport:
             "pump_count": len(rmd_data.get("pumps", [])),
             "fluid_loop_types": {proposed_fluid_loop.get("type") for proposed_fluid_loop in
                                  rmd_data.get("fluid_loops", [])},
+            "heating_capacity_by_fuel_type": {
+                "Electricity": 0.0,
+                "Fossil Fuel": 0.0,
+                "On-site Boiler Plant": 0.0,
+                "Purchased Heat": 0.0,
+                "Total": 0.0,
+            },
+            "cooling_capacity_by_fuel_type": {
+                "Electricity": 0.0,
+                "On-site Chiller Plant": 0.0,
+                "Purchased CHW": 0.0,
+                "Total": 0.0,
+            },
+            "external_fluid_sources": rmd_data.get("external_fluid_sources", []),
             "overall_wall_ua_by_building_segment": {},
             "overall_wall_u_factor_by_building_segment": {},
             "overall_roof_ua_by_building_segment": {},
@@ -273,6 +287,8 @@ class RCTDetailedReport:
 
             self.summarize_rmd_system_data(building_segment, rmd_building_summary)
 
+            self.summarize_heating_cooling_capacity_data(building_segment, rmd_building_summary)
+
     def summarize_rmd_zone_data(self, building_segment, rmd_building_summary):
         for zone in building_segment.get("zones", []):
             rmd_building_summary["space_count"] += len(
@@ -395,6 +411,50 @@ class RCTDetailedReport:
                                 ].get(space["lighting_space_type"], 0)
                                 + miscellaneous_equipment["power"]
                         )
+
+    def summarize_heating_cooling_capacity_data(self, building_segment, rmd_building_summary):
+        heating_capacity_data = rmd_building_summary.get("heating_capacity_by_fuel_type")
+        cooling_capacity_data = rmd_building_summary.get("cooling_capacity_by_fuel_type")
+        external_fluid_sources = rmd_building_summary.get("external_fluid_sources", [])
+
+        for hvac_system in building_segment.get("heating_ventilating_air_conditioning_systems", []):
+            # Heating systems
+            heating_system = hvac_system.get("heating_system")
+            if heating_system:
+                energy_source = heating_system.get("energy_source_type")
+                fuel = self.get_fuel_type(energy_source, heating_system.get("type"))
+                if fuel in heating_capacity_data:
+                    design_capacity = heating_system.get("design_capacity", 0.0)
+                    heating_capacity_data[fuel] += design_capacity
+                    heating_capacity_data["Total"] += design_capacity
+            # Cooling systems
+            cooling_system = hvac_system.get("cooling_system")
+            if cooling_system:
+                design_total_cool_capacity = cooling_system.get("design_total_cool_capacity", 0.0)
+                cooling_capacity_data["Electricity"] += design_total_cool_capacity
+                cooling_capacity_data["Total"] += design_total_cool_capacity
+
+        # Terminal capacities only populated by our RPD generation software when appropriate.
+        zones = building_segment.get("zones", [])
+        for zone in zones:
+            for terminal in zone.get("terminals", []):
+                # If terminals have capacity, determine if loop indicates purchased or on-site fuel type
+                heating_capacity = terminal.get("heating_capacity", 0.0)
+                cooling_capacity = terminal.get("cooling_capacity", 0.0)
+                heating_loop = terminal.get("heating_from_loop")
+                cooling_loop = terminal.get("cooling_from_loop")
+                if heating_capacity and heating_loop:
+                    if heating_loop in external_fluid_sources:
+                        heating_capacity_data["Purchased Heat"] += heating_capacity
+                    else:
+                        heating_capacity_data["On-site Boiler Plant"] += heating_capacity
+                    heating_capacity_data["Total"] += heating_capacity
+                if cooling_capacity and cooling_loop:
+                    if cooling_loop in external_fluid_sources:
+                        cooling_capacity_data["Purchased CHW"] += cooling_capacity
+                    else:
+                        cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
+                    cooling_capacity_data["Total"] += cooling_capacity
 
     @staticmethod
     def summarize_rmd_surface_data(building_segment, zone, rmd_building_summary):
@@ -1088,6 +1148,8 @@ class RCTDetailedReport:
             "energy_by_end_use": ("Btu", "kBtu"),
             "elec_by_end_use": ("Btu", "kWh"),
             "gas_by_end_use": ("Btu", "therm"),
+            "heating_capacity_by_fuel_type": ("Btu", "kBtu"),
+            "cooling_capacity_by_fuel_type": ("Btu", "kBtu"),
         }
 
         # Convert baseline model summary values
@@ -1154,102 +1216,9 @@ class RCTDetailedReport:
         for end_use in self.proposed_model_summary["energy_by_end_use"]:
             self.proposed_model_summary["energy_by_end_use_eui"][end_use] = self.proposed_model_summary["energy_by_end_use"][end_use] / self.proposed_model_summary["total_floor_area"]
 
-    def heating_cooling_capacity_summary(self):
-        """Summarizes the heating and cooling capacities from the model data."""
-        proposed_rmd = next(
-            rmd
-            for rmd in self.rpd_data["ruleset_model_descriptions"]
-            if rmd["type"] == "PROPOSED"
-        )
-        proposed_heating_capacity = {
-            "Electricity": 0,
-            "Fossil Fuel": 0,
-            "On-site Boiler Plant": 0,
-            "Purchased Heat": 0,
-        }
-        proposed_cooling_capacity = {
-            "Electricity": 0,
-            "On-site Chiller Plant": 0,
-            "Purchased CHW": 0,
-        }
-        for building in proposed_rmd.get("buildings", []):
-            for building_segment in building.get("building_segments", []):
-                for hvac_system in building_segment.get("heating_ventilating_air_conditioning_systems", []):
-                    energy_source = None
-                    # Heating systems
-                    heating_system = hvac_system.get("heating_system")
-                    if heating_system:
-                        energy_source = heating_system.get("energy_source_type")
-                        fuel = self.get_fuel_type(energy_source, heating_system.get("type"))
-                        if fuel in proposed_heating_capacity:
-                            proposed_heating_capacity[fuel] += heating_system.get("design_capacity", 0.0)
-                    # Cooling systems
-                    cooling_system = hvac_system.get("cooling_system")
-                    if cooling_system and energy_source:
-                        fuel = self.get_fuel_type(energy_source, cooling_system.get("type"))
-                        if fuel in proposed_cooling_capacity:
-                            proposed_cooling_capacity[fuel] += cooling_system.get("design_total_cool_capacity", 0.0)
-                # Terminal capacities only populated by our RPD generation software when appropriate.
-                zones = building_segment.get("zones", [])
-                for zone in zones:
-                    for terminal in zone.get("terminals", []):
-                        # TODO: not necessarily a 1:1 mapping with hvac_systems, which has energy type info. Discuss
-                        proposed_heating_capacity["Electricity"] += terminal.get("heating_capacity", 0.0)
-                        proposed_cooling_capacity["Electricity"] += terminal.get("cooling_capacity", 0.0)
-
-        baseline_rmd = next(
-            rmd
-            for rmd in self.rpd_data["ruleset_model_descriptions"]
-            if rmd["type"] == "BASELINE_0"
-        )
-        baseline_heating_capacity = {
-            "Electricity": 0,
-            "Fossil Fuel": 0,
-            "On-site Boiler Plant": 0,
-            "Purchased Heat": 0,
-        }
-        baseline_cooling_capacity = {
-            "Electricity": 0,
-            "On-site Chiller Plant": 0,
-            "Purchased CHW": 0,
-        }
-        for building in baseline_rmd.get("buildings", []):
-            for building_segment in building.get("building_segments", []):
-                for hvac_system in building_segment.get("heating_ventilating_air_conditioning_systems", []):
-                    energy_source = None
-                    # Heating systems
-                    heating_system = hvac_system.get("heating_system")
-                    if heating_system:
-                        energy_source = heating_system.get("energy_source_type")
-                        fuel = self.get_fuel_type(energy_source, heating_system.get("type"))
-                        if fuel in baseline_heating_capacity:
-                            baseline_heating_capacity[fuel] += heating_system.get("design_capacity", 0.0)
-                    # Cooling systems
-                    cooling_system = hvac_system.get("cooling_system")
-                    if cooling_system and energy_source:
-                        fuel = self.get_fuel_type(energy_source, cooling_system.get("type"))
-                        if fuel in baseline_cooling_capacity:
-                            baseline_cooling_capacity[fuel] += cooling_system.get("design_total_cool_capacity", 0.0)
-                # Terminal capacities only populated by our RPD generation software when appropriate.
-                zones = building_segment.get("zones", [])
-                for zone in zones:
-                    for terminal in zone.get("terminals", []):
-                        # TODO: not necessarily a 1:1 mapping with hvac_systems, which has energy type info. Discuss
-                        proposed_heating_capacity["Electricity"] += terminal.get("heating_capacity", 0.0)
-                        proposed_cooling_capacity["Electricity"] += terminal.get("cooling_capacity", 0.0)
-
-        # Sum capacities in each capacity column (dict) and add the total as a key:value pair
-        self.convert_and_total_capacities(proposed_heating_capacity)
-        self.convert_and_total_capacities(proposed_cooling_capacity)
-        self.convert_and_total_capacities(baseline_heating_capacity)
-        self.convert_and_total_capacities(baseline_cooling_capacity)
-        # TODO: Capacities here are in "columns." Use these to recreate table 1B in html report
-
     # TODO: Check this mapping
     def get_fuel_type(self, energy_source, hvac_type):
-        if hvac_type == "DIRECT_EXPANSION":
-            return "Electricity"
-        elif energy_source == "ELECTRICITY":
+        if energy_source == "ELECTRICITY":
             return "Electricity"
         elif energy_source in ["NATURAL_GAS", "PROPANE", "FUEL_OIL"]:
             return "Fossil Fuel"
@@ -1263,21 +1232,10 @@ class RCTDetailedReport:
             return "Purchased CHW"
         return "Unknown"
 
-    def convert_and_total_capacities(self, capacity_dict):
-        """Sum all the values in a capacity dictionary and add a total key.
-        Convert values from Btu/h to kBtu/h for heating and cooling capacities."""
-        total = 0
-        for key in capacity_dict:
-            capacity_dict[key] = self.convert_unit(capacity_dict[key], "Btu", "kBtu")
-            total += capacity_dict[key]
-        capacity_dict["Total"] = total
-        return capacity_dict
-
     def run(self):
         self.load_files()
         self.extract_evaluation_data()
         self.extract_model_data()
         self.perform_analytic_calculations()
         self.convert_model_data_units()
-        self.heating_cooling_capacity_summary()
         write_html_file(self)
