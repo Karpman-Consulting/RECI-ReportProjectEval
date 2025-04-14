@@ -133,7 +133,18 @@ class RCTDetailedReport:
             "space_count": 0,
             "system_count": 0,
             "boiler_count": len(rmd_data.get("boilers", [])),
+            "electric_boiler_count": 0,
+            "fossil_fuel_boiler_count": 0,
+            "electric_boiler_plant_capacity": 0.0,
+            "fossil_fuel_boiler_plant_capacity": 0.0,
             "chiller_count": len(rmd_data.get("chillers", [])),
+            "electric_chiller_count": 0,
+            "fossil_fuel_chiller_count": 0,
+            "electric_chiller_plant_capacity": 0.0,
+            "fossil_fuel_chiller_plant_capacity": 0.0,
+            "cooling_tower_gpm": 0.0,
+            "cooling_tower_hp": 0.0,
+            "design_flow_by_loop_id": {},
             "heat_rejection_count": len(rmd_data.get("heat_rejections", [])),
             "pump_count": len(rmd_data.get("pumps", [])),
             "fluid_loop_types": {proposed_fluid_loop.get("type") for proposed_fluid_loop in
@@ -219,6 +230,13 @@ class RCTDetailedReport:
             pump_power = self.determine_pump_power(pump)
             if pump_power:
                 rmd_building_summary["total_pump_power"] += pump_power
+                rmd_building_summary[pump.get("loop_or_piping", "Undefined")] = pump_power
+
+        for chiller in rmd_data.get("chillers", []):
+            self.summarize_cooling_plant_data(chiller, rmd_building_summary)
+
+        for boiler in rmd_data.get("boilers", []):
+            self.summarize_heating_plant_data(boiler, rmd_building_summary)
 
         return rmd_building_summary
 
@@ -679,6 +697,28 @@ class RCTDetailedReport:
                         rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                             supply_fan_controls
                         ]["Exhaust"] += fan["design_airflow"]
+
+    def summarize_cooling_plant_data(self, chiller, rmd_building_summary):
+        fuel = self.get_fuel_type(chiller.get("energy_source_type"), None)
+        if fuel == "Electricity":
+            rmd_building_summary["electric_chiller_count"] += 1
+            rmd_building_summary["electric_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
+        elif fuel == "Fossil Fuel":
+            rmd_building_summary["fossil_fuel_chiller_count"] += 1
+            rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
+        design_flow = rmd_building_summary.get("design_flow_by_loop_id").get(chiller.get("cooling_loop"), 0.0)
+        rmd_building_summary["cooling_tower_gpm"] += design_flow
+        # TODO: Is this supposed to be horsepower from correlated fan?
+        rmd_building_summary["cooling_tower_hp"] += chiller.get("cooling_tower_hp", 0.0)
+
+    def summarize_heating_plant_data(self, boiler, rmd_building_summary):
+        fuel = self.get_fuel_type(boiler.get("energy_source_type"), None)
+        if fuel == "Electricity":
+            rmd_building_summary["electric_chiller_count"] += 1
+            rmd_building_summary["electric_chiller_plant_capacity"] += boiler.get("design_capacity", 0.0)
+        elif fuel == "Fossil Fuel":
+            rmd_building_summary["fossil_fuel_chiller_count"] += 1
+            rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += boiler.get("design_capacity", 0.0)
 
     def load_files(self):
         """
@@ -1217,20 +1257,13 @@ class RCTDetailedReport:
             self.proposed_model_summary["energy_by_end_use_eui"][end_use] = self.proposed_model_summary["energy_by_end_use"][end_use] / self.proposed_model_summary["total_floor_area"]
 
     # TODO: Check this mapping
-    def get_fuel_type(self, energy_source, hvac_type):
+    @staticmethod
+    def get_fuel_type(energy_source, hvac_type):
         if energy_source == "ELECTRICITY":
             return "Electricity"
         elif energy_source in ["NATURAL_GAS", "PROPANE", "FUEL_OIL"]:
             return "Fossil Fuel"
-        elif energy_source == "STEAM" and hvac_type in ["BOILER", "FURNACE"]:
-            return "On-site Boiler Plant"
-        elif energy_source == "STEAM":
-            return "On-site Chiller Plant"
-        elif energy_source == "PURCHASED_HOT_WATER":
-            return "Purchased Heat"
-        elif energy_source == "PURCHASED_CHILLED_WATER":
-            return "Purchased CHW"
-        return "Unknown"
+        return None
 
     def run(self):
         self.load_files()
