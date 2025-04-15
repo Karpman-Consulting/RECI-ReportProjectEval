@@ -233,7 +233,13 @@ class RCTDetailedReport:
                 rmd_building_summary[pump.get("loop_or_piping", "Undefined")] = pump_power
 
         for chiller in rmd_data.get("chillers", []):
-            self.summarize_cooling_plant_data(chiller, rmd_building_summary)
+            condensing_loop = chiller.get("condensing_loop")
+            cooling_tower = None
+            if condensing_loop:
+                for heat_rejection in rmd_data.get("heat_rejections", []):
+                    if heat_rejection.get("loop") == condensing_loop:
+                        cooling_tower = heat_rejection
+            self.summarize_cooling_plant_data(chiller, cooling_tower, rmd_building_summary)
 
         for boiler in rmd_data.get("boilers", []):
             self.summarize_heating_plant_data(boiler, rmd_building_summary)
@@ -698,7 +704,7 @@ class RCTDetailedReport:
                             supply_fan_controls
                         ]["Exhaust"] += fan["design_airflow"]
 
-    def summarize_cooling_plant_data(self, chiller, rmd_building_summary):
+    def summarize_cooling_plant_data(self, chiller, cooling_tower, rmd_building_summary):
         fuel = self.get_fuel_type(chiller.get("energy_source_type"), None)
         if fuel == "Electricity":
             rmd_building_summary["electric_chiller_count"] += 1
@@ -706,19 +712,21 @@ class RCTDetailedReport:
         elif fuel == "Fossil Fuel":
             rmd_building_summary["fossil_fuel_chiller_count"] += 1
             rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
-        design_flow = rmd_building_summary.get("design_flow_by_loop_id").get(chiller.get("cooling_loop"), 0.0)
-        rmd_building_summary["cooling_tower_gpm"] += design_flow
-        # TODO: Is this supposed to be horsepower from correlated fan?
-        rmd_building_summary["cooling_tower_hp"] += chiller.get("cooling_tower_hp", 0.0)
+        rmd_building_summary["cooling_tower_gpm"] += chiller.get("design_flow_condenser", 0.0)
+        if cooling_tower:
+            rmd_building_summary["cooling_tower_gpm"] += cooling_tower.get("rated_water_flowrate", 0.0)
+            fan = cooling_tower.get("fan")
+            if fan:
+                rmd_building_summary["cooling_tower_hp"] += self.determine_fan_power(fan)
 
     def summarize_heating_plant_data(self, boiler, rmd_building_summary):
         fuel = self.get_fuel_type(boiler.get("energy_source_type"), None)
         if fuel == "Electricity":
-            rmd_building_summary["electric_chiller_count"] += 1
-            rmd_building_summary["electric_chiller_plant_capacity"] += boiler.get("design_capacity", 0.0)
+            rmd_building_summary["electric_boiler_count"] += 1
+            rmd_building_summary["electric_boiler_plant_capacity"] += boiler.get("design_capacity", 0.0)
         elif fuel == "Fossil Fuel":
-            rmd_building_summary["fossil_fuel_chiller_count"] += 1
-            rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += boiler.get("design_capacity", 0.0)
+            rmd_building_summary["fossil_fuel_boiler_count"] += 1
+            rmd_building_summary["fossil_fuel_boiler_plant_capacity"] += boiler.get("design_capacity", 0.0)
 
     def load_files(self):
         """
@@ -1188,8 +1196,14 @@ class RCTDetailedReport:
             "energy_by_end_use": ("Btu", "kBtu"),
             "elec_by_end_use": ("Btu", "kWh"),
             "gas_by_end_use": ("Btu", "therm"),
-            "heating_capacity_by_fuel_type": ("Btu", "kBtu"),
-            "cooling_capacity_by_fuel_type": ("Btu", "kBtu"),
+            "heating_capacity_by_fuel_type": ("W", "kBtu/hour"),
+            "cooling_capacity_by_fuel_type": ("W", "kBtu/hour"),
+            "electric_chiller_plant_capacity": ("W", "ton"),
+            "fossil_fuel_chiller_plant_capacity": ("W", "ton"),
+            "cooling_tower_gpm": ("L/s", "gpm"),
+            "cooling_tower_hp": ("W", "hp"),
+            "electric_boiler_plant_capacity": ("W", "Btu/hour"),
+            "fossil_fuel_boiler_plant_capacity": ("W", "Btu/hour"),
         }
 
         # Convert baseline model summary values
