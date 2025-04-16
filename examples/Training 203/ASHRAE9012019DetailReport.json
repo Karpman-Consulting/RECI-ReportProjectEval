@@ -17621,8 +17621,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17632,8 +17640,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17643,8 +17659,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17654,8 +17678,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17665,8 +17697,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17676,8 +17716,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17687,8 +17735,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17698,8 +17754,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17709,8 +17773,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17720,8 +17792,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17731,8 +17811,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17742,8 +17830,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17753,8 +17849,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17764,8 +17868,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17775,8 +17887,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17786,8 +17906,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17797,8 +17925,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17808,8 +17944,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17819,8 +17963,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17830,8 +17982,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17841,8 +18001,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17852,8 +18020,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17863,8 +18039,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17874,8 +18058,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17885,8 +18077,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17896,8 +18096,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17907,8 +18115,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17918,8 +18134,16 @@
                     "messages": "HVAC system type Sys-9 was selected based on G3_1_1e.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-9']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-9"
                         }
                     ]
                 },
@@ -17929,8 +18153,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17940,8 +18172,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 },
@@ -17951,8 +18191,16 @@
                     "messages": "HVAC system type Sys-1 was selected based on RESIDENTIAL CZ_3b_3c_or_4_to_8.",
                     "calculated_values": [
                         {
-                            "variable": "is_system_part_of_expected_sys_type_b",
-                            "value": "True"
+                            "variable": "hvac_system_types_b",
+                            "value": "{'Sys-1': ['Multifamily 1 System 1', 'Multifamily 1 System 2', 'Multifamily 1 System 3', 'Multifamily 1 System 4', 'Multifamily 1 System 5', 'Multifamily 1 System 6', 'Multifamily 2 System 1', 'Multifamily 2 System 2', 'Multifamily 2 System 3', 'Multifamily 2 System 4', 'Multifamily 2 System 5', 'Multifamily 2 System 6', 'Multifamily 3 System 1', 'Multifamily 3 System 2', 'Multifamily 3 System 3', 'Multifamily 3 System 4', 'Multifamily 3 System 5', 'Multifamily 3 System 6', 'Multifamily 1 Corridor System 1', 'Multifamily 2 Corridor System 1', 'Multifamily 3 Corridor System 1', 'RT - Retail System 1', 'RT - Retail System 2', 'RT - Retail System 3'], 'Sys-9': ['Stair System Unit Heater', 'Stair System Unit Heater - MF1 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF2 - Multifamily Stair Zn 2', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 1', 'Stair System Unit Heater - MF3 - Multifamily Stair Zn 2', 'Stair System Unit Heater - RT - Retail Stair Zn 1']}"
+                        },
+                        {
+                            "variable": "hvac_system_types_serving_zone_b",
+                            "value": "['Sys-1']"
+                        },
+                        {
+                            "variable": "expected_system_type_b",
+                            "value": "Sys-1"
                         }
                     ]
                 }
