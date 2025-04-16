@@ -297,8 +297,64 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.proposed_model_summary['total_equipment_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['total_floor_area'] / rct_detailed_report.proposed_model_summary['total_occupants'], 2)}</td>
                                     </tr>
+                                </tbody>
+                            </table>
         """)
+
+        # ----------------------- Schedule Summary Table -----------------------
         file.write(f"""
+                            <h3>Schedule Summary</h3>
+                            <table class="table table-sm table-borderless" style="width: 1250px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="1" class="col-4"></th>
+                                        <th colspan="5" class="col-4" style="border: 2px solid black;">Baseline</th>
+                                        <th colspan="5" class="col-4" style="border: 2px solid black;">Proposed</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Schedule</th>
+                                        <th style="border: 2px solid black;">EFLH</th>
+                                        <th style="border: 2px solid black;">Associated Floor Area (ft<sup>2</sup>)</th>
+                                        <th style="border: 2px solid black;">% of Total Lighting Watts Controlled</th>
+                                        <th style="border: 2px solid black;">% of Total Equipment Watts Controlled</th>
+                                        <th style="border: 2px solid black;">Associated Peak Internal Gain (kBtu/hr)</th>
+                                        <th style="border: 2px solid black;">EFLH</th>
+                                        <th style="border: 2px solid black;">Associated Floor Area (ft<sup>2</sup>)</th>
+                                        <th style="border: 2px solid black;">% of Total Lighting Watts Controlled</th>
+                                        <th style="border: 2px solid black;">% of Total Equipment Watts Controlled</th>
+                                        <th style="border: 2px solid black;">Associated Peak Internal Gain (kBtu/hr)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+        """)
+
+        baseline_schedule_summaries = rct_detailed_report.baseline_model_summary["schedule_summaries"]
+        for schedule_id in baseline_schedule_summaries.keys():
+            baseline_schedule_summary = (
+                rct_detailed_report.baseline_model_summary["schedule_summaries"].get(schedule_id, {})
+            )
+            proposed_schedule_summary = (
+                rct_detailed_report.proposed_model_summary["schedule_summaries"].get(schedule_id, {})
+            )
+            file.write(
+                f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                        <td style="border-right: 2px solid black;">{schedule_id}</td>
+                                        <td>{round(baseline_schedule_summary.get("EFLH", 0)):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("associated_floor_area", 0.0), 4):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("percent_total_lighting_power", 0.0), 4):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("percent_total_equipment_power", 0.0), 4):,}</td>
+                                        <td style="border-right: 2px solid black;">{round(baseline_schedule_summary.get("associated_peak_internal_gain", 0.0), 4):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("EFLH", 0)):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("associated_floor_area", 0.0), 4):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("percent_total_lighting_power", 0.0), 4):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("percent_total_equipment_power", 0.0), 4):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("associated_peak_internal_gain", 0.0), 4):,}</td>
+                                    </tr>
+                """
+            )
+        file.write(f"""
+                                    
                                 </tbody>
                             </table>
                         </div>

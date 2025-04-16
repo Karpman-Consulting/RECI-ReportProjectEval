@@ -213,6 +213,11 @@ class RCTDetailedReport:
             "unmet_cooling_hours": 0,
             "total_energy": 0,
             "total_cost": 0,
+            "int_ltg_power_by_schedule": {},
+            "equip_power_by_schedule": {},
+            "floor_area_by_schedule": {},
+            "occ_peak_internal_gain_by_schedule": {},
+            "schedule_summaries": {},
         }
 
         output = rmd_data.get("output")
@@ -234,17 +239,35 @@ class RCTDetailedReport:
 
         for chiller in rmd_data.get("chillers", []):
             condensing_loop = chiller.get("condensing_loop")
-            cooling_tower = None
+            cooling_towers = []
             if condensing_loop:
                 for heat_rejection in rmd_data.get("heat_rejections", []):
                     if heat_rejection.get("loop") == condensing_loop:
-                        cooling_tower = heat_rejection
-            self.summarize_cooling_plant_data(chiller, cooling_tower, rmd_building_summary)
+                        cooling_towers.append(heat_rejection)
+            self.summarize_cooling_plant_data(chiller, cooling_towers, rmd_building_summary)
 
         for boiler in rmd_data.get("boilers", []):
             self.summarize_heating_plant_data(boiler, rmd_building_summary)
 
+        for schedule in rmd_data.get("schedules", []):
+            self.summarize_schedule_data(schedule, rmd_building_summary)
+
         return rmd_building_summary
+
+    @staticmethod
+    def summarize_schedule_data(schedule, rmd_building_summary):
+        schedule_id = schedule.get("id")
+
+        rmd_building_summary["schedule_summaries"][schedule_id] = {
+            "EFLH": sum(schedule.get("hourly_values", [])),
+            "associated_floor_area": rmd_building_summary.get("floor_area_by_schedule", {}).get(schedule_id, 0.0),
+            "percent_total_lighting_power": (rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) /
+                                             rmd_building_summary.get("total_lighting_power", 1.0)),
+            "percent_total_equipment_power": (rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) /
+                                              rmd_building_summary.get("total_equipment_power", 1.0)),
+            "associated_peak_internal_gain": (rmd_building_summary.get("occ_peak_internal_gain_by_schedule", {}).get(schedule_id, 0.0) /
+                                              rmd_building_summary.get("total_occupants", 1.0)),
+        }
 
     @staticmethod
     def summarize_output_data(output, rmd_building_summary):
@@ -345,11 +368,20 @@ class RCTDetailedReport:
                     rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"]["Undefined"]["Zonal Exhaust"] += fan_power
                     rmd_building_summary["total_fan_power"] += fan_power
 
+            zone_area = sum(space.get("floor_area", 0.0) for space in zone.get("spaces", []))
+            rmd_building_summary["floor_area_by_schedule"][
+                zone.get("thermostat_cooling_setpoint_schedule")
+            ] = zone_area
+            rmd_building_summary["floor_area_by_schedule"][
+                zone.get("thermostat_heating_setpoint_schedule")
+            ] = zone_area
+
             self.summarize_rmd_space_data(building_segment, zone, rmd_building_summary)
 
             self.summarize_rmd_surface_data(building_segment, zone, rmd_building_summary)
 
             self.summarize_rmd_terminal_data(zone, rmd_building_summary)
+
 
     def summarize_rmd_space_data(self, building_segment, zone, rmd_building_summary):
         for space in zone.get("spaces", []):
@@ -393,10 +425,14 @@ class RCTDetailedReport:
                         "power_per_area" in interior_lighting
                         and "floor_area" in space
                 ):
-                    rmd_building_summary["total_lighting_power"] += (
-                            interior_lighting["power_per_area"]
-                            * space["floor_area"]
-                    )
+                    int_ltg_power =  interior_lighting["power_per_area"] * space["floor_area"]
+                    rmd_building_summary["total_lighting_power"] += int_ltg_power
+                    rmd_building_summary["int_ltg_power_by_schedule"][
+                        interior_lighting.get("lighting_multiplier_schedule")
+                    ] = int_ltg_power
+                    rmd_building_summary["floor_area_by_schedule"][
+                        interior_lighting.get("lighting_multiplier_schedule")
+                    ] = space["floor_area"]
                     if "lighting_space_type" in space:
                         rmd_building_summary[
                             "total_floor_area_by_space_type"
@@ -426,6 +462,12 @@ class RCTDetailedReport:
                     rmd_building_summary[
                         "total_equipment_power"
                     ] += miscellaneous_equipment["power"]
+                    rmd_building_summary["equip_power_by_schedule"][
+                        miscellaneous_equipment.get("multiplier_schedule")
+                    ] = miscellaneous_equipment["power"]
+                    rmd_building_summary["floor_area_by_schedule"][
+                        miscellaneous_equipment.get("multiplier_schedule")
+                    ] = space["floor_area"]
                     if "lighting_space_type" in space:
                         rmd_building_summary[
                             "total_miscellaneous_equipment_power_by_space_type"
@@ -435,6 +477,15 @@ class RCTDetailedReport:
                                 ].get(space["lighting_space_type"], 0)
                                 + miscellaneous_equipment["power"]
                         )
+
+            if "occupant_multiplier_schedule" in space and "floor_area" in space:
+                rmd_building_summary["floor_area_by_schedule"][
+                    space["occupant_multiplier_schedule"]
+                ] = space["floor_area"]
+                rmd_building_summary["occ_peak_internal_gain_by_schedule"][
+                    space["occupant_multiplier_schedule"]
+                ] = (space.get("occupant_sensible_heat_gain", 0.0) +
+                    space.get("occupant_latent_heat_gain", 0.0)) * space["number_of_occupants"]
 
     def summarize_heating_cooling_capacity_data(self, building_segment, rmd_building_summary):
         heating_capacity_data = rmd_building_summary.get("heating_capacity_by_fuel_type")
@@ -704,7 +755,7 @@ class RCTDetailedReport:
                             supply_fan_controls
                         ]["Exhaust"] += fan["design_airflow"]
 
-    def summarize_cooling_plant_data(self, chiller, cooling_tower, rmd_building_summary):
+    def summarize_cooling_plant_data(self, chiller, cooling_towers, rmd_building_summary):
         fuel = self.get_fuel_type(chiller.get("energy_source_type"), None)
         if fuel == "Electricity":
             rmd_building_summary["electric_chiller_count"] += 1
@@ -713,7 +764,7 @@ class RCTDetailedReport:
             rmd_building_summary["fossil_fuel_chiller_count"] += 1
             rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
         rmd_building_summary["cooling_tower_gpm"] += chiller.get("design_flow_condenser", 0.0)
-        if cooling_tower:
+        for cooling_tower in cooling_towers:
             rmd_building_summary["cooling_tower_gpm"] += cooling_tower.get("rated_water_flowrate", 0.0)
             fan = cooling_tower.get("fan")
             if fan:
@@ -1285,4 +1336,5 @@ class RCTDetailedReport:
         self.extract_model_data()
         self.perform_analytic_calculations()
         self.convert_model_data_units()
+        print(self.proposed_model_summary.get("occ_peak_internal_gain_by_schedule"))
         write_html_file(self)
