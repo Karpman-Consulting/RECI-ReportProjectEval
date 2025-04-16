@@ -26,6 +26,14 @@ class RCTDetailedReport:
         "NOT_APPLICABLE": "N/A",
         "UNDETERMINED": "Undetermined",
     }
+    fuel_type_map = {
+        "ELECTRICITY": "Electricity",
+        "NATURAL_GAS": "Fossil Fuel",
+        "PROPANE": "Fossil Fuel",
+        "FUEL_OIL": "Fossil Fuel",
+        "STEAM": "Fossil Fuel",
+        "OTHER": "Other"
+    }
 
     def __init__(
             self,
@@ -496,8 +504,7 @@ class RCTDetailedReport:
             # Heating systems
             heating_system = hvac_system.get("heating_system")
             if heating_system:
-                energy_source = heating_system.get("energy_source_type")
-                fuel = self.get_fuel_type(energy_source, heating_system.get("type"))
+                fuel = self.fuel_type_map.get(heating_system.get("energy_source_type"))
                 if fuel in heating_capacity_data:
                     design_capacity = heating_system.get("design_capacity", 0.0)
                     heating_capacity_data[fuel] += design_capacity
@@ -509,7 +516,7 @@ class RCTDetailedReport:
                 cooling_capacity_data["Electricity"] += design_total_cool_capacity
                 cooling_capacity_data["Total"] += design_total_cool_capacity
 
-        # Terminal capacities only populated by our RPD generation software when appropriate.
+        # Terminal Heating and Cooling
         zones = building_segment.get("zones", [])
         for zone in zones:
             for terminal in zone.get("terminals", []):
@@ -756,14 +763,16 @@ class RCTDetailedReport:
                         ]["Exhaust"] += fan["design_airflow"]
 
     def summarize_cooling_plant_data(self, chiller, cooling_towers, rmd_building_summary):
-        fuel = self.get_fuel_type(chiller.get("energy_source_type"), None)
+        fuel = self.fuel_type_map.get(chiller.get("energy_source_type"))
+
         if fuel == "Electricity":
             rmd_building_summary["electric_chiller_count"] += 1
             rmd_building_summary["electric_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
+
         elif fuel == "Fossil Fuel":
             rmd_building_summary["fossil_fuel_chiller_count"] += 1
             rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
-        rmd_building_summary["cooling_tower_gpm"] += chiller.get("design_flow_condenser", 0.0)
+
         for cooling_tower in cooling_towers:
             rmd_building_summary["cooling_tower_gpm"] += cooling_tower.get("rated_water_flowrate", 0.0)
             fan = cooling_tower.get("fan")
@@ -771,7 +780,7 @@ class RCTDetailedReport:
                 rmd_building_summary["cooling_tower_hp"] += self.determine_fan_power(fan)
 
     def summarize_heating_plant_data(self, boiler, rmd_building_summary):
-        fuel = self.get_fuel_type(boiler.get("energy_source_type"), None)
+        fuel = self.fuel_type_map.get(boiler.get("energy_source_type"))
         if fuel == "Electricity":
             rmd_building_summary["electric_boiler_count"] += 1
             rmd_building_summary["electric_boiler_plant_capacity"] += boiler.get("design_capacity", 0.0)
@@ -1205,29 +1214,18 @@ class RCTDetailedReport:
 
     def convert_model_data_units(self):
         """
-        Converts the model data from the JSON files to the desired units.
+        Converts the baseline and proposed model summary values to the desired units
+        and calculates EUI (Energy Use Intensity) values for electricity, gas, and total energy.
         """
         units_dict = {
             "overall_wall_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_wall_u_factor_by_building_segment": (
-                "W / m2 / K",
-                "Btu / h / ft2 / degR",
-            ),
+            "overall_wall_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
             "overall_roof_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_roof_u_factor_by_building_segment": (
-                "W / m2 / K",
-                "Btu / h / ft2 / degR",
-            ),
+            "overall_roof_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
             "overall_window_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_window_u_factor_by_building_segment": (
-                "W / m2 / K",
-                "Btu / h / ft2 / degR",
-            ),
+            "overall_window_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
             "overall_skylight_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_skylight_u_factor_by_building_segment": (
-                "W / m2 / K",
-                "Btu / h / ft2 / degR",
-            ),
+            "overall_skylight_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
             "average_lighting_power_by_space_type": ("W / m2", "W / ft2"),
             "total_floor_area_by_building_segment": ("m2", "ft2"),
             "total_wall_area_by_building_segment": ("m2", "ft2"),
@@ -1247,88 +1245,56 @@ class RCTDetailedReport:
             "energy_by_end_use": ("Btu", "kBtu"),
             "elec_by_end_use": ("Btu", "kWh"),
             "gas_by_end_use": ("Btu", "therm"),
-            "heating_capacity_by_fuel_type": ("W", "kBtu/hour"),
-            "cooling_capacity_by_fuel_type": ("W", "kBtu/hour"),
+            "heating_capacity_by_fuel_type": ("W", "kBtu / h"),
+            "cooling_capacity_by_fuel_type": ("W", "kBtu / h"),
             "electric_chiller_plant_capacity": ("W", "ton"),
             "fossil_fuel_chiller_plant_capacity": ("W", "ton"),
             "cooling_tower_gpm": ("L/s", "gpm"),
             "cooling_tower_hp": ("W", "hp"),
-            "electric_boiler_plant_capacity": ("W", "Btu/hour"),
-            "fossil_fuel_boiler_plant_capacity": ("W", "Btu/hour"),
+            "electric_boiler_plant_capacity": ("W", "Btu / h"),
+            "fossil_fuel_boiler_plant_capacity": ("W", "Btu / h"),
         }
 
-        # Convert baseline model summary values
-        for key in self.baseline_model_summary:
-            if key in units_dict:
-                if isinstance(self.baseline_model_summary[key], dict):
-                    for sub_key in self.baseline_model_summary[key]:
-                        if isinstance(self.baseline_model_summary[key][sub_key], dict):
-                            for sub_sub_key in self.baseline_model_summary[key][sub_key]:
-                                self.baseline_model_summary[key][sub_key][sub_sub_key] = self.convert_unit(
-                                    self.baseline_model_summary[key][sub_key][sub_sub_key],
-                                    units_dict[key][0],
-                                    units_dict[key][1],
-                                )
-                        else:
-                            self.baseline_model_summary[key][sub_key] = self.convert_unit(
-                                self.baseline_model_summary[key][sub_key],
-                                units_dict[key][0],
-                                units_dict[key][1],
-                            )
-                else:
-                    self.baseline_model_summary[key] = self.convert_unit(
-                        self.baseline_model_summary[key],
-                        units_dict[key][0],
-                        units_dict[key][1],
-                    )
+        self._convert_summary_units(self.baseline_model_summary, units_dict)
+        self._convert_summary_units(self.proposed_model_summary, units_dict)
 
-        # Convert proposed model summary values
-        for key in self.proposed_model_summary:
-            if key in units_dict:
-                if isinstance(self.proposed_model_summary[key], dict):
-                    for sub_key in self.proposed_model_summary[key]:
-                        if isinstance(self.proposed_model_summary[key][sub_key], dict):
-                            for sub_sub_key in self.proposed_model_summary[key][sub_key]:
-                                self.proposed_model_summary[key][sub_key][sub_sub_key] = self.convert_unit(
-                                    self.proposed_model_summary[key][sub_key][sub_sub_key],
-                                    units_dict[key][0],
-                                    units_dict[key][1],
-                                )
-                        else:
-                            self.proposed_model_summary[key][sub_key] = self.convert_unit(
-                                self.proposed_model_summary[key][sub_key],
-                                units_dict[key][0],
-                                units_dict[key][1],
-                            )
-                else:
-                    self.proposed_model_summary[key] = self.convert_unit(
-                        self.proposed_model_summary[key],
-                        units_dict[key][0],
-                        units_dict[key][1],
-                    )
+        self._calculate_eui(self.baseline_model_summary)
+        self._calculate_eui(self.proposed_model_summary)
 
-        # Convert each end use by fuel type to EUI
-        for end_use in self.baseline_model_summary["elec_by_end_use"]:
-            self.baseline_model_summary["elec_by_end_use_eui"][end_use] = self.baseline_model_summary["elec_by_end_use"][end_use] * 3.412 / self.baseline_model_summary["total_floor_area"]
-        for end_use in self.baseline_model_summary["gas_by_end_use"]:
-            self.baseline_model_summary["gas_by_end_use_eui"][end_use] = self.baseline_model_summary["gas_by_end_use"][end_use] * 100 / self.baseline_model_summary["total_floor_area"]
-        for end_use in self.baseline_model_summary["energy_by_end_use"]:
-            self.baseline_model_summary["energy_by_end_use_eui"][end_use] = self.baseline_model_summary["energy_by_end_use"][end_use] / self.baseline_model_summary["total_floor_area"]
-        for end_use in self.proposed_model_summary["elec_by_end_use"]:
-            self.proposed_model_summary["elec_by_end_use_eui"][end_use] = self.proposed_model_summary["elec_by_end_use"][end_use] * 3.412 / self.proposed_model_summary["total_floor_area"]
-        for end_use in self.proposed_model_summary["gas_by_end_use"]:
-            self.proposed_model_summary["gas_by_end_use_eui"][end_use] = self.proposed_model_summary["gas_by_end_use"][end_use] * 100 / self.proposed_model_summary["total_floor_area"]
-        for end_use in self.proposed_model_summary["energy_by_end_use"]:
-            self.proposed_model_summary["energy_by_end_use_eui"][end_use] = self.proposed_model_summary["energy_by_end_use"][end_use] / self.proposed_model_summary["total_floor_area"]
+    def _convert_summary_units(self, summary: dict, units_dict: dict):
+        for key, value in summary.items():
+            if key not in units_dict:
+                continue
+            from_unit, to_unit = units_dict[key]
 
-    # TODO: Check this mapping
+            if isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    if isinstance(sub_value, dict):
+                        for sub_sub_key, sub_sub_value in sub_value.items():
+                            value[sub_key][sub_sub_key] = self.convert_unit(sub_sub_value, from_unit, to_unit)
+                    else:
+                        value[sub_key] = self.convert_unit(sub_value, from_unit, to_unit)
+            else:
+                summary[key] = self.convert_unit(value, from_unit, to_unit)
+
     @staticmethod
-    def get_fuel_type(energy_source, hvac_type):
-        if energy_source == "ELECTRICITY":
-            return "Electricity"
-        elif energy_source in ["NATURAL_GAS", "PROPANE", "FUEL_OIL"]:
-            return "Fossil Fuel"
-        return None
+    def _calculate_eui(summary: dict):
+        floor_area = summary.get("total_floor_area", 1)  # avoid division by zero
+
+        elec = summary.get("elec_by_end_use", {})
+        gas = summary.get("gas_by_end_use", {})
+        total = summary.get("energy_by_end_use", {})
+
+        summary.setdefault("elec_by_end_use_eui", {})
+        summary.setdefault("gas_by_end_use_eui", {})
+        summary.setdefault("energy_by_end_use_eui", {})
+
+        for end_use, value in elec.items():
+            summary["elec_by_end_use_eui"][end_use] = value * 3.412 / floor_area
+        for end_use, value in gas.items():
+            summary["gas_by_end_use_eui"][end_use] = value * 100 / floor_area
+        for end_use, value in total.items():
+            summary["energy_by_end_use_eui"][end_use] = value / floor_area
 
     def run(self):
         self.load_files()
