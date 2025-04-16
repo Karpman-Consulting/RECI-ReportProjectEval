@@ -1336,5 +1336,4 @@ class RCTDetailedReport:
         self.extract_model_data()
         self.perform_analytic_calculations()
         self.convert_model_data_units()
-        print(self.proposed_model_summary.get("occ_peak_internal_gain_by_schedule"))
         write_html_file(self)
