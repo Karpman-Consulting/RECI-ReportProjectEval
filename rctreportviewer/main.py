@@ -274,9 +274,6 @@ class RCTDetailedReport:
         schedule_id = schedule.get("id")
         schedule_area = rmd_building_summary.get("floor_area_by_schedule", {}).get(schedule_id)
 
-        # TODO: There are 14 schedules in the demo file that are not associated with any data.
-        #       Still have to double check I'm not missing anything with this. Looks like they're defined in the
-        #       Schedules section but are never used. Example: "MF1Bldg Misc Sch"
         # If the schedule area is not defined, skip summarizing this schedule
         if not schedule_area:
             return
@@ -285,9 +282,9 @@ class RCTDetailedReport:
             "EFLH": sum(schedule.get("hourly_values", [])),
             "associated_floor_area": schedule_area,
             "percent_total_lighting_power": (rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) /
-                                             rmd_building_summary.get("total_lighting_power", 1.0)),
+                                             rmd_building_summary.get("total_lighting_power", 1.0)) * 100,
             "percent_total_equipment_power": (rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) /
-                                              rmd_building_summary.get("total_equipment_power", 1.0)),
+                                              rmd_building_summary.get("total_equipment_power", 1.0)) * 100,
             "associated_peak_internal_gain": (
                 rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) +
                 rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) +
@@ -418,6 +415,7 @@ class RCTDetailedReport:
             rmd_building_summary["occ_peak_internal_gain_by_schedule"][schedule] += occupancy_gain
 
         for space in zone.get("spaces", []):
+            schedule_areas_added = []
             if "floor_area" in space:
                 rmd_building_summary[
                     "total_floor_area"
@@ -489,7 +487,9 @@ class RCTDetailedReport:
                         if schedule and schedule not in dictionary:
                             dictionary[schedule] = 0.0
                     rmd_building_summary["int_ltg_power_by_schedule"][schedule] += int_ltg_power
-                    rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                    if schedule not in schedule_areas_added:
+                        rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                        schedule_areas_added.append(schedule)
                     add_internal_gain_from_occupancy(space, schedule)
 
             for miscellaneous_equipment in space.get(
@@ -522,7 +522,9 @@ class RCTDetailedReport:
                         if schedule and schedule not in dictionary:
                             dictionary[schedule] = 0.0
                     rmd_building_summary["equip_power_by_schedule"][schedule] += miscellaneous_equipment["power"]
-                    rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                    if schedule not in schedule_areas_added:
+                        rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                        schedule_areas_added.append(schedule)
                     add_internal_gain_from_occupancy(space, schedule)
 
             # Save occupancy schedule data
@@ -534,7 +536,9 @@ class RCTDetailedReport:
                 ]:
                     if schedule and schedule not in dictionary:
                         dictionary[schedule] = 0.0
-                rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                if schedule not in schedule_areas_added:
+                    rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                    schedule_areas_added.append(schedule)
                 add_internal_gain_from_occupancy(space, schedule)
 
     def summarize_heating_cooling_capacity_data(self, building_segment, rmd_building_summary):
@@ -1295,10 +1299,6 @@ class RCTDetailedReport:
             "cooling_tower_hp": ("W", "hp"),
             "electric_boiler_plant_capacity": ("W", "Btu / h"),
             "fossil_fuel_boiler_plant_capacity": ("W", "Btu / h"),
-            # TODO: Convert internal gain in here from W to Btu/h
-            # Not sure how to handle this yet. Double nested dict
-            # "schedule_summaries"[schedule_name]["internal_gain"]: ("W", "Btu / h"),
-            # "associated_peak_internal_gain": ("W", "Btu / h"),
         }
 
         self._convert_summary_units(self.baseline_model_summary, units_dict)
@@ -1306,6 +1306,9 @@ class RCTDetailedReport:
 
         self._calculate_eui(self.baseline_model_summary)
         self._calculate_eui(self.proposed_model_summary)
+
+        self._convert_schedule_summaries_internal_gain(self.baseline_model_summary)
+        self._convert_schedule_summaries_internal_gain(self.proposed_model_summary)
 
     def _convert_summary_units(self, summary: dict, units_dict: dict):
         for key, value in summary.items():
@@ -1341,6 +1344,13 @@ class RCTDetailedReport:
             summary["gas_by_end_use_eui"][end_use] = value * 100 / floor_area
         for end_use, value in total.items():
             summary["energy_by_end_use_eui"][end_use] = value / floor_area
+
+    def _convert_schedule_summaries_internal_gain(self, summary: dict):
+        for schedule_data in summary.get("schedule_summaries", {}).values():
+            if "associated_peak_internal_gain" in schedule_data:
+                schedule_data["associated_peak_internal_gain"] = self.convert_unit(
+                    schedule_data["associated_peak_internal_gain"], "W", "kBtu / h"
+                )
 
     def run(self):
         self.load_files()

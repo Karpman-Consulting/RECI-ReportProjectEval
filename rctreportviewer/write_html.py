@@ -247,6 +247,7 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-internal-loads-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
+                            <h3>Internal Loads by Space Type</h3>
                             <table class="table table-sm table-borderless" style="width: 900px;">
                                 <thead>
                                     <tr class="text-center">
@@ -342,13 +343,13 @@ def write_html_file(rct_detailed_report):
                                         <td style="border-right: 2px solid black;">{schedule_id}</td>
                                         <td>{round(baseline_schedule_summary.get("EFLH", 0)):,}</td>
                                         <td>{round(baseline_schedule_summary.get("associated_floor_area", 0.0), 1):,}</td>
-                                        <td>{round(baseline_schedule_summary.get("percent_total_lighting_power", 0.0), 2):,}</td>
-                                        <td>{round(baseline_schedule_summary.get("percent_total_equipment_power", 0.0), 2):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
                                         <td style="border-right: 2px solid black;">{round(baseline_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
                                         <td>{round(proposed_schedule_summary.get("EFLH", 0)):,}</td>
                                         <td>{round(proposed_schedule_summary.get("associated_floor_area", 0.0), 1):,}</td>
-                                        <td>{round(proposed_schedule_summary.get("percent_total_lighting_power", 0.0), 2):,}</td>
-                                        <td>{round(proposed_schedule_summary.get("percent_total_equipment_power", 0.0), 2):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
                                         <td>{round(proposed_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
                                     </tr>
                 """
