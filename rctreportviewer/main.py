@@ -258,6 +258,13 @@ class RCTDetailedReport:
             self.summarize_heating_plant_data(boiler, rmd_building_summary)
 
         for schedule in rmd_data.get("schedules", []):
+            # Skip temperature schedules
+            if schedule.get("type") in [None, "TEMPERATURE"]:
+                continue
+            # TODO: Better way to ID flag schedules?
+            # Skip flag schedules
+            if sum(schedule.get("hourly_values", [])) < 0:
+                continue
             self.summarize_schedule_data(schedule, rmd_building_summary)
 
         return rmd_building_summary
@@ -265,16 +272,27 @@ class RCTDetailedReport:
     @staticmethod
     def summarize_schedule_data(schedule, rmd_building_summary):
         schedule_id = schedule.get("id")
+        schedule_area = rmd_building_summary.get("floor_area_by_schedule", {}).get(schedule_id)
+
+        # TODO: There are 14 schedules in the demo file that are not associated with any data.
+        #       Still have to double check I'm not missing anything with this. Looks like they're defined in the
+        #       Schedules section but are never used. Example: "MF1Bldg Misc Sch"
+        # If the schedule area is not defined, skip summarizing this schedule
+        if not schedule_area:
+            return
 
         rmd_building_summary["schedule_summaries"][schedule_id] = {
             "EFLH": sum(schedule.get("hourly_values", [])),
-            "associated_floor_area": rmd_building_summary.get("floor_area_by_schedule", {}).get(schedule_id, 0.0),
+            "associated_floor_area": schedule_area,
             "percent_total_lighting_power": (rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) /
                                              rmd_building_summary.get("total_lighting_power", 1.0)),
             "percent_total_equipment_power": (rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) /
                                               rmd_building_summary.get("total_equipment_power", 1.0)),
-            "associated_peak_internal_gain": (rmd_building_summary.get("occ_peak_internal_gain_by_schedule", {}).get(schedule_id, 0.0) /
-                                              rmd_building_summary.get("total_occupants", 1.0)),
+            "associated_peak_internal_gain": (
+                rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) +
+                rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) +
+                rmd_building_summary.get("occ_peak_internal_gain_by_schedule", {}).get(schedule_id, 0.0)
+            ),
         }
 
     @staticmethod
@@ -392,6 +410,13 @@ class RCTDetailedReport:
 
 
     def summarize_rmd_space_data(self, building_segment, zone, rmd_building_summary):
+        def add_internal_gain_from_occupancy(space, schedule):
+            """Calculate the occupant internal heat gain for a space."""
+            sensible_gain = space.get("occupant_sensible_heat_gain", 0.0)
+            latent_gain = space.get("occupant_latent_heat_gain", 0.0)
+            occupancy_gain = (sensible_gain + latent_gain) * space.get("number_of_occupants", 0)
+            rmd_building_summary["occ_peak_internal_gain_by_schedule"][schedule] += occupancy_gain
+
         for space in zone.get("spaces", []):
             if "floor_area" in space:
                 rmd_building_summary[
@@ -435,12 +460,6 @@ class RCTDetailedReport:
                 ):
                     int_ltg_power =  interior_lighting["power_per_area"] * space["floor_area"]
                     rmd_building_summary["total_lighting_power"] += int_ltg_power
-                    rmd_building_summary["int_ltg_power_by_schedule"][
-                        interior_lighting.get("lighting_multiplier_schedule")
-                    ] = int_ltg_power
-                    rmd_building_summary["floor_area_by_schedule"][
-                        interior_lighting.get("lighting_multiplier_schedule")
-                    ] = space["floor_area"]
                     if "lighting_space_type" in space:
                         rmd_building_summary[
                             "total_floor_area_by_space_type"
@@ -460,6 +479,19 @@ class RCTDetailedReport:
                                 * space["floor_area"]
                         )
 
+                    # Save lighting schedule data
+                    schedule = interior_lighting.get("lighting_multiplier_schedule")
+                    for dictionary in [
+                        rmd_building_summary["int_ltg_power_by_schedule"],
+                        rmd_building_summary["floor_area_by_schedule"],
+                        rmd_building_summary["occ_peak_internal_gain_by_schedule"]
+                    ]:
+                        if schedule and schedule not in dictionary:
+                            dictionary[schedule] = 0.0
+                    rmd_building_summary["int_ltg_power_by_schedule"][schedule] += int_ltg_power
+                    rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                    add_internal_gain_from_occupancy(space, schedule)
+
             for miscellaneous_equipment in space.get(
                     "miscellaneous_equipment", [{"power": 0}]
             ):
@@ -470,12 +502,6 @@ class RCTDetailedReport:
                     rmd_building_summary[
                         "total_equipment_power"
                     ] += miscellaneous_equipment["power"]
-                    rmd_building_summary["equip_power_by_schedule"][
-                        miscellaneous_equipment.get("multiplier_schedule")
-                    ] = miscellaneous_equipment["power"]
-                    rmd_building_summary["floor_area_by_schedule"][
-                        miscellaneous_equipment.get("multiplier_schedule")
-                    ] = space["floor_area"]
                     if "lighting_space_type" in space:
                         rmd_building_summary[
                             "total_miscellaneous_equipment_power_by_space_type"
@@ -486,14 +512,30 @@ class RCTDetailedReport:
                                 + miscellaneous_equipment["power"]
                         )
 
+                    # Save equipment schedule data
+                    schedule = miscellaneous_equipment.get("multiplier_schedule")
+                    for dictionary in [
+                        rmd_building_summary["equip_power_by_schedule"],
+                        rmd_building_summary["floor_area_by_schedule"],
+                        rmd_building_summary["occ_peak_internal_gain_by_schedule"]
+                    ]:
+                        if schedule and schedule not in dictionary:
+                            dictionary[schedule] = 0.0
+                    rmd_building_summary["equip_power_by_schedule"][schedule] += miscellaneous_equipment["power"]
+                    rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                    add_internal_gain_from_occupancy(space, schedule)
+
+            # Save occupancy schedule data
             if "occupant_multiplier_schedule" in space and "floor_area" in space:
-                rmd_building_summary["floor_area_by_schedule"][
-                    space["occupant_multiplier_schedule"]
-                ] = space["floor_area"]
-                rmd_building_summary["occ_peak_internal_gain_by_schedule"][
-                    space["occupant_multiplier_schedule"]
-                ] = (space.get("occupant_sensible_heat_gain", 0.0) +
-                    space.get("occupant_latent_heat_gain", 0.0)) * space["number_of_occupants"]
+                schedule = space["occupant_multiplier_schedule"]
+                for dictionary in [
+                    rmd_building_summary["floor_area_by_schedule"],
+                    rmd_building_summary["occ_peak_internal_gain_by_schedule"]
+                ]:
+                    if schedule and schedule not in dictionary:
+                        dictionary[schedule] = 0.0
+                rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                add_internal_gain_from_occupancy(space, schedule)
 
     def summarize_heating_cooling_capacity_data(self, building_segment, rmd_building_summary):
         heating_capacity_data = rmd_building_summary.get("heating_capacity_by_fuel_type")
@@ -1253,6 +1295,10 @@ class RCTDetailedReport:
             "cooling_tower_hp": ("W", "hp"),
             "electric_boiler_plant_capacity": ("W", "Btu / h"),
             "fossil_fuel_boiler_plant_capacity": ("W", "Btu / h"),
+            # TODO: Convert internal gain in here from W to Btu/h
+            # Not sure how to handle this yet. Double nested dict
+            # "schedule_summaries"[schedule_name]["internal_gain"]: ("W", "Btu / h"),
+            # "associated_peak_internal_gain": ("W", "Btu / h"),
         }
 
         self._convert_summary_units(self.baseline_model_summary, units_dict)
