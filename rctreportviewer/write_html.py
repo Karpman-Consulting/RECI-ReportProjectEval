@@ -113,6 +113,141 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-model-results-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
+        """)
+        # ----------------------- Compliance Calculations Table -----------------------
+        file.write("""
+                            <H3>Compliance Calculations</H3>
+                            <table class="table table-sm table-borderless" style="width: 1300px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="2" class="col-4"></th>
+                                        <th colspan="4" class="col-4" style="border: 2px solid black;">Performance Metric</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Parameter</th>
+                                        <th style="border: 2px solid black;">Symbol</th>
+                                        <th style="border: 2px solid black;">Cost ($)</th>
+                                        <th style="border: 2px solid black;">Site Energy (MMBtu)</th>
+                                        <th style="border: 2px solid black;">Source Energy (MMBTU)</th>
+                                        <th style="border: 2px solid black;">GHG Emissions (Mt CO<sub>2</sub>e)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Proposed building performance before site-generated renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PBP<sub>nre</sub></td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Proposed design on-site renewable savings</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
+                                            <td>$0</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
+                                            <td>$0</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Baseline building unregulated energy, GHG emissions, and/or energy cost</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BBUEC</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Baseline building regulated energy, GHG memissions, and/or energy cost</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BBREC</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Baseline buidling performance</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BBP</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Building Performance Factor</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BPF</td>
+                                            <td>0.74</td>
+                                            <td>0.67</td>
+                                            <td>0.72</td>
+                                            <td>0.72</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance Index Target</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>t</sub></td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance index without on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>nre</sub></td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance index including on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance Index adjusted based upon ASHRAE 90.1-2019 Section 4.2.1.1</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>adjusted</sub></td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black; font-weight: bold;">% improvement beyond ASHRAE 90.1-2019, excluding proposed design on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black; font-weight: bold;">% improvement beyond ASHRAE 90.1-2019, including proposed design on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        
                             <div style="position: relative; left: 360px;" class="mb-3">
                                 <div class="btn-group" role="group" aria-label="Chart toggle">
                                     <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
