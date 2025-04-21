@@ -102,10 +102,30 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Heat Rejection Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["heat_rejection_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["heat_rejection_count"]}</td></tr>
                                 </tbody>
                             </table>
+        """)
+        # ----------------------- HVAC System Type Summary Table -----------------------
+        file.write(
+            f"""
+                            <H3>HVAC System Type Summary</H3>
+                            <table class="table table-sm table-borderless" style="width: 300px;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid black;"><th class="col-4 text-center">90.1 Baseline HVAC System Type</th><th class="col-4 text-center">Quantity</th></tr>
+                                </thead>
+                                <tbody>
+        """)
+        for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-center">{system_type}</td><td class="col-4 text-center">{len(systems)}</td></tr>
+            """)
+        file.write(f"""
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+        """)
 
+        file.write(f"""
                 <div class="mb-3 me-4">
                     <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
                         Results Summary
@@ -115,7 +135,7 @@ def write_html_file(rct_detailed_report):
                         <div class="accordion-body">
         """)
         # ----------------------- Compliance Calculations Table -----------------------
-        file.write("""
+        file.write(f"""
                             <H3>Compliance Calculations</H3>
                             <table class="table table-sm table-borderless" style="width: 1300px;">
                                 <thead>

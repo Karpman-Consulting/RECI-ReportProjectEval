@@ -1,3 +1,4 @@
+import ast
 import json
 import pint
 import os
@@ -57,6 +58,7 @@ class RCTDetailedReport:
         self.space_areas = {}
         self.baseline_space_space_types = {}
         self.space_lpd_allowances = {}
+        self.hvac_system_types_b = {}
         self.baseline_total_lighting_power_allowance = 0
         self.baseline_lighting_power_allowance_by_space_type = {}
         self.proposed_model_summary = {}
@@ -157,19 +159,8 @@ class RCTDetailedReport:
             "pump_count": len(rmd_data.get("pumps", [])),
             "fluid_loop_types": {proposed_fluid_loop.get("type") for proposed_fluid_loop in
                                  rmd_data.get("fluid_loops", [])},
-            "heating_capacity_by_fuel_type": {
-                "Electricity": 0.0,
-                "Fossil Fuel": 0.0,
-                "On-site Boiler Plant": 0.0,
-                "Purchased Heat": 0.0,
-                "Total": 0.0,
-            },
-            "cooling_capacity_by_fuel_type": {
-                "Electricity": 0.0,
-                "On-site Chiller Plant": 0.0,
-                "Purchased CHW": 0.0,
-                "Total": 0.0,
-            },
+            "heating_capacity_by_fuel_type": {},
+            "cooling_capacity_by_fuel_type": {},
             "external_fluid_sources": rmd_data.get("external_fluid_sources", []),
             "overall_wall_ua_by_building_segment": {},
             "overall_wall_u_factor_by_building_segment": {},
@@ -226,11 +217,25 @@ class RCTDetailedReport:
             "floor_area_by_schedule": {},
             "occ_peak_internal_gain_by_schedule": {},
             "schedule_summaries": {},
+            "boiler_loops": [],
+            "chw_loops": [],
         }
 
         output = rmd_data.get("output")
         if output is not None:
             self.summarize_output_data(output, rmd_building_summary)
+
+        for chiller in rmd_data.get("chillers", []):
+            condensing_loop = chiller.get("condensing_loop")
+            cooling_towers = []
+            if condensing_loop:
+                for heat_rejection in rmd_data.get("heat_rejections", []):
+                    if heat_rejection.get("loop") == condensing_loop:
+                        cooling_towers.append(heat_rejection)
+            self.summarize_cooling_plant_data(chiller, cooling_towers, rmd_building_summary)
+
+        for boiler in rmd_data.get("boilers", []):
+            self.summarize_heating_plant_data(boiler, rmd_building_summary)
 
         for building in rmd_data.get("buildings", []):
             rmd_building_summary["building_segment_count"] += len(
@@ -244,18 +249,6 @@ class RCTDetailedReport:
             if pump_power:
                 rmd_building_summary["total_pump_power"] += pump_power
                 rmd_building_summary[pump.get("loop_or_piping", "Undefined")] = pump_power
-
-        for chiller in rmd_data.get("chillers", []):
-            condensing_loop = chiller.get("condensing_loop")
-            cooling_towers = []
-            if condensing_loop:
-                for heat_rejection in rmd_data.get("heat_rejections", []):
-                    if heat_rejection.get("loop") == condensing_loop:
-                        cooling_towers.append(heat_rejection)
-            self.summarize_cooling_plant_data(chiller, cooling_towers, rmd_building_summary)
-
-        for boiler in rmd_data.get("boilers", []):
-            self.summarize_heating_plant_data(boiler, rmd_building_summary)
 
         for schedule in rmd_data.get("schedules", []):
             # Skip temperature schedules
@@ -542,6 +535,36 @@ class RCTDetailedReport:
                 add_internal_gain_from_occupancy(space, schedule)
 
     def summarize_heating_cooling_capacity_data(self, building_segment, rmd_building_summary):
+        def get_external_fluid_source_capacity(loop, is_heating):
+            for fluid_source in external_fluid_sources:
+                if loop == fluid_source.get("loop"):
+                    if is_heating:
+                        heating_capacity_data["Purchased Heat"] += heating_capacity
+                        heating_capacity_data["Total"] += heating_capacity
+                    else:
+                        cooling_capacity_data["Purchased CHW"] += cooling_capacity
+                        cooling_capacity_data["Total"] += cooling_capacity
+                    return True
+            return False
+
+        def get_onsite_heating_capacity(hot_water_loop):
+            if get_external_fluid_source_capacity(hot_water_loop, True):
+                return
+            if hot_water_loop in rmd_building_summary.get("boiler_loops", {}):
+                if "On-site Boiler Plant" not in heating_capacity_data:
+                    heating_capacity_data["On-site Boiler Plant"] = 0.0
+                if "Total" not in heating_capacity_data:
+                    heating_capacity_data["Total"] = 0.0
+                heating_capacity_data["On-site Boiler Plant"] += design_capacity
+                heating_capacity_data["Total"] += design_capacity
+
+        def get_onsite_cooling_capacity(chw_loop):
+            if get_external_fluid_source_capacity(chw_loop, False):
+                return
+            if chw_loop in rmd_building_summary.get("chw_loops", []):
+                cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
+                cooling_capacity_data["Total"] += cooling_capacity
+
         heating_capacity_data = rmd_building_summary.get("heating_capacity_by_fuel_type")
         cooling_capacity_data = rmd_building_summary.get("cooling_capacity_by_fuel_type")
         external_fluid_sources = rmd_building_summary.get("external_fluid_sources", [])
@@ -551,16 +574,27 @@ class RCTDetailedReport:
             heating_system = hvac_system.get("heating_system")
             if heating_system:
                 fuel = self.fuel_type_map.get(heating_system.get("energy_source_type"))
-                if fuel in heating_capacity_data:
-                    design_capacity = heating_system.get("design_capacity", 0.0)
+                hot_water_loop = heating_system.get("hot_water_loop")
+                design_capacity = heating_system.get("design_capacity", 0.0)
+                if hot_water_loop:
+                    get_onsite_heating_capacity(hot_water_loop)
+                elif fuel in heating_capacity_data:
                     heating_capacity_data[fuel] += design_capacity
                     heating_capacity_data["Total"] += design_capacity
             # Cooling systems
             cooling_system = hvac_system.get("cooling_system")
             if cooling_system:
-                design_total_cool_capacity = cooling_system.get("design_total_cool_capacity", 0.0)
-                cooling_capacity_data["Electricity"] += design_total_cool_capacity
-                cooling_capacity_data["Total"] += design_total_cool_capacity
+                chw_loop = cooling_system.get("chilled_water_loop")
+                if chw_loop:
+                    get_onsite_cooling_capacity(chw_loop)
+                else:
+                    if "Electricity" not in cooling_capacity_data:
+                        cooling_capacity_data["Electricity"] = 0.0
+                    if "Total" not in cooling_capacity_data:
+                        cooling_capacity_data["Total"] = 0.0
+                    design_total_cool_capacity = cooling_system.get("design_total_cool_capacity", 0.0)
+                    cooling_capacity_data["Electricity"] += design_total_cool_capacity
+                    cooling_capacity_data["Total"] += design_total_cool_capacity
 
         # Terminal Heating and Cooling
         zones = building_segment.get("zones", [])
@@ -570,19 +604,19 @@ class RCTDetailedReport:
                 heating_capacity = terminal.get("heating_capacity", 0.0)
                 cooling_capacity = terminal.get("cooling_capacity", 0.0)
                 heating_loop = terminal.get("heating_from_loop")
-                cooling_loop = terminal.get("cooling_from_loop")
+                chw_loop = terminal.get("cooling_from_loop")
+                uses_external_source = False
                 if heating_capacity and heating_loop:
-                    if heating_loop in external_fluid_sources:
-                        heating_capacity_data["Purchased Heat"] += heating_capacity
-                    else:
+                    uses_external_source = get_external_fluid_source_capacity(heating_loop, True)
+                    if not uses_external_source:
                         heating_capacity_data["On-site Boiler Plant"] += heating_capacity
-                    heating_capacity_data["Total"] += heating_capacity
-                if cooling_capacity and cooling_loop:
-                    if cooling_loop in external_fluid_sources:
-                        cooling_capacity_data["Purchased CHW"] += cooling_capacity
-                    else:
+                        heating_capacity_data["Total"] += heating_capacity
+                uses_external_source = False
+                if cooling_capacity and chw_loop:
+                    uses_external_source = get_external_fluid_source_capacity(chw_loop, False)
+                    if not uses_external_source:
                         cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
-                    cooling_capacity_data["Total"] += cooling_capacity
+                        cooling_capacity_data["Total"] += cooling_capacity
 
     @staticmethod
     def summarize_rmd_surface_data(building_segment, zone, rmd_building_summary):
@@ -810,20 +844,20 @@ class RCTDetailedReport:
 
     def summarize_cooling_plant_data(self, chiller, cooling_towers, rmd_building_summary):
         fuel = self.fuel_type_map.get(chiller.get("energy_source_type"))
-
         if fuel == "Electricity":
             rmd_building_summary["electric_chiller_count"] += 1
             rmd_building_summary["electric_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
-
         elif fuel == "Fossil Fuel":
             rmd_building_summary["fossil_fuel_chiller_count"] += 1
             rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
-
         for cooling_tower in cooling_towers:
             rmd_building_summary["cooling_tower_gpm"] += cooling_tower.get("rated_water_flowrate", 0.0)
             fan = cooling_tower.get("fan")
             if fan:
                 rmd_building_summary["cooling_tower_hp"] += self.determine_fan_power(fan)
+        loop = chiller.get("loop")
+        if loop:
+            rmd_building_summary["chw_loops"].append(loop)
 
     def summarize_heating_plant_data(self, boiler, rmd_building_summary):
         fuel = self.fuel_type_map.get(boiler.get("energy_source_type"))
@@ -833,6 +867,9 @@ class RCTDetailedReport:
         elif fuel == "Fossil Fuel":
             rmd_building_summary["fossil_fuel_boiler_count"] += 1
             rmd_building_summary["fossil_fuel_boiler_plant_capacity"] += boiler.get("design_capacity", 0.0)
+        loop = boiler.get("loop")
+        if loop:
+            rmd_building_summary["boiler_loops"].append(loop)
 
     def load_files(self):
         """
@@ -898,6 +935,15 @@ class RCTDetailedReport:
                         self.space_lpd_allowances[evaluation["data_group_id"]] = float(
                             lpd_allowance_calc_value["value"]
                         )
+
+                if rule_id == "18-1" and "calculated_values" in evaluation and not self.hvac_system_types_b:
+                    hvac_system_types_b_value = next(
+                        calc_value
+                        for calc_value in evaluation["calculated_values"]
+                        if calc_value["variable"] == "hvac_system_types_b"
+                    )
+                    if hvac_system_types_b_value:
+                        self.hvac_system_types_b = ast.literal_eval(hvac_system_types_b_value["value"])
 
             # Determine rule status
             if outcomes == {"Failing"} and messages == {" ::TOLERANCE::"}:
