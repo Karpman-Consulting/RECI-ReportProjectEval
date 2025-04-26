@@ -34,6 +34,7 @@ def write_html_file(rct_detailed_report):
     with open(rct_detailed_report.output_file_path, "w", encoding="utf-8") as file:
         file.write(
             """
+        <!DOCTYPE HTML>
         <html style="scrollbar-gutter: stable;">
         <head>
             <meta charset="UTF-8">
@@ -75,6 +76,17 @@ def write_html_file(rct_detailed_report):
             "N/A": rct_detailed_report.rules_not_applicable,
         }
 
+        # ----------------------- HVAC System Type Summary Tooltip -----------------------
+        tooltip_lines = []
+        total_qty = 0
+
+        for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
+            qty = len(systems)
+            total_qty += qty
+            tooltip_lines.append(f"<div class='text-start'><b>{system_type}</b>: {qty}</div>")
+
+        tooltip_html = "".join(tooltip_lines)
+
         file.write(
             f"""
                 <div class="mb-3 me-4">
@@ -92,7 +104,15 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["building_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["building_count"]}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Total Floor Area</td><td class="col-4 text-center">{round(rct_detailed_report.baseline_model_summary['total_floor_area']):,}</td><td class="col-4 text-center">{round(rct_detailed_report.proposed_model_summary["total_floor_area"]):,}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Area Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["building_segment_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["building_segment_count"]}</td></tr>
-                                    <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">System Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["system_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["system_count"]}</td></tr>
+                                    <tr style="font-size: 12px;" class="lh-1">
+                                        <td class="col-3 text-end">System Qty</td>
+                                        <td class="col-4 text-center">
+                                            <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-title="{tooltip_html}" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">
+                                                {rct_detailed_report.baseline_model_summary["system_count"]}
+                                            </span>
+                                        </td>
+                                        <td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["system_count"]}</td>
+                                    </tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Zone Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["zone_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["zone_count"]}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Space Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["space_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["space_count"]}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Fluid Loops</td><td class="col-4 text-center">{", ".join(s.title() for s in rct_detailed_report.baseline_model_summary["fluid_loop_types"])}</td><td class="col-4 text-center">{", ".join(s.title() for s in rct_detailed_report.proposed_model_summary["fluid_loop_types"])}</td></tr>
@@ -102,41 +122,20 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Heat Rejection Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["heat_rejection_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["heat_rejection_count"]}</td></tr>
                                 </tbody>
                             </table>
-        """)
-        # ----------------------- HVAC System Type Summary Table -----------------------
-        file.write(
-            f"""
-                            <H3>HVAC System Type Summary</H3>
-                            <table class="table table-sm table-borderless" style="width: 300px;">
-                                <thead>
-                                    <tr style="border-bottom: 2px solid black;"><th class="col-4 text-center">90.1 Baseline HVAC System Type</th><th class="col-4 text-center">Quantity</th></tr>
-                                </thead>
-                                <tbody>
-        """)
-        for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
-            file.write(f"""
-                                    <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-center">{system_type}</td><td class="col-4 text-center">{len(systems)}</td></tr>
-            """)
-        file.write(f"""
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
         """)
 
+        # ----------------------- Compliance Calculations -----------------------
         file.write(f"""
                 <div class="mb-3 me-4">
-                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
-                        Results Summary
+                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-compliance-calcs" aria-expanded="false">
+                        Compliance Calculations
                     </button>
 
-                    <div id="collapse-model-results-summary" class="accordion-collapse collapse">
+                    <div id="collapse-compliance-calcs" class="accordion-collapse collapse">
                         <div class="accordion-body">
-        """)
-        # ----------------------- Compliance Calculations Table -----------------------
-        file.write(f"""
-                            <H3>Compliance Calculations</H3>
                             <table class="table table-sm table-borderless" style="width: 1300px;">
                                 <thead>
                                     <tr class="text-center">
@@ -267,7 +266,24 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+        """)
+
+        # ----------------------- Model Results Summary -----------------------
+        file.write(f"""
+                <div class="mb-3 me-4">
+                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
+                        Results Summary
+                    </button>
+
+                    <div id="collapse-model-results-summary" class="accordion-collapse collapse">
+                        <div class="accordion-body">
                         
+        """)
+
+        file.write(f"""
                             <div style="position: relative; left: 360px;" class="mb-3">
                                 <div class="btn-group" role="group" aria-label="Chart toggle">
                                     <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
@@ -402,7 +418,7 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-internal-loads-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
-                            <h3>Internal Loads by Space Type</h3>
+                            <h3>Space Type Summary</h3>
                             <table class="table table-sm table-borderless" style="width: 900px;">
                                 <thead>
                                     <tr class="text-center">
@@ -417,9 +433,9 @@ def write_html_file(rct_detailed_report):
                                         <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
                                         <th style="border: 2px solid black;">Allowed Lighting Power Density (W/ft<sup>2</sup>)</th>
                                         <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                        <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                        <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
                                         <th style="border: 2px solid black;">Occupancy Density (ft<sup>2</sup>/person)</th>
+                                        <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
+                                        <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
@@ -435,9 +451,9 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.baseline_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                         <td>{round(rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                         <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type] / rct_detailed_report.proposed_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                     </tr>
                 """
             )
@@ -449,9 +465,9 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.baseline_model_summary['total_equipment_power'] / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
                                         <td>{round(rct_detailed_report.baseline_total_lighting_power_allowance / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
                                         <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_lighting_power'] / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_equipment_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['total_floor_area'] / rct_detailed_report.proposed_model_summary['total_occupants'], 2)}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_equipment_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -631,9 +647,9 @@ def write_html_file(rct_detailed_report):
                                                 </tr>
                                                 <tr class="text-center">
                                                     <th style="border: 2px solid black;">Total Quantity of Boilers</th>
-                                                    <th style="border: 2px solid black;">Total Boiler Plant Capacity [Btu/hr]</th>
+                                                    <th style="border: 2px solid black;">Total Boiler Plant Capacity [kBtu/hr]</th>
                                                     <th style="border: 2px solid black;">Total Quantity of Boilers</th>
-                                                    <th style="border: 2px solid black;">Total Boiler Plant Capacity [Btu/hr]</th>
+                                                    <th style="border: 2px solid black;">Total Boiler Plant Capacity [kBtu/hr]</th>
                                                 </tr>
                                             </thead>
                                             <tbody style="border: 2px solid black;">
@@ -674,19 +690,19 @@ def write_html_file(rct_detailed_report):
                                                 <tr style="font-size: 12px;" class="text-center">
                                                     <td style="border-right: 2px solid black;">Fossil Fuel</td>
                                                     <td>{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
-                                                    <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0)):,}</td>
+                                                    <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
                                                     <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
-                                                    <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0)):,}</td>
+                                                    <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
                                                 </tr>
                 """)
             file.write(f"""
                                             <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                                 <td style="border-right: 2px solid black;">Total</td>
                                                 <td>{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
-                                                <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0)):,}</td>
+                                                <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
                                                 <td>{round(rct_detailed_report.proposed_model_summary.get("boiler_count", 0)):,}</td>
                                                 <td>{round((rct_detailed_report.proposed_model_summary.get("electric_boiler_plant_capacity", 0) +
-                                                            rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0))):,}</td>
+                                                            rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0)), 1):,}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1610,6 +1626,13 @@ def write_html_file(rct_detailed_report):
             }}
 
             document.addEventListener("DOMContentLoaded", () => {{
+                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl =>
+                  new bootstrap.Tooltip(tooltipTriggerEl, {{
+                    container: 'body',
+                  }})
+                );
+                
                 calculateSubtotals();
 
                 // Chart labels

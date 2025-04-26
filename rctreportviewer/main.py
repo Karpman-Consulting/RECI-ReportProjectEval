@@ -1343,8 +1343,8 @@ class RCTDetailedReport:
             "fossil_fuel_chiller_plant_capacity": ("W", "ton"),
             "cooling_tower_gpm": ("L/s", "gpm"),
             "cooling_tower_hp": ("W", "hp"),
-            "electric_boiler_plant_capacity": ("W", "Btu / h"),
-            "fossil_fuel_boiler_plant_capacity": ("W", "Btu / h"),
+            "electric_boiler_plant_capacity": ("W", "kBtu / h"),
+            "fossil_fuel_boiler_plant_capacity": ("W", "kBtu / h"),
         }
 
         self._convert_summary_units(self.baseline_model_summary, units_dict)
