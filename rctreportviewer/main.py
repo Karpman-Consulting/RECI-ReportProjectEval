@@ -142,6 +142,7 @@ class RCTDetailedReport:
             "zone_count": 0,
             "space_count": 0,
             "system_count": 0,
+            "hvac_systems": [],
             "boiler_count": len(rmd_data.get("boilers", [])),
             "electric_boiler_count": 0,
             "fossil_fuel_boiler_count": 0,
@@ -770,6 +771,7 @@ class RCTDetailedReport:
         for hvac_system in building_segment.get(
                 "heating_ventilating_air_conditioning_systems", []
         ):
+            rmd_building_summary.get("hvac_systems", []).append(hvac_system.get("id"))
             hvac_fan_system = hvac_system.get("fan_system")
             if hvac_fan_system:
                 supply_fan_controls = hvac_fan_system.get(

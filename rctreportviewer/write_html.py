@@ -708,6 +708,78 @@ def write_html_file(rct_detailed_report):
                                     </table>
             """)
 
+            # -------------------------- Air-Side HVAC System Type, Capacity, and Efficiency Summary Table-------------------------
+            file.write(f"""   
+                                        <h3> Air-Side HVAC System Type, Capacity, and Efficiency Summary</h3>
+                                        <table class="table table-sm table-borderless fan-summary" style="width: 2400px;">
+                                            <thead>
+                                                <tr class="text-center">
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Modeled System Name</th>
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">System Type</th>
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Applicable Baseline\nHVAC System Type\nAdjustment, If Any</th>
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Zoning</th>
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Areas Served</th>
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Qty.</th>
+                                                    <th style="border: 2px solid black; width: 14%;" colspan="4">Heating</th>
+                                                    <th style="border: 2px solid black; width: 14%;" colspan="3">Cooling</th>
+                                                    <th style="border: 2px solid black; width: 14%;" colspan="3">Baseline Efficiency Heating</th>
+                                                    <th style="border: 2px solid black; width: 14%;" colspan="5">Baseline Efficiency Cooling</th>
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Basis of Modeled\nPerformance Curves</th>
+                                                </tr>
+                                                <tr class="text-center">
+                                                    <th style="border: 2px solid black;">Equipment Type</th>
+                                                    <th style="border: 2px solid black;">Fuel Type/Heating Source</th>
+                                                    <th style="border: 2px solid black;">Total Capacity</th>
+                                                    <th style="border: 2px solid black;">Cap. Units</th>
+                                                    <th style="border: 2px solid black;">Equipment Type</th>
+                                                    <th style="border: 2px solid black;">Total Capacity</th>
+                                                    <th style="border: 2px solid black;">Cap. Units</th>
+                                                    <th style="border: 2px solid black;">Unitary Eff.</th>
+                                                    <th style="border: 2px solid black;">Eff. Units</th>
+                                                    <th style="border: 2px solid black;">Modeled Efficiency</th>
+                                                    <th style="border: 2px solid black;">Unitary Full Load Eff.</th>
+                                                    <th style="border: 2px solid black;">Eff. Units</th>
+                                                    <th style="border: 2px solid black;">Unitary Part Load Eff.</th>
+                                                    <th style="border: 2px solid black;">Eff. Units</th>
+                                                    <th style="border: 2px solid black;">COPnfCooling</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="border: 2px solid black;">
+                    """)
+            # A row for every system
+            write_row = False
+            for system in rct_detailed_report.baseline_model_summary.get("hvac_systems", []):
+                file.write(f"""
+                                                <tr style="font-size: 12px;" class="text-center">
+                                                    <td>{system}</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td>-</td>
+                                                </tr>
+                        """)
+            file.write(f"""
+                                        </tbody>
+                                    </table>
+                    """)
+
         # -------------------------- Air-Side HVAC Capacity Summary Table-------------------------
         file.write(f"""   
                             <h3> Air-side HVAC Capacity Summary</h3>
