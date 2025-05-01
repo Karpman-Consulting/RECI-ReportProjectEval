@@ -1,5 +1,7 @@
 import ast
 import json
+from itertools import count
+
 import pint
 import os
 
@@ -142,7 +144,7 @@ class RCTDetailedReport:
             "zone_count": 0,
             "space_count": 0,
             "system_count": 0,
-            "hvac_systems": [],
+            "hvac_system_summaries": [],
             "boiler_count": len(rmd_data.get("boilers", [])),
             "electric_boiler_count": 0,
             "fossil_fuel_boiler_count": 0,
@@ -771,9 +773,32 @@ class RCTDetailedReport:
         for hvac_system in building_segment.get(
                 "heating_ventilating_air_conditioning_systems", []
         ):
-            rmd_building_summary.get("hvac_systems", []).append(hvac_system.get("id"))
+            # Add hvac system to the summary list if not already present
+            system_in_summaries = False
+            for system in rmd_building_summary["hvac_system_summaries"]:
+                if system.get("name") == hvac_system.get("id"):
+                    system_in_summaries = True
+                    break
+            if not system_in_summaries:
+                # Add hvac system to the summary list
+                system_summary = {}
+                system_summary["name"] = hvac_system.get("id")
+                quantity = 0
+                for key in ["heating_system", "cooling_system", "fan_system"]:
+                    quantity += 1 if hvac_system.get(key) else 0
+                system_summary["quantity"] = quantity
+                rmd_building_summary["hvac_system_summaries"].append(system_summary)
+
             hvac_fan_system = hvac_system.get("fan_system")
             if hvac_fan_system:
+                # Add fan system to the summary list if it exists
+                fan_system_summary = {
+                    "name": hvac_fan_system.get("id"),
+                    "quantity": 1,
+                    "type": hvac_fan_system.get("type"),
+                }
+                rmd_building_summary["hvac_system_summaries"].append(fan_system_summary)
+
                 supply_fan_controls = hvac_fan_system.get(
                     "fan_control",
                     "Undefined"
@@ -843,6 +868,26 @@ class RCTDetailedReport:
                         rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                             supply_fan_controls
                         ]["Exhaust"] += fan["design_airflow"]
+
+            hvac_heating_system = hvac_system.get("heating_system")
+            if hvac_heating_system:
+                # Add heating system to the summary list if it exists
+                heating_system_summary = {
+                    "name": hvac_heating_system.get("id"),
+                    "quantity": 1,
+                    "type": hvac_heating_system.get("type"),
+                }
+                rmd_building_summary["hvac_system_summaries"].append(heating_system_summary)
+
+            hvac_cooling_system = hvac_system.get("cooling_system")
+            if hvac_cooling_system:
+                # Add cooling system to the summary list if it exists
+                cooling_system_summary = {
+                    "name": hvac_cooling_system.get("id"),
+                    "quantity": 1,
+                    "type": hvac_cooling_system.get("type"),
+                }
+                rmd_building_summary["hvac_system_summaries"].append(cooling_system_summary)
 
     def summarize_cooling_plant_data(self, chiller, cooling_towers, rmd_building_summary):
         fuel = self.fuel_type_map.get(chiller.get("energy_source_type"))

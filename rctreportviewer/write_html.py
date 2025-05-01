@@ -748,15 +748,15 @@ def write_html_file(rct_detailed_report):
                     """)
             # A row for every system
             write_row = False
-            for system in rct_detailed_report.baseline_model_summary.get("hvac_systems", []):
+            for system_summary in rct_detailed_report.baseline_model_summary["hvac_system_summaries"]:
                 file.write(f"""
                                                 <tr style="font-size: 12px;" class="text-center">
-                                                    <td>{system}</td>
+                                                    <td>{system_summary.get("name")}</td>
+                                                    <td>{system_summary.get("type")}</td>
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>-</td>
-                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td style="border-right: 2px solid black;">{system_summary.get("quantity")}</td>
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
