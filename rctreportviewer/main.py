@@ -1,6 +1,7 @@
 import ast
 import json
 from itertools import count
+import re
 
 import pint
 import os
@@ -65,6 +66,7 @@ class RCTDetailedReport:
         self.baseline_lighting_power_allowance_by_space_type = {}
         self.proposed_model_summary = {}
         self.baseline_model_summary = {}
+        self.climate_zone = None
 
         self.rules_passed = []  # ALL outcomes are PASS or N/A
         self.rules_failed = []  # ANY outcome is FAIL
@@ -351,7 +353,7 @@ class RCTDetailedReport:
 
             self.summarize_rmd_zone_data(building_segment, rmd_building_summary)
 
-            self.summarize_rmd_system_data(building_segment, rmd_building_summary)
+            self.summarize_rmd_system_data(building_segment, building, rmd_building_summary)
 
             self.summarize_heating_cooling_capacity_data(building_segment, rmd_building_summary)
 
@@ -769,36 +771,83 @@ class RCTDetailedReport:
                     rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"]["Undefined"]["Terminal Unit"] += fan_power
                     rmd_building_summary["total_fan_power"] += fan_power
 
-    def summarize_rmd_system_data(self, building_segment, rmd_building_summary):
+    # TODO: Move to perform_analytical_calculations?
+    #       Make this less awful. I think building type, num floors, and area are all separate building metrics
+    #       Should they all be in the JSON file?
+    def get_system_type(self, building):
+        system_type_by_building_type_and_climate_zone = {
+            "Residential": {
+                "climate_zone_0_3A": "System 2--PTHP",
+                "climate_zone_3B-8": "System 1--PTAC",
+            },
+            "Public assembly <120,000 ft2": {
+                "climate_zone_0_3A": "System 4--PSZ-HP",
+                "climate_zone_3B-8": "System 3--PSZ-AC",
+            },
+            "Public assembly >=120,000 ft2": {
+                "climate_zone_0_3A": "System 13--SZ-CV-ER",
+                "climate_zone_3B-8": "System 12--SZ-CV-HW",
+            },
+            "Heated-only storage": {
+                "climate_zone_0_3A": "System 10--Heating and ventilation",
+                "climate_zone_3B-8": "System 9--Heating and ventilation",
+            },
+            "Retail and 2 floors or fewer": {
+                "climate_zone_0_3A": "System 4--PSZ-HP",
+                "climate_zone_3B-8": "System 3--PSZ-AC",
+            },
+            "Other nonresidential and 3 floors or fewer and <25,000 ft2": {
+                "climate_zone_0_3A": "System 4--PSZ-HP",
+                "climate_zone_3B-8": "System 3--PSZ-AC",
+            },
+            "Other nonresidential and 4 or 5 floors and <25,000 ft2 or 5 floors or fewer and 25,000 ft2 to 150,000 ft2": {
+                "climate_zone_0_3A": "System 6--Packaged VAV with PFP boxes",
+                "climate_zone_3B-8": "System 5--Packaged VAV with reheat",
+            },
+            "Other nonresidential and more than 5 floors or >150,000 ft2": {
+                "climate_zone_0_3A": "System 8--VAV with PFP boxes",
+                "climate_zone_3B-8": "System 7--VAV with reheat",
+            }
+        }
+        climate_zone = self.rpd_data.get("weather").get("climate_zone")
+        building_type = building.get("type")
+        if not climate_zone or not building_type:
+            return
+
+        for i in range(len(climate_zone)):
+            if climate_zone[i].isdigit():
+                climate_zone = climate_zone[i:]
+                break
+        if int(climate_zone[0]) < 3 or climate_zone == "3A":
+            climate_zone_key = "climate_zone_0_3A"
+        elif climate_zone in ["3B", "3C"] or int(climate_zone[0]) > 3:
+            climate_zone_key = "climate_zone_3B-8"
+        else:
+            return
+
+        return system_type_by_building_type_and_climate_zone.get(building_type, {}).get(climate_zone_key)
+
+    def summarize_rmd_system_data(self, building_segment, building, rmd_building_summary):
         for hvac_system in building_segment.get(
                 "heating_ventilating_air_conditioning_systems", []
         ):
             # Add hvac system to the summary list if not already present
             system_in_summaries = False
+            system_summary = {}
             for system in rmd_building_summary["hvac_system_summaries"]:
                 if system.get("name") == hvac_system.get("id"):
                     system_in_summaries = True
                     break
             if not system_in_summaries:
-                # Add hvac system to the summary list
-                system_summary = {}
                 system_summary["name"] = hvac_system.get("id")
                 quantity = 0
                 for key in ["heating_system", "cooling_system", "fan_system"]:
                     quantity += 1 if hvac_system.get(key) else 0
                 system_summary["quantity"] = quantity
-                rmd_building_summary["hvac_system_summaries"].append(system_summary)
+                system_summary["type"] = self.get_system_type(building)
 
             hvac_fan_system = hvac_system.get("fan_system")
             if hvac_fan_system:
-                # Add fan system to the summary list if it exists
-                fan_system_summary = {
-                    "name": hvac_fan_system.get("id"),
-                    "quantity": 1,
-                    "type": hvac_fan_system.get("type"),
-                }
-                rmd_building_summary["hvac_system_summaries"].append(fan_system_summary)
-
                 supply_fan_controls = hvac_fan_system.get(
                     "fan_control",
                     "Undefined"
@@ -871,23 +920,23 @@ class RCTDetailedReport:
 
             hvac_heating_system = hvac_system.get("heating_system")
             if hvac_heating_system:
-                # Add heating system to the summary list if it exists
-                heating_system_summary = {
-                    "name": hvac_heating_system.get("id"),
-                    "quantity": 1,
-                    "type": hvac_heating_system.get("type"),
-                }
-                rmd_building_summary["hvac_system_summaries"].append(heating_system_summary)
+                # Add heating system info to the summary list if it exists
+                # TODO Change this to area where capacities are calculated with consideration of terminal capacity
+                system_summary["heating_equipment_type"] = hvac_heating_system.get("type")
+                system_summary["heating_energy_source"] = hvac_heating_system.get("energy_source_type")
+                system_summary["heating_capacity"] = hvac_heating_system.get("design_capacity", 0.0)
+                system_summary["heating_capacity_units"] = "Btu/h"
 
             hvac_cooling_system = hvac_system.get("cooling_system")
             if hvac_cooling_system:
                 # Add cooling system to the summary list if it exists
-                cooling_system_summary = {
-                    "name": hvac_cooling_system.get("id"),
-                    "quantity": 1,
-                    "type": hvac_cooling_system.get("type"),
-                }
-                rmd_building_summary["hvac_system_summaries"].append(cooling_system_summary)
+                # TODO Change this to area where capacities are calculated with consideration of terminal capacity
+                system_summary["cooling_equipment_type"] = hvac_cooling_system.get("type")
+                system_summary["cooling_capacity"] = hvac_cooling_system.get("design_total_cool_capacity", 0.0)
+                system_summary["cooling_capacity_units"] = "Btu/h"
+
+            if system_summary:
+                rmd_building_summary["hvac_system_summaries"].append(system_summary)
 
     def summarize_cooling_plant_data(self, chiller, cooling_towers, rmd_building_summary):
         fuel = self.fuel_type_map.get(chiller.get("energy_source_type"))

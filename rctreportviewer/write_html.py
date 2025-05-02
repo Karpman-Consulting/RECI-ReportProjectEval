@@ -757,13 +757,13 @@ def write_html_file(rct_detailed_report):
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td style="border-right: 2px solid black;">{system_summary.get("quantity")}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td style="border-right: 2px solid black;">-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td style="border-right: 2px solid black;">-</td>
+                                                    <td>{system_summary.get("heating_equipment_type")}</td>
+                                                    <td>{system_summary.get("heating_energy_source")}</td>
+                                                    <td>{round(system_summary.get("heating_capacity", 0))}</td>
+                                                    <td style="border-right: 2px solid black;">{system_summary.get("heating_capacity_units")}</td>
+                                                    <td>{system_summary.get("cooling_equipment_type")}</td>
+                                                    <td>{round(system_summary.get("cooling_capacity", 0))}</td>
+                                                    <td style="border-right: 2px solid black;">{system_summary.get("cooling_capacity_units")}</td>
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td style="border-right: 2px solid black;">-</td>
