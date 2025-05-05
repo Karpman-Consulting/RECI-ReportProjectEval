@@ -542,7 +542,8 @@ def write_html_file(rct_detailed_report):
                         <div class="accordion-body">
         """)
 
-        if (rct_detailed_report.proposed_model_summary["chiller_count"] + rct_detailed_report.baseline_model_summary["chiller_count"]) > 0:
+        if (rct_detailed_report.proposed_model_summary["chiller_count"] + rct_detailed_report.baseline_model_summary[
+            "chiller_count"]) > 0:
             # -------------------------- Cooling Plant Summary Table-------------------------
             file.write(f"""   
                                 <h3> Cooling Plant Summary</h3>
@@ -626,7 +627,7 @@ def write_html_file(rct_detailed_report):
                                             <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
                                             <td>{round(rct_detailed_report.proposed_model_summary.get("chiller_count", 0)):,}</td>
                                             <td>{round((rct_detailed_report.proposed_model_summary.get("electric_chiller_plant_capacity", 0) +
-                                                    rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_plant_capacity", 0)), 1):,}</td>
+                                                        rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_plant_capacity", 0)), 1):,}</td>
                                             <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_gpm", 0), 1):,}</td>
                                             <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
                                         </tr>
@@ -635,7 +636,8 @@ def write_html_file(rct_detailed_report):
             """)
 
         # -------------------------- Heating Plant Summary Table-------------------------
-        if (rct_detailed_report.proposed_model_summary["boiler_count"] + rct_detailed_report.baseline_model_summary["boiler_count"]) > 0:
+        if (rct_detailed_report.proposed_model_summary["boiler_count"] + rct_detailed_report.baseline_model_summary[
+            "boiler_count"]) > 0:
             file.write(f"""   
                                         <h3> Heating Plant Summary</h3>
                                         <table class="table table-sm table-borderless fan-summary" style="width: 800px;">
@@ -708,78 +710,6 @@ def write_html_file(rct_detailed_report):
                                     </table>
             """)
 
-            # -------------------------- Air-Side HVAC System Type, Capacity, and Efficiency Summary Table-------------------------
-            file.write(f"""   
-                                        <h3> Air-Side HVAC System Type, Capacity, and Efficiency Summary</h3>
-                                        <table class="table table-sm table-borderless fan-summary" style="width: 2400px;">
-                                            <thead>
-                                                <tr class="text-center">
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Modeled System Name</th>
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">System Type</th>
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Applicable Baseline\nHVAC System Type\nAdjustment, If Any</th>
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Zoning</th>
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Areas Served</th>
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Qty.</th>
-                                                    <th style="border: 2px solid black; width: 14%;" colspan="4">Heating</th>
-                                                    <th style="border: 2px solid black; width: 14%;" colspan="3">Cooling</th>
-                                                    <th style="border: 2px solid black; width: 14%;" colspan="3">Baseline Efficiency Heating</th>
-                                                    <th style="border: 2px solid black; width: 14%;" colspan="5">Baseline Efficiency Cooling</th>
-                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Basis of Modeled\nPerformance Curves</th>
-                                                </tr>
-                                                <tr class="text-center">
-                                                    <th style="border: 2px solid black;">Equipment Type</th>
-                                                    <th style="border: 2px solid black;">Fuel Type/Heating Source</th>
-                                                    <th style="border: 2px solid black;">Total Capacity</th>
-                                                    <th style="border: 2px solid black;">Cap. Units</th>
-                                                    <th style="border: 2px solid black;">Equipment Type</th>
-                                                    <th style="border: 2px solid black;">Total Capacity</th>
-                                                    <th style="border: 2px solid black;">Cap. Units</th>
-                                                    <th style="border: 2px solid black;">Unitary Eff.</th>
-                                                    <th style="border: 2px solid black;">Eff. Units</th>
-                                                    <th style="border: 2px solid black;">Modeled Efficiency</th>
-                                                    <th style="border: 2px solid black;">Unitary Full Load Eff.</th>
-                                                    <th style="border: 2px solid black;">Eff. Units</th>
-                                                    <th style="border: 2px solid black;">Unitary Part Load Eff.</th>
-                                                    <th style="border: 2px solid black;">Eff. Units</th>
-                                                    <th style="border: 2px solid black;">COPnfCooling</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody style="border: 2px solid black;">
-                    """)
-            # A row for every system
-            write_row = False
-            for system_summary in rct_detailed_report.baseline_model_summary["hvac_system_summaries"]:
-                file.write(f"""
-                                                <tr style="font-size: 12px;" class="text-center">
-                                                    <td>{system_summary.get("name")}</td>
-                                                    <td>{system_summary.get("type")}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td style="border-right: 2px solid black;">{system_summary.get("quantity")}</td>
-                                                    <td>{system_summary.get("heating_equipment_type")}</td>
-                                                    <td>{system_summary.get("heating_energy_source")}</td>
-                                                    <td>{round(system_summary.get("heating_capacity", 0))}</td>
-                                                    <td style="border-right: 2px solid black;">{system_summary.get("heating_capacity_units")}</td>
-                                                    <td>{system_summary.get("cooling_equipment_type")}</td>
-                                                    <td>{round(system_summary.get("cooling_capacity", 0))}</td>
-                                                    <td style="border-right: 2px solid black;">{system_summary.get("cooling_capacity_units")}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td style="border-right: 2px solid black;">-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                    <td style="border-right: 2px solid black;">-</td>
-                                                    <td>-</td>
-                                                </tr>
-                        """)
-            file.write(f"""
-                                        </tbody>
-                                    </table>
-                    """)
-
         # -------------------------- Air-Side HVAC Capacity Summary Table-------------------------
         file.write(f"""   
                             <h3> Air-side HVAC Capacity Summary</h3>
@@ -842,8 +772,10 @@ def write_html_file(rct_detailed_report):
         # Check if there are any On-site Boiler Plant heating capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant", 0.0),
-            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant", 0.0),
+            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant",
+                                                                                            0.0),
+            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant",
+                                                                                            0.0),
         ]:
             if val > 0:
                 write_row = True
@@ -880,8 +812,10 @@ def write_html_file(rct_detailed_report):
         # Check if there are any On-site Chiller Plant cooling capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant", 0.0),
-            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant", 0.0)
+            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant",
+                                                                                            0.0),
+            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant",
+                                                                                            0.0)
         ]:
             if val > 0:
                 write_row = True
@@ -1170,8 +1104,72 @@ def write_html_file(rct_detailed_report):
                     </div>
                 </div>
             </div>
+            
+            <div class="mb-3 me-4">
+                <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-hvac-details" aria-expanded="false">
+                        HVAC Details
+                </button>
+
+                <div id="collapse-hvac-details" class="accordion-collapse collapse">
+                    <div class="accordion-body">
         """
-       )
+                   )
+
+        # -------------------------- Air-Side HVAC System Type, Capacity, and Efficiency Summary Table-------------------------
+        file.write(f"""   
+                                                <h3> Baseline Air-Side HVAC System Type, Capacity, and Efficiency</h3>
+                                                <table class="table table-sm table-borderless fan-summary">
+                                                    <thead>
+                                                        <tr class="text-center">
+                                                            <th style="border: 2px solid black;" rowspan="2">Modeled System Name</th>
+                                                            <th style="border: 2px solid black;" rowspan="2">System Type</th>
+                                                            <th style="border: 2px solid black;" rowspan="2">Zone Qty.</th>
+                                                            <th style="border: 2px solid black;" colspan="6">Heating</th>
+                                                            <th style="border: 2px solid black;" colspan="5">Cooling</th>
+                                                        </tr>
+                                                        <tr class="text-center">
+                                                            <th style="border: 2px solid black;">Equipment Type</th>
+                                                            <th style="border: 2px solid black;">Fuel Type/Heating Source</th>
+                                                            <th style="border: 2px solid black;">Total Capacity</th>
+                                                            <th style="border: 2px solid black;">Cap. Units</th>
+                                                            <th style="border: 2px solid black;">Unitary Eff.</th>
+                                                            <th style="border: 2px solid black;">Eff. Units</th>
+                                                            <th style="border: 2px solid black;">Equipment Type</th>
+                                                            <th style="border: 2px solid black;">Total Capacity</th>
+                                                            <th style="border: 2px solid black;">Cap. Units</th>
+                                                            <th style="border: 2px solid black;">Unitary Eff.</th>
+                                                            <th style="border: 2px solid black;">Eff. Units</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody style="border: 2px solid black;">
+                            """)
+        # A row for every system
+        for system_summary in rct_detailed_report.baseline_model_summary["hvac_system_summaries"]:
+            file.write(f"""
+                                                        <tr style="font-size: 12px;" class="text-center">
+                                                            <td>{system_summary.get("name")}</td>
+                                                            <td>{system_summary.get("type")}</td>
+                                                            <td style="border-right: 2px solid black;">-</td>
+                                                            <td>{system_summary.get("heating_equipment_type", "").replace("_", " ").title()}</td>
+                                                            <td>{system_summary.get("heating_energy_source", "").replace("_", " ").title()}</td>
+                                                            <td>{round(system_summary.get("heating_capacity", 0)):,}</td>
+                                                            <td>{system_summary.get("heating_capacity_units")}</td>
+                                                            <td>-</td>
+                                                            <td style="border-right: 2px solid black;">-</td>
+                                                            <td>{system_summary.get("cooling_equipment_type", "").replace("_", " ").title()}</td>
+                                                            <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
+                                                            <td>{system_summary.get("cooling_capacity_units")}</td>
+                                                            <td>-</td>
+                                                            <td style="border-right: 2px solid black;">-</td>
+                                                        </tr>
+                                """)
+        file.write(f"""
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            """)
 
         for category, rules in rule_categories.items():
             btn_class = (
@@ -1246,7 +1244,8 @@ def write_html_file(rct_detailed_report):
 
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
-                    outcome_summary = " | ".join([f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                    outcome_summary = " | ".join(
+                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
 
                     file.write(
                         f"""
@@ -1396,7 +1395,8 @@ def write_html_file(rct_detailed_report):
 
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
-                    outcome_summary = " | ".join([f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                    outcome_summary = " | ".join(
+                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
 
                     file.write(
                         f"""
@@ -1529,7 +1529,8 @@ def write_html_file(rct_detailed_report):
 
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
-                    outcome_summary = " | ".join([f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                    outcome_summary = " | ".join(
+                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
 
                     file.write(
                         f"""
@@ -2040,4 +2041,3 @@ def write_html_file(rct_detailed_report):
             </html>
             """
         )
-

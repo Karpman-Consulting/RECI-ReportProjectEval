@@ -826,10 +826,6 @@ class RCTDetailedReport:
                     break
             if not system_in_summaries:
                 system_summary["name"] = hvac_system.get("id")
-                quantity = 0
-                for key in ["heating_system", "cooling_system", "fan_system"]:
-                    quantity += 1 if hvac_system.get(key) else 0
-                system_summary["quantity"] = quantity
                 system_summary["type"] = self.get_system_type(building)
 
             hvac_fan_system = hvac_system.get("fan_system")
