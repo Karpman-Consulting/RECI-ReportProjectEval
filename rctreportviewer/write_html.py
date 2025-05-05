@@ -513,12 +513,12 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                         <td style="border-right: 2px solid black;">{schedule_id}</td>
                                         <td>{round(baseline_schedule_summary.get("EFLH", 0)):,}</td>
-                                        <td>{round(baseline_schedule_summary.get("associated_floor_area", 0.0), 1):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("associated_floor_area", 0.0)):,}</td>
                                         <td>{round(baseline_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
                                         <td>{round(baseline_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
                                         <td style="border-right: 2px solid black;">{round(baseline_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
                                         <td>{round(proposed_schedule_summary.get("EFLH", 0)):,}</td>
-                                        <td>{round(proposed_schedule_summary.get("associated_floor_area", 0.0), 1):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("associated_floor_area", 0.0)):,}</td>
                                         <td>{round(proposed_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
                                         <td>{round(proposed_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
                                         <td>{round(proposed_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>

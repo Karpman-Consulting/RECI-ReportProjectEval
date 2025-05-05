@@ -1,8 +1,5 @@
 import ast
 import json
-from itertools import count
-import re
-
 import pint
 import os
 
@@ -259,23 +256,21 @@ class RCTDetailedReport:
             # Skip temperature schedules
             if schedule.get("type") in [None, "TEMPERATURE"]:
                 continue
-            # TODO: Better way to ID flag schedules?
             # Skip flag schedules
-            if sum(schedule.get("hourly_values", [])) < 0:
+            if any(hourly_val < 0 for hourly_val in schedule.get("hourly_values", [])):
                 continue
             self.summarize_schedule_data(schedule, rmd_building_summary)
 
         return rmd_building_summary
 
-    @staticmethod
-    def summarize_schedule_data(schedule, rmd_building_summary):
+    def summarize_schedule_data(self, schedule, rmd_building_summary):
         schedule_id = schedule.get("id")
         schedule_area = rmd_building_summary.get("floor_area_by_schedule", {}).get(schedule_id)
 
         # If the schedule area is not defined, skip summarizing this schedule
         if not schedule_area:
             return
-
+        schedule_area = self.convert_unit(schedule_area, "m2", "ft2")
         rmd_building_summary["schedule_summaries"][schedule_id] = {
             "EFLH": sum(schedule.get("hourly_values", [])),
             "associated_floor_area": schedule_area,
@@ -389,28 +384,19 @@ class RCTDetailedReport:
                     rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"]["Undefined"]["Zonal Exhaust"] += fan_power
                     rmd_building_summary["total_fan_power"] += fan_power
 
-            zone_area = sum(space.get("floor_area", 0.0) for space in zone.get("spaces", []))
-            rmd_building_summary["floor_area_by_schedule"][
-                zone.get("thermostat_cooling_setpoint_schedule")
-            ] = zone_area
-            rmd_building_summary["floor_area_by_schedule"][
-                zone.get("thermostat_heating_setpoint_schedule")
-            ] = zone_area
-
             self.summarize_rmd_space_data(building_segment, zone, rmd_building_summary)
 
             self.summarize_rmd_surface_data(building_segment, zone, rmd_building_summary)
 
             self.summarize_rmd_terminal_data(zone, rmd_building_summary)
 
-
     def summarize_rmd_space_data(self, building_segment, zone, rmd_building_summary):
-        def add_internal_gain_from_occupancy(space, schedule):
+        def add_internal_gain_from_occupancy(spc, sch):
             """Calculate the occupant internal heat gain for a space."""
-            sensible_gain = space.get("occupant_sensible_heat_gain", 0.0)
-            latent_gain = space.get("occupant_latent_heat_gain", 0.0)
-            occupancy_gain = (sensible_gain + latent_gain) * space.get("number_of_occupants", 0)
-            rmd_building_summary["occ_peak_internal_gain_by_schedule"][schedule] += occupancy_gain
+            sensible_gain = spc.get("occupant_sensible_heat_gain", 0.0)
+            latent_gain = spc.get("occupant_latent_heat_gain", 0.0)
+            occupancy_gain = (sensible_gain + latent_gain) * spc.get("number_of_occupants", 0)
+            rmd_building_summary["occ_peak_internal_gain_by_schedule"][sch] += occupancy_gain
 
         for space in zone.get("spaces", []):
             schedule_areas_added = []
@@ -454,7 +440,7 @@ class RCTDetailedReport:
                         "power_per_area" in interior_lighting
                         and "floor_area" in space
                 ):
-                    int_ltg_power =  interior_lighting["power_per_area"] * space["floor_area"]
+                    int_ltg_power = interior_lighting["power_per_area"] * space["floor_area"]
                     rmd_building_summary["total_lighting_power"] += int_ltg_power
                     if "lighting_space_type" in space:
                         rmd_building_summary[
@@ -552,10 +538,10 @@ class RCTDetailedReport:
                     return True
             return False
 
-        def get_onsite_heating_capacity(hot_water_loop):
-            if get_external_fluid_source_capacity(hot_water_loop, True):
+        def get_onsite_heating_capacity(hw_loop):
+            if get_external_fluid_source_capacity(hw_loop, True):
                 return
-            if hot_water_loop in rmd_building_summary.get("boiler_loops", {}):
+            if hw_loop in rmd_building_summary.get("boiler_loops", {}):
                 if "On-site Boiler Plant" not in heating_capacity_data:
                     heating_capacity_data["On-site Boiler Plant"] = 0.0
                 if "Total" not in heating_capacity_data:
@@ -589,9 +575,9 @@ class RCTDetailedReport:
             # Cooling systems
             cooling_system = hvac_system.get("cooling_system")
             if cooling_system:
-                chw_loop = cooling_system.get("chilled_water_loop")
-                if chw_loop:
-                    get_onsite_cooling_capacity(chw_loop)
+                chilled_water_loop = cooling_system.get("chilled_water_loop")
+                if chilled_water_loop:
+                    get_onsite_cooling_capacity(chilled_water_loop)
                 else:
                     if "Electricity" not in cooling_capacity_data:
                         cooling_capacity_data["Electricity"] = 0.0
@@ -609,16 +595,16 @@ class RCTDetailedReport:
                 heating_capacity = terminal.get("heating_capacity", 0.0)
                 cooling_capacity = terminal.get("cooling_capacity", 0.0)
                 heating_loop = terminal.get("heating_from_loop")
-                chw_loop = terminal.get("cooling_from_loop")
-                uses_external_source = False
+                chilled_water_loop = terminal.get("cooling_from_loop")
+
                 if heating_capacity and heating_loop:
                     uses_external_source = get_external_fluid_source_capacity(heating_loop, True)
                     if not uses_external_source:
                         heating_capacity_data["On-site Boiler Plant"] += heating_capacity
                         heating_capacity_data["Total"] += heating_capacity
-                uses_external_source = False
-                if cooling_capacity and chw_loop:
-                    uses_external_source = get_external_fluid_source_capacity(chw_loop, False)
+
+                if cooling_capacity and chilled_water_loop:
+                    uses_external_source = get_external_fluid_source_capacity(chilled_water_loop, False)
                     if not uses_external_source:
                         cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
                         cooling_capacity_data["Total"] += cooling_capacity
@@ -1416,6 +1402,7 @@ class RCTDetailedReport:
             "overall_skylight_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
             "average_lighting_power_by_space_type": ("W / m2", "W / ft2"),
             "total_floor_area_by_building_segment": ("m2", "ft2"),
+            "floor_area_by_schedule": ("m2", "ft2"),
             "total_wall_area_by_building_segment": ("m2", "ft2"),
             "total_roof_area_by_building_segment": ("m2", "ft2"),
             "total_window_area_by_building_segment": ("m2", "ft2"),
