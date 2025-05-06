@@ -1149,7 +1149,7 @@ def write_html_file(rct_detailed_report):
                                                         <tr style="font-size: 12px;" class="text-center">
                                                             <td>{system_summary.get("name")}</td>
                                                             <td>{system_summary.get("type")}</td>
-                                                            <td style="border-right: 2px solid black;">-</td>
+                                                            <td style="border-right: 2px solid black;">{system_summary.get("zone_qty")}</td>
                                                             <td>{system_summary.get("heating_equipment_type", "").replace("_", " ").title()}</td>
                                                             <td>{system_summary.get("heating_energy_source", "").replace("_", " ").title()}</td>
                                                             <td>{round(system_summary.get("heating_capacity", 0)):,}</td>

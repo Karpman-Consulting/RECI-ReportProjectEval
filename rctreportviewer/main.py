@@ -348,7 +348,7 @@ class RCTDetailedReport:
 
             self.summarize_rmd_zone_data(building_segment, rmd_building_summary)
 
-            self.summarize_rmd_system_data(building_segment, building, rmd_building_summary)
+            self.summarize_rmd_system_data(building_segment, rmd_building_summary)
 
             self.summarize_heating_cooling_capacity_data(building_segment, rmd_building_summary)
 
@@ -757,76 +757,27 @@ class RCTDetailedReport:
                     rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"]["Undefined"]["Terminal Unit"] += fan_power
                     rmd_building_summary["total_fan_power"] += fan_power
 
-    # TODO: Move to perform_analytical_calculations?
-    #       Make this less awful. I think building type, num floors, and area are all separate building metrics
-    #       Should they all be in the JSON file?
-    def get_system_type(self, building):
-        system_type_by_building_type_and_climate_zone = {
-            "Residential": {
-                "climate_zone_0_3A": "System 2--PTHP",
-                "climate_zone_3B-8": "System 1--PTAC",
-            },
-            "Public assembly <120,000 ft2": {
-                "climate_zone_0_3A": "System 4--PSZ-HP",
-                "climate_zone_3B-8": "System 3--PSZ-AC",
-            },
-            "Public assembly >=120,000 ft2": {
-                "climate_zone_0_3A": "System 13--SZ-CV-ER",
-                "climate_zone_3B-8": "System 12--SZ-CV-HW",
-            },
-            "Heated-only storage": {
-                "climate_zone_0_3A": "System 10--Heating and ventilation",
-                "climate_zone_3B-8": "System 9--Heating and ventilation",
-            },
-            "Retail and 2 floors or fewer": {
-                "climate_zone_0_3A": "System 4--PSZ-HP",
-                "climate_zone_3B-8": "System 3--PSZ-AC",
-            },
-            "Other nonresidential and 3 floors or fewer and <25,000 ft2": {
-                "climate_zone_0_3A": "System 4--PSZ-HP",
-                "climate_zone_3B-8": "System 3--PSZ-AC",
-            },
-            "Other nonresidential and 4 or 5 floors and <25,000 ft2 or 5 floors or fewer and 25,000 ft2 to 150,000 ft2": {
-                "climate_zone_0_3A": "System 6--Packaged VAV with PFP boxes",
-                "climate_zone_3B-8": "System 5--Packaged VAV with reheat",
-            },
-            "Other nonresidential and more than 5 floors or >150,000 ft2": {
-                "climate_zone_0_3A": "System 8--VAV with PFP boxes",
-                "climate_zone_3B-8": "System 7--VAV with reheat",
-            }
-        }
-        climate_zone = self.rpd_data.get("weather").get("climate_zone")
-        building_type = building.get("type")
-        if not climate_zone or not building_type:
-            return
+    def summarize_rmd_system_data(self, building_segment, rmd_building_summary):
+        def get_system_type(system_id):
+            for system_type, system_names in self.hvac_system_types_b.items():
+                if system_id in system_names:
+                    return system_type
+            return None
 
-        for i in range(len(climate_zone)):
-            if climate_zone[i].isdigit():
-                climate_zone = climate_zone[i:]
-                break
-        if int(climate_zone[0]) < 3 or climate_zone == "3A":
-            climate_zone_key = "climate_zone_0_3A"
-        elif climate_zone in ["3B", "3C"] or int(climate_zone[0]) > 3:
-            climate_zone_key = "climate_zone_3B-8"
-        else:
-            return
-
-        return system_type_by_building_type_and_climate_zone.get(building_type, {}).get(climate_zone_key)
-
-    def summarize_rmd_system_data(self, building_segment, building, rmd_building_summary):
         for hvac_system in building_segment.get(
                 "heating_ventilating_air_conditioning_systems", []
         ):
             # Add hvac system to the summary list if not already present
             system_in_summaries = False
             system_summary = {}
+            system_name = hvac_system.get("id")
             for system in rmd_building_summary["hvac_system_summaries"]:
-                if system.get("name") == hvac_system.get("id"):
+                if system.get("name") == system_name:
                     system_in_summaries = True
                     break
             if not system_in_summaries:
-                system_summary["name"] = hvac_system.get("id")
-                system_summary["type"] = self.get_system_type(building)
+                system_summary["name"] = system_name
+                system_summary["type"] = get_system_type(system_name)
 
             hvac_fan_system = hvac_system.get("fan_system")
             if hvac_fan_system:
@@ -916,6 +867,12 @@ class RCTDetailedReport:
                 system_summary["cooling_equipment_type"] = hvac_cooling_system.get("type")
                 system_summary["cooling_capacity"] = hvac_cooling_system.get("design_total_cool_capacity", 0.0)
                 system_summary["cooling_capacity_units"] = "Btu/h"
+
+            # Count the number of zones served by system
+            for zone in building_segment.get("zones", []):
+                for terminal in zone.get("terminals", []):
+                    if terminal.get("served_by_heating_ventilating_air_conditioning_system") == system_name:
+                        system_summary["zone_qty"] = system_summary.get("zone_qty", 0) + 1
 
             if system_summary:
                 rmd_building_summary["hvac_system_summaries"].append(system_summary)
