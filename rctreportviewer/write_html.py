@@ -529,6 +529,7 @@ def write_html_file(rct_detailed_report):
                                     
                                 </tbody>
                             </table>
+                            <p style="font-size: 0.75rem;" class="ms-2">*Peak Internal Gain = Internal Gain when hourly fractional value is 1 or 100%</p>
                         </div>
                     </div>
                 </div>
