@@ -1147,22 +1147,49 @@ def write_html_file(rct_detailed_report):
         for system_summary in rct_detailed_report.baseline_model_summary["hvac_system_summaries"]:
             file.write(f"""
                                                         <tr style="font-size: 12px;" class="text-center">
-                                                            <td>{system_summary.get("name")}</td>
-                                                            <td>{system_summary.get("type")}</td>
-                                                            <td style="border-right: 2px solid black;">{system_summary.get("zone_qty")}</td>
-                                                            <td>{system_summary.get("heating_equipment_type", "").replace("_", " ").title()}</td>
-                                                            <td>{system_summary.get("heating_energy_source", "").replace("_", " ").title()}</td>
+                                                            <td>{system_summary.get("name", "-")}</td>
+                                                            <td>{system_summary.get("type", "-")}</td>
+                                                            <td style="border-right: 2px solid black;">{system_summary.get("zone_qty", 0)}</td>
+                                                            <td>{system_summary.get("heating_equipment_type", "-").replace("_", " ").title()}</td>
+                                                            <td>{system_summary.get("heating_energy_source", "-").replace("_", " ").title()}</td>
                                                             <td>{round(system_summary.get("heating_capacity", 0)):,}</td>
-                                                            <td>{system_summary.get("heating_capacity_units")}</td>
-                                                            <td>-</td>
-                                                            <td style="border-right: 2px solid black;">-</td>
-                                                            <td>{system_summary.get("cooling_equipment_type", "").replace("_", " ").title()}</td>
+                                                            <td>{system_summary.get("heating_capacity_units", "-")}</td>
+                        """)
+            if system_summary.get("heating_efficiency_metric_values") and system_summary.get("heating_efficiency_metric_types"):
+                efficiency_values = ", ".join(str(round(x, 3)) for x in system_summary["heating_efficiency_metric_values"])
+                efficiency_types = ", ".join(system_summary["heating_efficiency_metric_types"])
+                file.write(f"""
+                                                            <td>{efficiency_values}</td>
+                                                            <td style="border-right: 2px solid black;">{efficiency_types}</td>
+                                                            <td>{system_summary.get("cooling_equipment_type", "-").replace("_", " ").title()}</td>
                                                             <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
-                                                            <td>{system_summary.get("cooling_capacity_units")}</td>
+                                                            <td>{system_summary.get("cooling_capacity_units", "-")}</td>
+                                """)
+            else:
+                file.write(f"""
                                                             <td>-</td>
                                                             <td style="border-right: 2px solid black;">-</td>
-                                                        </tr>
+                                                            <td>{system_summary.get("cooling_equipment_type", "-").replace("_", " ").title()}</td>
+                                                            <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
+                                                            <td>{system_summary.get("cooling_capacity_units", "-")}</td>
                                 """)
+            if system_summary.get("cooling_efficiency_metric_values") and system_summary.get("cooling_efficiency_metric_types"):
+                efficiency_values = ", ".join(str(round(x, 3)) for x in system_summary["cooling_efficiency_metric_values"])
+                efficiency_types = ", ".join(system_summary["cooling_efficiency_metric_types"])
+                file.write(f"""
+                                                        <td>{efficiency_values}</td>
+                                                        <td style="border-right: 2px solid black;">{efficiency_types}</td>
+                """)
+            else:
+                file.write(f"""
+                                                        <td>-</td>
+                                                        <td style="border-right: 2px solid black;">-</td>
+                """)
+            # End of system summary row
+            file.write(f"""
+                                                    </tr>
+                                """)
+        # End of table
         file.write(f"""
                                                 </tbody>
                                             </table>

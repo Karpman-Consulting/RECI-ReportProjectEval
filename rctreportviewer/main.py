@@ -859,6 +859,8 @@ class RCTDetailedReport:
                 system_summary["heating_energy_source"] = hvac_heating_system.get("energy_source_type")
                 system_summary["heating_capacity"] = hvac_heating_system.get("design_capacity", 0.0)
                 system_summary["heating_capacity_units"] = "Btu/h"
+                system_summary["heating_efficiency_metric_types"] = hvac_heating_system.get("efficiency_metric_types",[])
+                system_summary["heating_efficiency_metric_values"] = hvac_heating_system.get("efficiency_metric_values", [])
 
             hvac_cooling_system = hvac_system.get("cooling_system")
             if hvac_cooling_system:
@@ -867,6 +869,8 @@ class RCTDetailedReport:
                 system_summary["cooling_equipment_type"] = hvac_cooling_system.get("type")
                 system_summary["cooling_capacity"] = hvac_cooling_system.get("design_total_cool_capacity", 0.0)
                 system_summary["cooling_capacity_units"] = "Btu/h"
+                system_summary["cooling_efficiency_metric_types"] = hvac_cooling_system.get("efficiency_metric_types", [])
+                system_summary["cooling_efficiency_metric_values"] = hvac_cooling_system.get("efficiency_metric_values", [])
 
             # Count the number of zones served by system
             for zone in building_segment.get("zones", []):
