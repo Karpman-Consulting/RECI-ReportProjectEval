@@ -966,9 +966,12 @@ class RCTDetailedReport:
 
                 if rule_id == "6-4" and "calculated_values" in evaluation:
                     lpd_allowance_calc_value = next(
-                        calc_value
-                        for calc_value in evaluation["calculated_values"]
-                        if calc_value["variable"] == "lpd_allowance_b"
+                        (
+                            calc_value
+                            for calc_value in evaluation["calculated_values"]
+                            if calc_value["variable"] == "lpd_allowance_b"
+                        ),
+                        None
                     )
                     if lpd_allowance_calc_value:
                         self.space_lpd_allowances[evaluation["data_group_id"]] = float(
@@ -977,9 +980,12 @@ class RCTDetailedReport:
 
                 if rule_id == "18-1" and "calculated_values" in evaluation and not self.hvac_system_types_b:
                     hvac_system_types_b_value = next(
-                        calc_value
-                        for calc_value in evaluation["calculated_values"]
-                        if calc_value["variable"] == "hvac_system_types_b"
+                        (
+                            calc_value
+                            for calc_value in evaluation["calculated_values"]
+                            if calc_value["variable"] == "hvac_system_types_b"
+                        ),
+                        None
                     )
                     if hvac_system_types_b_value:
                         self.hvac_system_types_b = ast.literal_eval(hvac_system_types_b_value["value"])
@@ -1010,17 +1016,27 @@ class RCTDetailedReport:
             self.rpd_data = rpd_data
 
         proposed_rmd = next(
-            rmd
-            for rmd in self.rpd_data["ruleset_model_descriptions"]
-            if rmd["type"] == "PROPOSED"
+            (
+                rmd
+                for rmd in self.rpd_data["ruleset_model_descriptions"]
+                if rmd["type"] == "PROPOSED"
+            ),
+            None
         )
-        self.proposed_model_summary = self.summarize_rmd_data(proposed_rmd, model_type="Proposed")
-
         baseline_rmd = next(
-            rmd
-            for rmd in self.rpd_data["ruleset_model_descriptions"]
-            if rmd["type"] == "BASELINE_0"
+            (
+                rmd
+                for rmd in self.rpd_data["ruleset_model_descriptions"]
+                if rmd["type"] == "BASELINE_0"
+            ),
+            None
         )
+        if not proposed_rmd or not baseline_rmd:
+            # TODO Handle the case where the proposed or baseline RMD is not found
+            print("Proposed or Baseline RMD not found in the RPD data.")
+            return
+
+        self.proposed_model_summary = self.summarize_rmd_data(proposed_rmd, model_type="Proposed")
         self.baseline_model_summary = self.summarize_rmd_data(baseline_rmd, model_type="Baseline")
 
     def perform_analytic_calculations(self):
