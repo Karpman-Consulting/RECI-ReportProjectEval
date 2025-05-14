@@ -702,13 +702,44 @@ class RCTDetailedReport:
     def extract_model_data(self):
         if len(self.rpd_data) == 1:
             self.rpd_data = self.rpd_data[0]
-        else:
-            rpd_data = self.rpd_data[0]
-            for rpd in self.rpd_data[1:]:
-                rpd_data["ruleset_model_descriptions"].extend(
-                    rpd["ruleset_model_descriptions"]
-                )
-            self.rpd_data = rpd_data
+            return
+
+        merged = self.rpd_data[0]
+
+        for rpd in self.rpd_data[1:]:
+            # Extend the ruleset_model_descriptions list
+            merged["ruleset_model_descriptions"].extend(rpd["ruleset_model_descriptions"])
+
+            for key in rpd:
+                if key == "ruleset_model_descriptions":
+                    continue  # already handled
+
+                val = rpd[key]
+                if key not in merged:
+                    merged[key] = val
+                    continue
+
+                # Merge non-list, non-dict values (e.g., strings and numbers)
+                if not isinstance(val, (list, dict)):
+                    if merged[key] != val:
+                        # TODO log this conflict visible to users
+                        print("Conflicting value for key:", key, " keeping the first occurrence")
+                        pass
+                    continue
+
+                # Merge dicts like metadata and output, or calendar and weather in older versions of the schema
+                if isinstance(val, dict):
+                    if not isinstance(merged[key], dict):
+                        continue  # mismatched types, skip or log error
+                    for subkey, subval in val.items():
+                        if subkey not in merged[key]:
+                            merged[key][subkey] = subval
+                        elif merged[key][subkey] != subval:
+                            # TODO log this conflict visible to users
+                            print("Conflicting value for key:", subkey, " keeping the first occurrence")
+                            pass
+
+        self.rpd_data = merged
 
         proposed_rmd = next(
             rmd
