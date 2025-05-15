@@ -213,12 +213,8 @@ class RCTDetailedReport:
             "unmet_heating_hours": 0,
             "unmet_cooling_hours": 0,
             "total_energy": 0,
-            "total_site_energy": 0,
-            "total_source_energy": 0,
-            "total_site_energy_regulated": 0,
-            "total_source_energy_regulated": 0,
-            "total_site_energy_unregulated": 0,
-            "total_source_energy_unregulated": 0,
+            "proposed_site_energy_savings": 0,
+            "compliance_calcs_by_parameter": {},
             "total_cost": 0,
             "int_ltg_power_by_schedule": {},
             "equip_power_by_schedule": {},
@@ -302,18 +298,24 @@ class RCTDetailedReport:
                 "unmet_cooling_hours", 0
             )
 
+            bbp_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("bbp", {})
+            bbuec_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("bbuec", {})
+            bbrec_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("bbrec", {})
+            pbp_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("pbp", {})
+            pbp_nre_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("pbp_nre", {})
+
             source_results = output_instance.get("annual_source_results", [])
             for source_result in source_results:
                 source = source_result.get("energy_source")
 
                 annual_consumption = source_result.get("annual_consumption", 0)
                 if source_result.get("is_regulated"):
-                    rmd_building_summary["total_source_energy_regulated"] += annual_consumption
+                    bbrec_summary["source_energy"] = bbrec_summary.get("source_energy", 0) + annual_consumption
                 else:
-                    rmd_building_summary["total_source_energy_unregulated"] += annual_consumption
+                    bbuec_summary["source_energy"] = bbuec_summary.get("source_energy", 0) + annual_consumption
 
+                bbp_summary["source_energy"] = bbp_summary.get("source_energy", 0) + annual_consumption
                 rmd_building_summary["total_energy"] += annual_consumption
-                rmd_building_summary["total_source_energy"] += annual_consumption
                 rmd_building_summary["total_cost"] += source_result.get("annual_cost", 0)
                 rmd_building_summary["energy_by_fuel_type"][source] = (
                     rmd_building_summary["energy_by_fuel_type"].get(source, 0)
@@ -329,13 +331,15 @@ class RCTDetailedReport:
                 end_use_name = end_use.get("type")
 
                 energy_use = end_use.get("annual_site_energy_use", 0)
-                if end_use.get("is_regulated"):
-                    rmd_building_summary["total_site_energy_regulated"] += energy_use
-                else:
-                    rmd_building_summary["total_site_energy_unregulated"] += energy_use
 
+                if end_use.get("is_regulated"):
+                    bbrec_summary["site_energy"] = bbrec_summary.get("site_energy", 0) + energy_use
+                else:
+                    bbuec_summary["site_energy"] = bbuec_summary.get("site_energy", 0) + energy_use
+
+                bbp_summary["site_energy"] = bbp_summary.get("site_energy", 0) + energy_use
+                pbp_nre_summary["site_energy"] = pbp_nre_summary.get("site_energy", 0) + energy_use
                 rmd_building_summary["total_energy"] += energy_use
-                rmd_building_summary["total_site_energy"] += energy_use
                 rmd_building_summary["energy_by_end_use"][end_use_name] = (
                     rmd_building_summary["energy_by_end_use"].get(end_use_name, 0)
                     + energy_use
@@ -352,6 +356,17 @@ class RCTDetailedReport:
                         rmd_building_summary["gas_by_end_use"].get(end_use_name, 0)
                         + energy_use
                     )
+
+            # Update compliance calculations dictionary with new values
+            pbp_summary["site_energy"] = (pbp_nre_summary.get("site_energy", 0) -
+                                          rmd_building_summary.get("proposed_site_energy_savings", 0))
+            if rmd_building_summary["rmd_type"] == "Baseline":
+                rmd_building_summary["compliance_calcs_by_parameter"]["bbp"] = bbp_summary
+                rmd_building_summary["compliance_calcs_by_parameter"]["bbuec"] = bbuec_summary
+                rmd_building_summary["compliance_calcs_by_parameter"]["bbrec"] = bbrec_summary
+            elif rmd_building_summary["rmd_type"] == "Proposed":
+                rmd_building_summary["compliance_calcs_by_parameter"]["pbp"] = pbp_summary
+                rmd_building_summary["compliance_calcs_by_parameter"]["pbp_nre"] = pbp_nre_summary
 
     def summarize_building_segment_data(self, building, rmd_building_summary):
         for building_segment in building.get(
@@ -1440,6 +1455,9 @@ class RCTDetailedReport:
         self._convert_schedule_summaries_internal_gain(self.baseline_model_summary)
         self._convert_schedule_summaries_internal_gain(self.proposed_model_summary)
 
+        self._convert_compliance_summary_energies(self.baseline_model_summary)
+        self._convert_compliance_summary_energies(self.proposed_model_summary)
+
     def _convert_summary_units(self, summary: dict, units_dict: dict):
         for key, value in summary.items():
             if key not in units_dict:
@@ -1481,6 +1499,14 @@ class RCTDetailedReport:
                 schedule_data["associated_peak_internal_gain"] = self.convert_unit(
                     schedule_data["associated_peak_internal_gain"], "W", "kBtu / h"
                 )
+
+    def _convert_compliance_summary_energies(self, summary: dict):
+        for parameter_data in summary.get("compliance_calcs_by_parameter", {}).values():
+            for data_name, data in parameter_data.items():
+                if data_name in ["source_energy", "site_energy"]:
+                    parameter_data[data_name] = self.convert_unit(
+                        data, "Btu", "MMBtu"
+                    )
 
     def run(self):
         self.load_files()

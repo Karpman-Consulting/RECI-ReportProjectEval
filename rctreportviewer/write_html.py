@@ -182,6 +182,8 @@ def write_html_file(rct_detailed_report):
             row_number += 1
 
         output = rct_detailed_report.rpd_data.get("output", {})
+        baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {})
+        proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get("compliance_calcs_by_parameter", {})
         bpf = 1.0
         file.write(f"""
                                 </tbody>
@@ -206,7 +208,7 @@ def write_html_file(rct_detailed_report):
                                             <td style="border-right: 2px solid black;">Proposed building performance before site-generated renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PBP<sub>nre</sub></td>
                                             <td>${round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)):,}</td>
-                                            <td>-</td>
+                                            <td>{round(proposed_compliance_calcs.get("pbp_nre", {}).get("site_energy", 0)):,}</td>
                                             <td>-</td>
                                             <td>-</td>
                                     </tr>
@@ -235,7 +237,7 @@ def write_html_file(rct_detailed_report):
                                             <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
                                             <td>${round(output.get("total_proposed_building_energy_cost_including_renewable_energy", 0)):,}</td>
-                                            <td>-</td>
+                                            <td>{round(proposed_compliance_calcs.get("pbp", {}).get("site_energy", 0)):,}</td>
                                             <td>-</td>
                                             <td>-</td>
                                     </tr>
@@ -243,24 +245,24 @@ def write_html_file(rct_detailed_report):
                                             <td style="border-right: 2px solid black;">Baseline building unregulated energy, GHG emissions, and/or energy cost</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BBUEC</td>
                                             <td>${round(output.get("baseline_building_unregulated_energy_cost", 0)):,}</td>
-                                             <td>{round(rct_detailed_report.baseline_model_summary.get("total_site_energy_unregulated")):,}</td>
-                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_source_energy_unregulated")):,}</td>
+                                            <td>{round(baseline_compliance_calcs.get("bbuec", {}).get("site_energy", 0)):,}</td>
+                                            <td>{round(baseline_compliance_calcs.get("bbuec", {}).get("source_energy", 0)):,}</td>
                                             <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Baseline building regulated energy, GHG memissions, and/or energy cost</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BBREC</td>
                                             <td>${round(output.get("baseline_building_regulated_energy_cost", 0)):,}</td>
-                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_site_energy_regulated")):,}</td>
-                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_source_energy_regulated")):,}</td>
+                                            <td>{round(baseline_compliance_calcs.get("bbrec", {}).get("site_energy", 0)):,}</td>
+                                            <td>{round(baseline_compliance_calcs.get("bbrec", {}).get("source_energy", 0)):,}</td>
                                             <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Baseline buidling performance</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BBP</td>
                                             <td>${round(output.get("baseline_building_performance_energy_cost", 0)):,}</td>
-                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_site_energy")):,}</td>
-                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_source_energy")):,}</td>
+                                            <td>{round(baseline_compliance_calcs.get("bbp", {}).get("site_energy", 0)):,}</td>
+                                            <td>{round(baseline_compliance_calcs.get("bbp", {}).get("source_energy", 0)):,}</td>
                                             <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
