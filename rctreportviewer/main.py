@@ -53,6 +53,7 @@ class RCTDetailedReport:
         self.output_file_path = output_file_path
         self.rpd_data = None
         self.evaluation_data = None
+        self.ruleset = None
 
         self.model_types = set()
         self.space_areas = {}
@@ -63,7 +64,6 @@ class RCTDetailedReport:
         self.baseline_lighting_power_allowance_by_space_type = {}
         self.proposed_model_summary = {}
         self.baseline_model_summary = {}
-        self.climate_zone = None
 
         self.rules_passed = []  # ALL outcomes are PASS or N/A
         self.rules_failed = []  # ANY outcome is FAIL
@@ -213,6 +213,12 @@ class RCTDetailedReport:
             "unmet_heating_hours": 0,
             "unmet_cooling_hours": 0,
             "total_energy": 0,
+            "total_site_energy": 0,
+            "total_source_energy": 0,
+            "total_site_energy_regulated": 0,
+            "total_source_energy_regulated": 0,
+            "total_site_energy_unregulated": 0,
+            "total_source_energy_unregulated": 0,
             "total_cost": 0,
             "int_ltg_power_by_schedule": {},
             "equip_power_by_schedule": {},
@@ -300,11 +306,18 @@ class RCTDetailedReport:
             for source_result in source_results:
                 source = source_result.get("energy_source")
 
-                rmd_building_summary["total_energy"] += source_result.get("annual_consumption", 0)
+                annual_consumption = source_result.get("annual_consumption", 0)
+                if source_result.get("is_regulated"):
+                    rmd_building_summary["total_source_energy_regulated"] += annual_consumption
+                else:
+                    rmd_building_summary["total_source_energy_unregulated"] += annual_consumption
+
+                rmd_building_summary["total_energy"] += annual_consumption
+                rmd_building_summary["total_source_energy"] += annual_consumption
                 rmd_building_summary["total_cost"] += source_result.get("annual_cost", 0)
                 rmd_building_summary["energy_by_fuel_type"][source] = (
                     rmd_building_summary["energy_by_fuel_type"].get(source, 0)
-                    + source_result.get("annual_consumption", 0)
+                    + annual_consumption
                 )
                 rmd_building_summary["cost_by_fuel_type"][source] = (
                     rmd_building_summary["cost_by_fuel_type"].get(source, 0)
@@ -315,22 +328,29 @@ class RCTDetailedReport:
             for end_use in end_use_results:
                 end_use_name = end_use.get("type")
 
-                rmd_building_summary["total_energy"] += end_use.get("annual_site_energy_use", 0)
+                energy_use = end_use.get("annual_site_energy_use", 0)
+                if end_use.get("is_regulated"):
+                    rmd_building_summary["total_site_energy_regulated"] += energy_use
+                else:
+                    rmd_building_summary["total_site_energy_unregulated"] += energy_use
+
+                rmd_building_summary["total_energy"] += energy_use
+                rmd_building_summary["total_site_energy"] += energy_use
                 rmd_building_summary["energy_by_end_use"][end_use_name] = (
                     rmd_building_summary["energy_by_end_use"].get(end_use_name, 0)
-                    + end_use.get("annual_site_energy_use", 0)
+                    + energy_use
                 )
 
                 source = end_use.get("energy_source")
                 if source == "ELECTRICITY":
                     rmd_building_summary["elec_by_end_use"][end_use_name] = (
                         rmd_building_summary["elec_by_end_use"].get(end_use_name, 0)
-                        + end_use.get("annual_site_energy_use", 0)
+                        + energy_use
                     )
                 elif source == "NATURAL_GAS":
                     rmd_building_summary["gas_by_end_use"][end_use_name] = (
                         rmd_building_summary["gas_by_end_use"].get(end_use_name, 0)
-                        + end_use.get("annual_site_energy_use", 0)
+                        + energy_use
                     )
 
     def summarize_building_segment_data(self, building, rmd_building_summary):
@@ -921,6 +941,8 @@ class RCTDetailedReport:
         """
         Extracts select evaluation data from the overall data structure for reformatting and easy presentation.
         """
+        self.ruleset = self.evaluation_data.get("ruleset")
+
         for rpd_file in self.evaluation_data["rpd_files"]:
             self.model_types.add(
                 self.model_type_disp_map.get(rpd_file["ruleset_model_type"])
@@ -1389,6 +1411,12 @@ class RCTDetailedReport:
             "total_air_flow_by_fan_control_by_fan_type": ("L / s", "cfm"),
             "total_air_flow_by_fan_type": ("L / s", "cfm"),
             "total_energy": ("Btu", "kBtu"),
+            "total_site_energy": ("Btu", "MMBtu"),
+            "total_source_energy": ("Btu", "MMBtu"),
+            "total_site_energy_regulated": ("Btu", "MMBtu"),
+            "total_source_energy_regulated": ("Btu", "MMBtu"),
+            "total_site_energy_unregulated": ("Btu", "MMBtu"),
+            "total_source_energy_unregulated": ("Btu", "MMBtu"),
             "energy_by_fuel_type": ("Btu", "kBtu"),
             "energy_by_end_use": ("Btu", "kBtu"),
             "elec_by_end_use": ("Btu", "kWh"),

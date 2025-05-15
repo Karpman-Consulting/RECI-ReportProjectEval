@@ -136,6 +136,56 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-compliance-calcs" class="accordion-collapse collapse">
                         <div class="accordion-body">
+                            <h3>Compliance Calculations</h3>
+                            <table class="table table-sm table-borderless" style="width: 800px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Energy Source</th>
+                                        <th style="border: 2px solid black;">Source-Site Ratio</th>
+                                        <th style="border: 2px solid black;">GHG Emission Factor\n(Metric Ton CO<sub>2</sub>/MMBtu)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+                """)
+        row_number = 0
+        for energy_source in rct_detailed_report.proposed_model_summary.get("energy_by_fuel_type", {}).keys():
+            if energy_source == "ELECTRICITY":
+                file.write(
+                    f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>Electricity</td>
+                                            <td><input type="number" data-row="{row_number}" data-col="0" value="2.80"></td>
+                                            <td><input type="number" data-row="{row_number}" data-col="1" value="0.037"></td>
+                                    </tr>
+                    """
+                )
+            elif energy_source == "NATURAL_GAS":
+                file.write(
+                    f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>Natural Gas</td>
+                                            <td><input type="number" data-row="{row_number}" data-col="0" value="1.05"></td>
+                                            <td><input type="number" data-row="{row_number}" data-col="1" value="0.053"></td>
+                                    </tr>
+                    """
+                )
+            else:
+                file.write(
+                    f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>{energy_source}</td>
+                                            <td><input type="number" data-row="{row_number}" data-col="0" value="0.0"></td>
+                                            <td><input type="number" data-row="{row_number}" data-col="1" value="0.0"></td>
+                                    </tr>
+                    """
+                )
+            row_number += 1
+
+        output = rct_detailed_report.rpd_data.get("output", {})
+        bpf = 1.0
+        file.write(f"""
+                                </tbody>
+                            </table>
                             <table class="table table-sm table-borderless" style="width: 1300px;">
                                 <thead>
                                     <tr class="text-center">
@@ -147,7 +197,7 @@ def write_html_file(rct_detailed_report):
                                         <th style="border: 2px solid black;">Symbol</th>
                                         <th style="border: 2px solid black;">Cost ($)</th>
                                         <th style="border: 2px solid black;">Site Energy (MMBtu)</th>
-                                        <th style="border: 2px solid black;">Source Energy (MMBTU)</th>
+                                        <th style="border: 2px solid black;">Source Energy (MMBtu)</th>
                                         <th style="border: 2px solid black;">GHG Emissions (Mt CO<sub>2</sub>e)</th>
                                     </tr>
                                 </thead>
@@ -155,7 +205,7 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Proposed building performance before site-generated renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PBP<sub>nre</sub></td>
-                                            <td>-</td>
+                                            <td>${round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)):,}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -168,6 +218,9 @@ def write_html_file(rct_detailed_report):
                                             <td>-</td>
                                             <td>-</td>
                                     </tr>
+                            """)
+        if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
+            file.write("""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
@@ -176,50 +229,52 @@ def write_html_file(rct_detailed_report):
                                             <td>0</td>
                                             <td>0</td>
                                     </tr>
+                            """)
+        file.write(f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
-                                            <td>$0</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                            <td>0</td>
+                                            <td>${round(output.get("total_proposed_building_energy_cost_including_renewable_energy", 0)):,}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Baseline building unregulated energy, GHG emissions, and/or energy cost</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BBUEC</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            <td>${round(output.get("baseline_building_unregulated_energy_cost", 0)):,}</td>
+                                             <td>{round(rct_detailed_report.baseline_model_summary.get("total_site_energy_unregulated")):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_source_energy_unregulated")):,}</td>
                                             <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Baseline building regulated energy, GHG memissions, and/or energy cost</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BBREC</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            <td>${round(output.get("baseline_building_regulated_energy_cost", 0)):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_site_energy_regulated")):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_source_energy_regulated")):,}</td>
                                             <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Baseline buidling performance</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BBP</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            <td>${round(output.get("baseline_building_performance_energy_cost", 0)):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_site_energy")):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("total_source_energy")):,}</td>
                                             <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Building Performance Factor</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BPF</td>
-                                            <td>0.74</td>
-                                            <td>0.67</td>
-                                            <td>0.72</td>
-                                            <td>0.72</td>
+                                            <td>{bpf}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance Index Target</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>t</sub></td>
-                                            <td>-</td>
+                                            <td>{round(output.get("performance_cost_index_target", 0), 2):,}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -227,7 +282,7 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance index without on-site renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>nre</sub></td>
-                                            <td>-</td>
+                                            <td>{round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)/output.get("baseline_building_performance_energy_cost"), 2):,}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -235,7 +290,7 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance index including on-site renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PCI</td>
-                                            <td>-</td>
+                                            <td>{round(output.get("performance_cost_index", 0), 2):,}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
