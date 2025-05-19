@@ -34,6 +34,7 @@ def write_html_file(rct_detailed_report):
     with open(rct_detailed_report.output_file_path, "w", encoding="utf-8") as file:
         file.write(
             """
+        <!DOCTYPE HTML>
         <html style="scrollbar-gutter: stable;">
         <head>
             <meta charset="UTF-8">
@@ -75,6 +76,17 @@ def write_html_file(rct_detailed_report):
             "N/A": rct_detailed_report.rules_not_applicable,
         }
 
+        # ----------------------- HVAC System Type Summary Tooltip -----------------------
+        tooltip_lines = []
+        total_qty = 0
+
+        for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
+            qty = len(systems)
+            total_qty += qty
+            tooltip_lines.append(f"<div class='text-start'><b>{system_type}</b>: {qty}</div>")
+
+        tooltip_html = "".join(tooltip_lines)
+
         file.write(
             f"""
                 <div class="mb-3 me-4">
@@ -92,7 +104,15 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["building_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["building_count"]}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Total Floor Area</td><td class="col-4 text-center">{round(rct_detailed_report.baseline_model_summary['total_floor_area']):,}</td><td class="col-4 text-center">{round(rct_detailed_report.proposed_model_summary["total_floor_area"]):,}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Area Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["building_segment_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["building_segment_count"]}</td></tr>
-                                    <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">System Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["system_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["system_count"]}</td></tr>
+                                    <tr style="font-size: 12px;" class="lh-1">
+                                        <td class="col-3 text-end">System Qty</td>
+                                        <td class="col-4 text-center">
+                                            <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-title="{tooltip_html}" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">
+                                                {rct_detailed_report.baseline_model_summary["system_count"]}
+                                            </span>
+                                        </td>
+                                        <td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["system_count"]}</td>
+                                    </tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Zone Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["zone_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["zone_count"]}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Space Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["space_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["space_count"]}</td></tr>
                                     <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Fluid Loops</td><td class="col-4 text-center">{", ".join(s.title() for s in rct_detailed_report.baseline_model_summary["fluid_loop_types"])}</td><td class="col-4 text-center">{", ".join(s.title() for s in rct_detailed_report.proposed_model_summary["fluid_loop_types"])}</td></tr>
@@ -105,7 +125,288 @@ def write_html_file(rct_detailed_report):
                         </div>
                     </div>
                 </div>
+        """)
 
+        # ----------------------- Compliance Calculations -----------------------
+        file.write(f"""
+                <div class="mb-3 me-4">
+                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-compliance-calcs" aria-expanded="false">
+                        Compliance Calculations
+                    </button>
+
+                    <div id="collapse-compliance-calcs" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <h3>Compliance Calculations</h3>
+                            <table class="table table-sm table-borderless" style="width: 800px;" id="energySourceTable">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Energy Source</th>
+                                        <th style="border: 2px solid black;">Baseline Unregulated Energy\n(MMBtu)</th>
+                                        <th style="border: 2px solid black;">Baseline Regulated Energy\n(MMBtu)</th>
+                                        <th style="border: 2px solid black;">Total Baseline Energy\n(MMBtu)</th>
+                                        <th style="border: 2px solid black;">Total Proposed Energy\n(MMBtu)</th>
+                                        <th style="border: 2px solid black;">Source-Site Ratio</th>
+                                        <th style="border: 2px solid black;">GHG Emission Factor\n(Metric Ton CO<sub>2</sub>/MMBtu)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+                """)
+        row_number = 0
+        for energy_source, proposed_energy_use in rct_detailed_report.proposed_model_summary.get("energy_by_fuel_type", {}).items():
+            baseline_energy_use = rct_detailed_report.baseline_model_summary.get("energy_by_fuel_type", {}).get(energy_source, 0)
+            baseline_unregulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbuec", {}).get(energy_source, 0)
+            baseline_regulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbrec", {}).get(energy_source, 0)
+            if energy_source == "ELECTRICITY":
+                file.write(
+                    f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>Electricity</td>
+                                            <td class="baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
+                                            <td class="baselineRegulatedEnergy">{round(baseline_regulated_energy, 1):,}</td>
+                                            <td class="baselineEnergyUse">{round(baseline_energy_use, 1):,}</td>
+                                            <td class="proposedEnergyUse">{round(proposed_energy_use, 1):,}</td>
+                                            <td><input type="number" class="siteSourceRatio" value="2.80"></td>
+                                            <td><input type="number" class="ghgEmissionFactor" value="0.037"></td>
+                                    </tr>
+                    """
+                )
+            elif energy_source == "NATURAL_GAS":
+                file.write(
+                    f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>Natural Gas</td>
+                                            <td class="baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
+                                            <td class="baselineRegulatedEnergy">{round(baseline_regulated_energy, 1):,}</td>
+                                            <td class="baselineEnergyUse">{round(baseline_energy_use, 1):,}</td>
+                                            <td class="proposedEnergyUse">{round(proposed_energy_use, 1):,}</td>
+                                            <td><input type="number" class="siteSourceRatio" value="1.05"></td>
+                                            <td><input type="number" class="ghgEmissionFactor" value="0.053"></td>
+                                    </tr>
+                    """
+                )
+            else:
+                file.write(
+                    f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td>{energy_source}</td>
+                                            <td class="baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
+                                            <td class="baselineRegulatedEnergy">{round(baseline_regulated_energy, 1):,}</td>
+                                            <td class="baselineEnergyUse">{round(baseline_energy_use, 1):,}</td>
+                                            <td class="proposedEnergyUse">{round(proposed_energy_use, 1):,}</td>
+                                            <td><input type="number" class="siteSourceRatio" value="0.0"></td>
+                                            <td><input type="number" class="ghgEmissionFactor" value="0.0"></td>
+                                    </tr>
+                    """
+                )
+            row_number += 1
+
+        output = rct_detailed_report.rpd_data.get("output", {})
+        baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {})
+        proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get("compliance_calcs_by_parameter", {})
+        bpf = 1.0
+        file.write(f"""
+                                </tbody>
+                            </table>
+                            <table class="table table-sm table-borderless" style="width: 1300px;" id="complianceCalcsTable">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="2" class="col-4"></th>
+                                        <th colspan="4" class="col-4" style="border: 2px solid black;">Performance Metric</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Parameter</th>
+                                        <th style="border: 2px solid black;">Symbol</th>
+                                        <th style="border: 2px solid black;">Cost ($)</th>
+                                        <th style="border: 2px solid black;">Site Energy (MMBtu)</th>
+                                        <th style="border: 2px solid black;">Source Energy (MMBtu)</th>
+                                        <th style="border: 2px solid black;">GHG Emissions (Mt CO<sub>2</sub>e)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Proposed building performance before site-generated renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PBP<sub>nre</sub></td>
+                                            <td>${round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)):,}</td>
+                                            <td id="pbp_nre_site_energy">{round(proposed_compliance_calcs.get("pbp_nre", {}).get("site_energy", 0)):,}</td>
+                                            <td id="pbp_nre_source_energy">-</td>
+                                            <td id="pbp_nre_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Proposed design on-site renewable savings</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
+                                            <td id="proposed_cost_savings">$0</td>
+                                            <td id="proposed_site_energy_savings">0</td>
+                                            <td id="proposed_source_energy_savings">0</td>
+                                            <td id="proposed_ghg_savings">0</td>
+                                    </tr>
+                            """)
+        if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
+            file.write("""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
+                                            <td>$0</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                    </tr>
+                            """)
+        file.write(f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
+                                            <td>${round(output.get("total_proposed_building_energy_cost_including_renewable_energy", 0)):,}</td>
+                                            <td id="pbp_site_energy">-</td>
+                                            <td id="pbp_source_energy">-</td>
+                                            <td id="pbp_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Baseline building unregulated energy, GHG emissions, and/or energy cost</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BBUEC</td>
+                                            <td>${round(output.get("baseline_building_unregulated_energy_cost", 0)):,}</td>
+                                            <td id="bbuec_site_energy">{round(baseline_compliance_calcs.get("bbuec", {}).get("site_energy", 0)):,}</td>
+                                            <td id="bbuec_source_energy">-</td>
+                                            <td id="bbuec_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Baseline building regulated energy, GHG memissions, and/or energy cost</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BBREC</td>
+                                            <td>${round(output.get("baseline_building_regulated_energy_cost", 0)):,}</td>
+                                            <td id="bbrec_site_energy">{round(baseline_compliance_calcs.get("bbrec", {}).get("site_energy", 0)):,}</td>
+                                            <td id="bbrec_source_energy"></td>
+                                            <td id="bbrec_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Baseline buidling performance</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BBP</td>
+                                            <td>${round(output.get("baseline_building_performance_energy_cost", 0)):,}</td>
+                                            <td id="bbp_site_energy">{round(baseline_compliance_calcs.get("bbp", {}).get("site_energy", 0)):,}</td>
+                                            <td id="bbp_source_energy">-</td>
+                                            <td id="bbp_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Building Performance Factor</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">BPF</td>
+                                            <td>{bpf}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance Index Target</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>t</sub></td>
+                                            <td>{round(output.get("performance_cost_index_target", 0), 2):,}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance index without on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>nre</sub></td>
+                                            <td>{round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)/output.get("baseline_building_performance_energy_cost"), 2):,}</td>
+                                            <td id="pci_nre_site_energy">-</td>
+                                            <td id="pci_nre_source_energy">-</td>
+                                            <td id="pci_nre_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance index including on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI</td>
+                                            <td>{round(output.get("performance_cost_index", 0), 2):,}</td>
+                                            <td id="pci_site_energy">-</td>
+                                            <td id="pci_source_energy">-</td>
+                                            <td id="pci_ghg">-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black;">Performance Index adjusted based upon ASHRAE 90.1-2019 Section 4.2.1.1</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>adjusted</sub></td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black; font-weight: bold;">% improvement beyond ASHRAE 90.1-2019, excluding proposed design on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                    </tr>
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                            <td style="border-right: 2px solid black; font-weight: bold;">% improvement beyond ASHRAE 90.1-2019, including proposed design on-site renewable energy</td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <script>
+                                const inputs = document.querySelectorAll('#energySourceTable input');
+                                const rows = document.querySelectorAll('#energySourceTable tbody tr');
+                                
+                                inputs.forEach(input => {{
+                                    input.addEventListener('input', (event) => {{
+                                    proposedSourceEnergy = 0;
+                                    proposedGHGEmissions = 0;
+                                    baselineUnregulatedEnergy = 0;
+                                    baselineUnregulatedGHGEmissions = 0;
+                                    baselineRegulatedEnergy = 0;
+                                    baselineRegulatedGHGEmissions = 0;
+                                    baselineSourceEnergy = 0;
+                                    baselineGHGEmissions = 0;
+                                        rows.forEach(row => {{
+                                            proposedSourceEnergy += parseFloat(row.querySelector('.proposedEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
+                                            proposedGHGEmissions += parseFloat(row.querySelector('.proposedEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
+                                            baselineUnregulatedEnergy += parseFloat(row.querySelector('.baselineUnregulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
+                                            baselineUnregulatedGHGEmissions += parseFloat(row.querySelector('.baselineUnregulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
+                                            baselineRegulatedEnergy += parseFloat(row.querySelector('.baselineRegulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
+                                            baselineRegulatedGHGEmissions += parseFloat(row.querySelector('.baselineRegulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
+                                            baselineSourceEnergy += parseFloat(row.querySelector('.baselineEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
+                                            baselineGHGEmissions += parseFloat(row.querySelector('.baselineEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
+                                        }})
+                                        document.getElementById(`pbp_nre_source_energy`).textContent = Math.round(proposedSourceEnergy).toLocaleString();
+                                        document.getElementById(`pbp_nre_ghg`).textContent = Math.round(proposedGHGEmissions).toLocaleString();
+                                        document.getElementById(`pbp_site_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_site_energy').textContent.replace(/,/g, "")) - 
+                                                                                                parseFloat(document.getElementById('proposed_site_energy_savings').textContent.replace(/,/g, ""))).toLocaleString();
+                                        document.getElementById(`pbp_source_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_source_energy').textContent.replace(/,/g, "")) - 
+                                                                                                parseFloat(document.getElementById('proposed_source_energy_savings').textContent.replace(/,/g, ""))).toLocaleString();
+                                        document.getElementById(`pbp_ghg`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_ghg').textContent.replace(/,/g, "")) - 
+                                                                                                parseFloat(document.getElementById('proposed_ghg_savings').textContent.replace(/,/g, ""))).toLocaleString();
+                                        
+                                        document.getElementById(`bbuec_source_energy`).textContent = Math.round(baselineUnregulatedEnergy).toLocaleString();
+                                        document.getElementById(`bbuec_ghg`).textContent = Math.round(baselineUnregulatedGHGEmissions).toLocaleString();
+                                        document.getElementById(`bbrec_source_energy`).textContent = Math.round(baselineRegulatedEnergy).toLocaleString();
+                                        document.getElementById(`bbrec_ghg`).textContent = Math.round(baselineRegulatedGHGEmissions).toLocaleString();
+                                        document.getElementById(`bbp_source_energy`).textContent = Math.round(parseFloat(document.getElementById('bbuec_source_energy').textContent.replace(/,/g, "")) + 
+                                                                                                parseFloat(document.getElementById('bbrec_source_energy').textContent.replace(/,/g, ""))).toLocaleString();
+                                        document.getElementById(`bbp_ghg`).textContent = Math.round(parseFloat(document.getElementById('bbuec_ghg').textContent.replace(/,/g, "")) + 
+                                                                                                parseFloat(document.getElementById('bbrec_ghg').textContent.replace(/,/g, ""))).toLocaleString();
+                                        
+                                        document.getElementById(`pci_site_energy`).textContent = (parseFloat(document.getElementById('pbp_site_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_source_energy`).textContent = (parseFloat(document.getElementById('pbp_source_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_ghg`).textContent = (parseFloat(document.getElementById('pbp_ghg').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_nre_site_energy`).textContent = (parseFloat(document.getElementById('pbp_nre_site_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_nre_source_energy`).textContent = (parseFloat(document.getElementById('pbp_nre_source_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_nre_ghg`).textContent = (parseFloat(document.getElementById('pbp_nre_ghg').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toFixed(2);
+                                    }})
+                                }})
+                                inputs[0].dispatchEvent(new Event('input'));
+                          </script>
+                        </div>
+                    </div>
+                </div>
+        """)
+
+        # ----------------------- Model Results Summary -----------------------
+        file.write(f"""
                 <div class="mb-3 me-4">
                     <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
                         Results Summary
@@ -113,6 +414,10 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-model-results-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
+                        
+        """)
+
+        file.write(f"""
                             <div style="position: relative; left: 360px;" class="mb-3">
                                 <div class="btn-group" role="group" aria-label="Chart toggle">
                                     <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
@@ -247,6 +552,7 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-internal-loads-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
+                            <h3>Space Type Summary</h3>
                             <table class="table table-sm table-borderless" style="width: 900px;">
                                 <thead>
                                     <tr class="text-center">
@@ -261,9 +567,9 @@ def write_html_file(rct_detailed_report):
                                         <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
                                         <th style="border: 2px solid black;">Allowed Lighting Power Density (W/ft<sup>2</sup>)</th>
                                         <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                        <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                        <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
                                         <th style="border: 2px solid black;">Occupancy Density (ft<sup>2</sup>/person)</th>
+                                        <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
+                                        <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
@@ -279,9 +585,9 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.baseline_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                         <td>{round(rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                         <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type] / rct_detailed_report.proposed_model_summary['total_occupants_by_space_type'].get(space_type, math.inf))}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / rct_detailed_report.proposed_model_summary['total_floor_area_by_space_type'][space_type], 2)}</td>
                                     </tr>
                 """
             )
@@ -293,14 +599,71 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.baseline_model_summary['total_equipment_power'] / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
                                         <td>{round(rct_detailed_report.baseline_total_lighting_power_allowance / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
                                         <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_lighting_power'] / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
-                                        <td>{round(rct_detailed_report.proposed_model_summary['total_equipment_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['total_floor_area'] / rct_detailed_report.proposed_model_summary['total_occupants'], 2)}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_equipment_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
                                     </tr>
-        """)
-        file.write(f"""
                                 </tbody>
                             </table>
+        """)
+
+        # ----------------------- Schedule Summary Table -----------------------
+        file.write(f"""
+                            <h3>Schedule Summary</h3>
+                            <table class="table table-sm table-borderless" style="width: 1250px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="1" class="col-4"></th>
+                                        <th colspan="5" class="col-4" style="border: 2px solid black;">Baseline</th>
+                                        <th colspan="5" class="col-4" style="border: 2px solid black;">Proposed</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Schedule</th>
+                                        <th style="border: 2px solid black;">EFLH</th>
+                                        <th style="border: 2px solid black;">Associated Floor Area (ft<sup>2</sup>)</th>
+                                        <th style="border: 2px solid black;">% of Total Lighting Watts Controlled</th>
+                                        <th style="border: 2px solid black;">% of Total Equipment Watts Controlled</th>
+                                        <th style="border: 2px solid black;">Associated Peak Internal Gain (kBtu/hr)</th>
+                                        <th style="border: 2px solid black;">EFLH</th>
+                                        <th style="border: 2px solid black;">Associated Floor Area (ft<sup>2</sup>)</th>
+                                        <th style="border: 2px solid black;">% of Total Lighting Watts Controlled</th>
+                                        <th style="border: 2px solid black;">% of Total Equipment Watts Controlled</th>
+                                        <th style="border: 2px solid black;">Associated Peak Internal Gain (kBtu/hr)</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+        """)
+
+        baseline_schedule_summaries = rct_detailed_report.baseline_model_summary["schedule_summaries"]
+        for schedule_id in baseline_schedule_summaries.keys():
+            baseline_schedule_summary = (
+                rct_detailed_report.baseline_model_summary["schedule_summaries"].get(schedule_id, {})
+            )
+            proposed_schedule_summary = (
+                rct_detailed_report.proposed_model_summary["schedule_summaries"].get(schedule_id, {})
+            )
+            file.write(
+                f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                        <td style="border-right: 2px solid black;">{schedule_id}</td>
+                                        <td>{round(baseline_schedule_summary.get("EFLH", 0)):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("associated_floor_area", 0.0)):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
+                                        <td>{round(baseline_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
+                                        <td style="border-right: 2px solid black;">{round(baseline_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("EFLH", 0)):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("associated_floor_area", 0.0)):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
+                                        <td>{round(proposed_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
+                                    </tr>
+                """
+            )
+        file.write(f"""
+                                    
+                                </tbody>
+                            </table>
+                            <p style="font-size: 0.75rem;" class="ms-2">*Peak Internal Gain = Internal Gain when hourly fractional value is 1 or 100%</p>
                         </div>
                     </div>
                 </div>
@@ -312,6 +675,329 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-hvac-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
+        """)
+
+        if (rct_detailed_report.proposed_model_summary["chiller_count"] + rct_detailed_report.baseline_model_summary[
+            "chiller_count"]) > 0:
+            # -------------------------- Cooling Plant Summary Table-------------------------
+            file.write(f"""   
+                                <h3> Cooling Plant Summary</h3>
+                                <table class="table table-sm table-borderless fan-summary" style="width: 1150px;">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th style="border: 2px solid black; width: 12%;" rowspan="2">Fuel Type</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="4">Baseline Design</th>
+                                            <th style="border: 2px solid black; width: 14%;" colspan="4">Proposed Design</th>
+                                        </tr>
+                                        <tr class="text-center">
+                                            <th style="border: 2px solid black;">Total Quantity of Chillers</th>
+                                            <th style="border: 2px solid black;">Total Chiller Plant Capacity [ton]</th>
+                                            <th style="border: 2px solid black;">Total Cooling Tower GPM</th>
+                                            <th style="border: 2px solid black;">Total Cooling Tower HP</th>
+                                            <th style="border: 2px solid black;">Total Quantity of Chillers</th>
+                                            <th style="border: 2px solid black;">Total Chiller Plant Capacity [ton]</th>
+                                            <th style="border: 2px solid black;">Total Cooling Tower GPM</th>
+                                            <th style="border: 2px solid black;">Total Cooling Tower HP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="border: 2px solid black;">
+            """)
+            # Check if there is any chiller plant info for electricity in the baseline model
+            write_row = False
+            for val in [
+                rct_detailed_report.baseline_model_summary.get("electric_chiller_count", 0),
+                rct_detailed_report.baseline_model_summary.get("electric_chiller_plant_capacity", 0),
+                rct_detailed_report.baseline_model_summary.get("cooling_tower_gpm", 0),
+                rct_detailed_report.baseline_model_summary.get("cooling_tower_hp", 0),
+                rct_detailed_report.proposed_model_summary.get("electric_chiller_count", 0),
+                rct_detailed_report.proposed_model_summary.get("electric_chiller_plant_capacity", 0),
+                rct_detailed_report.proposed_model_summary.get("cooling_tower_gpm", 0),
+                rct_detailed_report.proposed_model_summary.get("cooling_tower_hp", 0),
+            ]:
+                if val > 0:
+                    write_row = True
+                    break
+            if write_row:
+                file.write(f"""
+                                        <tr style="font-size: 12px;" class="text-center">
+                                            <td style="border-right: 2px solid black;">Electricity</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("electric_chiller_count", 0)):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("electric_chiller_plant_capacity", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("cooling_tower_gpm", 0), 1):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("electric_chiller_count", 0)):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("electric_chiller_plant_capacity", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_gpm", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
+                                        </tr>
+                """)
+            write_row = False
+            for val in [
+                rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_count", 0),
+                rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_plant_capacity", 0.0),
+            ]:
+                if val > 0:
+                    write_row = True
+                    break
+            if write_row:
+                file.write(f"""
+                                        <tr style="font-size: 12px;" class="text-center">
+                                            <td style="border-right: 2px solid black;">Fossil Fuel</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_count", 0)):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_plant_capacity", 0.0), 1):,}</td>
+                                            <td style="background: black;"></td>
+                                            <td style="background: black;"></td>
+                                        </tr>
+                """)
+            file.write(f"""
+                                        <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
+                                            <td style="border-right: 2px solid black;">Total</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("electric_chiller_count", 0)):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("electric_chiller_plant_capacity", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.baseline_model_summary.get("cooling_tower_gpm", 0), 1):,}</td>
+                                            <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("chiller_count", 0)):,}</td>
+                                            <td>{round((rct_detailed_report.proposed_model_summary.get("electric_chiller_plant_capacity", 0) +
+                                                        rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_plant_capacity", 0)), 1):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_gpm", 0), 1):,}</td>
+                                            <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+            """)
+
+        # -------------------------- Heating Plant Summary Table-------------------------
+        if (rct_detailed_report.proposed_model_summary["boiler_count"] + rct_detailed_report.baseline_model_summary[
+            "boiler_count"]) > 0:
+            file.write(f"""   
+                                        <h3> Heating Plant Summary</h3>
+                                        <table class="table table-sm table-borderless fan-summary" style="width: 800px;">
+                                            <thead>
+                                                <tr class="text-center">
+                                                    <th style="border: 2px solid black; width: 12%;" rowspan="2">Fuel Type</th>
+                                                    <th style="border: 2px solid black; width: 14%;" colspan="2">Baseline Design</th>
+                                                    <th style="border: 2px solid black; width: 14%;" colspan="2">Proposed Design</th>
+                                                </tr>
+                                                <tr class="text-center">
+                                                    <th style="border: 2px solid black;">Total Quantity of Boilers</th>
+                                                    <th style="border: 2px solid black;">Total Boiler Plant Capacity [kBtu/hr]</th>
+                                                    <th style="border: 2px solid black;">Total Quantity of Boilers</th>
+                                                    <th style="border: 2px solid black;">Total Boiler Plant Capacity [kBtu/hr]</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style="border: 2px solid black;">
+            """)
+
+            # Check if there is any boiler plant info for electricity in the proposed model
+            write_row = False
+            for val in [
+                rct_detailed_report.proposed_model_summary.get("electric_boiler_count", 0),
+                rct_detailed_report.proposed_model_summary.get("electric_boiler_plant_capacity", 0.0)
+            ]:
+                if val > 0:
+                    write_row = True
+                    break
+            if write_row:
+                file.write(f"""
+                                                <tr style="font-size: 12px;" class="text-center">
+                                                    <td style="border-right: 2px solid black;">Electricity</td>
+                                                    <td style="background: black;"></td>
+                                                    <td style="border-right: 2px solid black; background: black;"></td>
+                                                    <td>{round(rct_detailed_report.proposed_model_summary.get("electric_boiler_count", 0)):,}</td>
+                                                    <td>{round(rct_detailed_report.proposed_model_summary.get("electric_boiler_plant_capacity", 0)):,}</td>
+                                                </tr>
+                """)
+            # Check if there is any boiler plant info for fossil fuel
+            write_row = False
+            for val in [
+                rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0),
+                rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0.0),
+                rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_count", 0),
+                rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0.0)
+            ]:
+                if val > 0:
+                    write_row = True
+                    break
+            if write_row:
+                file.write(f"""
+                                                <tr style="font-size: 12px;" class="text-center">
+                                                    <td style="border-right: 2px solid black;">Fossil Fuel</td>
+                                                    <td>{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
+                                                    <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
+                                                    <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
+                                                    <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
+                                                </tr>
+                """)
+            file.write(f"""
+                                            <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
+                                                <td style="border-right: 2px solid black;">Total</td>
+                                                <td>{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
+                                                <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
+                                                <td>{round(rct_detailed_report.proposed_model_summary.get("boiler_count", 0)):,}</td>
+                                                <td>{round((rct_detailed_report.proposed_model_summary.get("electric_boiler_plant_capacity", 0) +
+                                                            rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0)), 1):,}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+            """)
+
+        # -------------------------- Air-Side HVAC Capacity Summary Table-------------------------
+        file.write(f"""   
+                            <h3> Air-side HVAC Capacity Summary</h3>
+                            <table class="table table-sm table-borderless fan-summary" style="width: 750px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black; width: 12%;" rowspan="2">Fuel Type</th>
+                                        <th style="border: 2px solid black; width: 14%;" colspan="2">Baseline Design</th>
+                                        <th style="border: 2px solid black; width: 14%;" colspan="2">Proposed Design</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Heating Capacity [kBtu/hr]</th>
+                                        <th style="border: 2px solid black;">Cooling Capacity [kBtu/hr]</th>
+                                        <th style="border: 2px solid black;">Heating Capacity [kBtu/hr]</th>
+                                        <th style="border: 2px solid black;">Cooling Capacity [kBtu/hr]</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+        """)
+        # Check if there are any electricity heating or cooling capacities in the baseline or proposed models
+        write_row = False
+        for val in [
+            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0),
+            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0),
+            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0),
+            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0)
+        ]:
+            if val > 0:
+                write_row = True
+                break
+        if write_row:
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="text-center">
+                                        <td style="border-right: 2px solid black;">Electricity</td>
+                                        <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
+                                        <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
+                                    </tr>
+            """)
+        # Check if there are any fossil fuel heating capacities in the baseline or proposed models
+        write_row = False
+        for val in [
+            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0),
+            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0),
+        ]:
+            if val > 0:
+                write_row = True
+                break
+        if write_row:
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="text-center">
+                                        <td style="border-right: 2px solid black;">Fossil Fuel</td>
+                                        <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0)):,}</td>
+                                        <td style="background: black; border-right: 2px solid black;"></td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0)):,}</td>
+                                        <td style="background: black;"></td>
+                                    </tr>
+            """)
+        # Check if there are any On-site Boiler Plant heating capacities in the baseline or proposed models
+        write_row = False
+        for val in [
+            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant",
+                                                                                            0.0),
+            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant",
+                                                                                            0.0),
+        ]:
+            if val > 0:
+                write_row = True
+                break
+        if write_row:
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="text-center">
+                                        <td style="border-right: 2px solid black;">On-site Boiler Plant</td>
+                                        <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant", 0.0)):,}</td>
+                                        <td style="background: black; border-right: 2px solid black;"></td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant", 0.0)):,}</td>
+                                        <td style="background: black;"></td>
+                                    </tr>
+            """)
+        # Check if there are any Purchased Heat heating capacities in the baseline or proposed models
+        write_row = False
+        for val in [
+            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0),
+            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0),
+        ]:
+            if val > 0:
+                write_row = True
+                break
+        if write_row:
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="text-center">
+                                        <td style="border-right: 2px solid black;">Purchased Heat</td>
+                                        <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0)):,}</td>
+                                        <td style="background: black; border-right: 2px solid black;"></td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0)):,}</td>
+                                        <td style="background: black;"></td>
+                                    </tr>
+            """)
+        # Check if there are any On-site Chiller Plant cooling capacities in the baseline or proposed models
+        write_row = False
+        for val in [
+            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant",
+                                                                                            0.0),
+            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant",
+                                                                                            0.0)
+        ]:
+            if val > 0:
+                write_row = True
+                break
+        if write_row:
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="text-center">
+                                        <td style="border-right: 2px solid black;">On-site Chiller Plant</td>
+                                        <td style="background: black;"></td>
+                                        <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant", 0.0)):,}</td>
+                                        <td style="background: black;"></td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant", 0.0)):,}</td>
+                                    </tr>
+            """)
+        # Check if there are any Purchased CHW cooling capacities in the baseline or proposed models
+        write_row = False
+        for val in [
+            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0),
+            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0)
+        ]:
+            if val > 0:
+                write_row = True
+                break
+        if write_row:
+            file.write(f"""
+                                    <tr style="font-size: 12px;" class="text-center">
+                                        <td style="border-right: 2px solid black;">Purchased CHW</td>
+                                        <td style="background: black;"></td>
+                                        <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0)):,}</td>
+                                        <td style="background: black;"></td>
+                                        <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0)):,}</td>
+                                    </tr>
+            """)
+        file.write(f"""
+                                <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
+                                    <td style="border-right: 2px solid black;">Total</td>
+                                    <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Total", 0.0)):,}</td>
+                                    <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Total", 0.0)):,}</td>
+                                    <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Total", 0.0)):,}</td>
+                                    <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Total", 0.0)):,}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+        """)
+
+        # ----------------------- HVAC Fan Summary Table -----------------------
+        file.write(f"""
                             <h3>Baseline HVAC Fan Summary</h3>
                             <p><strong>Outdoor Airflow:</strong> {round(rct_detailed_report.baseline_model_summary['total_zone_minimum_oa_flow']):,} CFM</p>
                             <table class="table table-sm table-borderless fan-summary" style="width: 1250px;">
@@ -377,7 +1063,7 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                 """
             )
-        # ------------------------- Subtotal Row --------------------------------
+        # --------- Subtotal Row -------------
         file.write(f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                         <td style="border-right: 2px solid black;">Subtotal</td>
@@ -402,7 +1088,7 @@ def write_html_file(rct_detailed_report):
                                         <td>0</td>
                                     </tr>
                     """)
-        # ------------------------- Terminal Units Row --------------------------------
+        # --------- Terminal Units Row ------------
         file.write(f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
                                         <td style="border-right: 2px solid black;">Terminal Units</td>
@@ -496,7 +1182,7 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                 """
             )
-        # ------------------------- Subtotal Row --------------------------------
+        # ---------- Subtotal Row -------------
         file.write(f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                         <td style="border-right: 2px solid black;">Subtotal</td>
@@ -521,7 +1207,7 @@ def write_html_file(rct_detailed_report):
                                         <td>0</td>
                                     </tr>
         """)
-        # ------------------------- Terminal Units Row --------------------------------
+        # --------- Terminal Units Row -----------
         file.write(f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
                                         <td>Terminal Units</td>
@@ -545,15 +1231,107 @@ def write_html_file(rct_detailed_report):
                                         <td style="background: black;"></td>
                                         <td style="background: black;"></td>
                                     </tr>
-                    """)
-        file.write(f"""
                                 </tbody>
                             </table>
-                        </div>
+        """)
+
+        file.write(f""" 
                     </div>
                 </div>
-            """
+            </div>
+            
+            <div class="mb-3 me-4">
+                <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-hvac-details" aria-expanded="false">
+                        HVAC Details
+                </button>
+
+                <div id="collapse-hvac-details" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+        """
                    )
+
+        # -------------------------- Air-Side HVAC System Type, Capacity, and Efficiency Summary Table-------------------------
+        file.write(f"""   
+                                                <h3> Baseline Air-Side HVAC System Type, Capacity, and Efficiency</h3>
+                                                <table class="table table-sm table-borderless fan-summary">
+                                                    <thead>
+                                                        <tr class="text-center">
+                                                            <th style="border: 2px solid black;" rowspan="2">Modeled System Name</th>
+                                                            <th style="border: 2px solid black;" rowspan="2">System Type</th>
+                                                            <th style="border: 2px solid black;" rowspan="2">Zone Qty.</th>
+                                                            <th style="border: 2px solid black;" colspan="6">Heating</th>
+                                                            <th style="border: 2px solid black;" colspan="5">Cooling</th>
+                                                        </tr>
+                                                        <tr class="text-center">
+                                                            <th style="border: 2px solid black;">Equipment Type</th>
+                                                            <th style="border: 2px solid black;">Fuel Type/Heating Source</th>
+                                                            <th style="border: 2px solid black;">Total Capacity</th>
+                                                            <th style="border: 2px solid black;">Cap. Units</th>
+                                                            <th style="border: 2px solid black;">Unitary Eff.</th>
+                                                            <th style="border: 2px solid black;">Eff. Units</th>
+                                                            <th style="border: 2px solid black;">Equipment Type</th>
+                                                            <th style="border: 2px solid black;">Total Capacity</th>
+                                                            <th style="border: 2px solid black;">Cap. Units</th>
+                                                            <th style="border: 2px solid black;">Unitary Eff.</th>
+                                                            <th style="border: 2px solid black;">Eff. Units</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody style="border: 2px solid black;">
+                            """)
+        # A row for every system
+        for system_summary in rct_detailed_report.baseline_model_summary["hvac_system_summaries"]:
+            file.write(f"""
+                                                        <tr style="font-size: 12px;" class="text-center">
+                                                            <td>{system_summary.get("name", "-")}</td>
+                                                            <td>{system_summary.get("type", "-")}</td>
+                                                            <td style="border-right: 2px solid black;">{system_summary.get("zone_qty", 0)}</td>
+                                                            <td>{system_summary.get("heating_equipment_type", "-").replace("_", " ").title()}</td>
+                                                            <td>{system_summary.get("heating_energy_source", "-").replace("_", " ").title()}</td>
+                                                            <td>{round(system_summary.get("heating_capacity", 0)):,}</td>
+                                                            <td>{system_summary.get("heating_capacity_units", "-")}</td>
+                        """)
+            if system_summary.get("heating_efficiency_metric_values") and system_summary.get("heating_efficiency_metric_types"):
+                efficiency_values = ", ".join(str(round(x, 3)) for x in system_summary["heating_efficiency_metric_values"])
+                efficiency_types = ", ".join(system_summary["heating_efficiency_metric_types"])
+                file.write(f"""
+                                                            <td>{efficiency_values}</td>
+                                                            <td style="border-right: 2px solid black;">{efficiency_types}</td>
+                                                            <td>{system_summary.get("cooling_equipment_type", "-").replace("_", " ").title()}</td>
+                                                            <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
+                                                            <td>{system_summary.get("cooling_capacity_units", "-")}</td>
+                                """)
+            else:
+                file.write(f"""
+                                                            <td>-</td>
+                                                            <td style="border-right: 2px solid black;">-</td>
+                                                            <td>{system_summary.get("cooling_equipment_type", "-").replace("_", " ").title()}</td>
+                                                            <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
+                                                            <td>{system_summary.get("cooling_capacity_units", "-")}</td>
+                                """)
+            if system_summary.get("cooling_efficiency_metric_values") and system_summary.get("cooling_efficiency_metric_types"):
+                efficiency_values = ", ".join(str(round(x, 3)) for x in system_summary["cooling_efficiency_metric_values"])
+                efficiency_types = ", ".join(system_summary["cooling_efficiency_metric_types"])
+                file.write(f"""
+                                                        <td>{efficiency_values}</td>
+                                                        <td style="border-right: 2px solid black;">{efficiency_types}</td>
+                """)
+            else:
+                file.write(f"""
+                                                        <td>-</td>
+                                                        <td style="border-right: 2px solid black;">-</td>
+                """)
+            # End of system summary row
+            file.write(f"""
+                                                    </tr>
+                                """)
+        # End of table
+        file.write(f"""
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            """)
 
         for category, rules in rule_categories.items():
             btn_class = (
@@ -628,7 +1406,8 @@ def write_html_file(rct_detailed_report):
 
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
-                    outcome_summary = " | ".join([f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                    outcome_summary = " | ".join(
+                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
 
                     file.write(
                         f"""
@@ -778,7 +1557,8 @@ def write_html_file(rct_detailed_report):
 
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
-                    outcome_summary = " | ".join([f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                    outcome_summary = " | ".join(
+                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
 
                     file.write(
                         f"""
@@ -911,7 +1691,8 @@ def write_html_file(rct_detailed_report):
 
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
-                    outcome_summary = " | ".join([f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                    outcome_summary = " | ".join(
+                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
 
                     file.write(
                         f"""
@@ -1080,6 +1861,13 @@ def write_html_file(rct_detailed_report):
             }}
 
             document.addEventListener("DOMContentLoaded", () => {{
+                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl =>
+                  new bootstrap.Tooltip(tooltipTriggerEl, {{
+                    container: 'body',
+                  }})
+                );
+                
                 calculateSubtotals();
 
                 // Chart labels
@@ -1415,4 +2203,3 @@ def write_html_file(rct_detailed_report):
             </html>
             """
         )
-
