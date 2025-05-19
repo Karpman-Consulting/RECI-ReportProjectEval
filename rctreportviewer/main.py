@@ -213,7 +213,6 @@ class RCTDetailedReport:
             "unmet_heating_hours": 0,
             "unmet_cooling_hours": 0,
             "total_energy": 0,
-            "proposed_site_energy_savings": 0,
             "compliance_calcs_by_parameter": {},
             "total_cost": 0,
             "int_ltg_power_by_schedule": {},
@@ -309,12 +308,6 @@ class RCTDetailedReport:
                 source = source_result.get("energy_source")
 
                 annual_consumption = source_result.get("annual_consumption", 0)
-                if source_result.get("is_regulated"):
-                    bbrec_summary["source_energy"] = bbrec_summary.get("source_energy", 0) + annual_consumption
-                else:
-                    bbuec_summary["source_energy"] = bbuec_summary.get("source_energy", 0) + annual_consumption
-
-                bbp_summary["source_energy"] = bbp_summary.get("source_energy", 0) + annual_consumption
                 rmd_building_summary["total_energy"] += annual_consumption
                 rmd_building_summary["total_cost"] += source_result.get("annual_cost", 0)
                 rmd_building_summary["energy_by_fuel_type"][source] = (
@@ -334,8 +327,10 @@ class RCTDetailedReport:
 
                 if end_use.get("is_regulated"):
                     bbrec_summary["site_energy"] = bbrec_summary.get("site_energy", 0) + energy_use
+                    bbrec_summary[end_use.get("energy_source")] = (bbrec_summary.get(end_use.get("energy_source"), 0) + energy_use) / 1000000
                 else:
                     bbuec_summary["site_energy"] = bbuec_summary.get("site_energy", 0) + energy_use
+                    bbuec_summary[end_use.get("energy_source")] = (bbuec_summary.get(end_use.get("energy_source"), 0) + energy_use) / 1000000
 
                 bbp_summary["site_energy"] = bbp_summary.get("site_energy", 0) + energy_use
                 pbp_nre_summary["site_energy"] = pbp_nre_summary.get("site_energy", 0) + energy_use
@@ -358,8 +353,6 @@ class RCTDetailedReport:
                     )
 
             # Update compliance calculations dictionary with new values
-            pbp_summary["site_energy"] = (pbp_nre_summary.get("site_energy", 0) -
-                                          rmd_building_summary.get("proposed_site_energy_savings", 0))
             if rmd_building_summary["rmd_type"] == "Baseline":
                 rmd_building_summary["compliance_calcs_by_parameter"]["bbp"] = bbp_summary
                 rmd_building_summary["compliance_calcs_by_parameter"]["bbuec"] = bbuec_summary
@@ -1429,9 +1422,7 @@ class RCTDetailedReport:
             "total_site_energy": ("Btu", "MMBtu"),
             "total_source_energy": ("Btu", "MMBtu"),
             "total_site_energy_regulated": ("Btu", "MMBtu"),
-            "total_source_energy_regulated": ("Btu", "MMBtu"),
             "total_site_energy_unregulated": ("Btu", "MMBtu"),
-            "total_source_energy_unregulated": ("Btu", "MMBtu"),
             "energy_by_fuel_type": ("Btu", "kBtu"),
             "energy_by_end_use": ("Btu", "kBtu"),
             "elec_by_end_use": ("Btu", "kWh"),
