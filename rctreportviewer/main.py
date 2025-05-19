@@ -327,10 +327,10 @@ class RCTDetailedReport:
 
                 if end_use.get("is_regulated"):
                     bbrec_summary["site_energy"] = bbrec_summary.get("site_energy", 0) + energy_use
-                    bbrec_summary[end_use.get("energy_source")] = (bbrec_summary.get(end_use.get("energy_source"), 0) + energy_use) / 1000000
+                    bbrec_summary[end_use.get("energy_source")] = bbrec_summary.get(end_use.get("energy_source"), 0) + (energy_use / 1000000)
                 else:
                     bbuec_summary["site_energy"] = bbuec_summary.get("site_energy", 0) + energy_use
-                    bbuec_summary[end_use.get("energy_source")] = (bbuec_summary.get(end_use.get("energy_source"), 0) + energy_use) / 1000000
+                    bbuec_summary[end_use.get("energy_source")] = bbuec_summary.get(end_use.get("energy_source"), 0) + (energy_use / 1000000)
 
                 bbp_summary["site_energy"] = bbp_summary.get("site_energy", 0) + energy_use
                 pbp_nre_summary["site_energy"] = pbp_nre_summary.get("site_energy", 0) + energy_use

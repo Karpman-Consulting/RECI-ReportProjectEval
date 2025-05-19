@@ -379,19 +379,23 @@ def write_html_file(rct_detailed_report):
                                         document.getElementById(`bbuec_ghg`).textContent = Math.round(baselineUnregulatedGHGEmissions).toLocaleString();
                                         document.getElementById(`bbrec_source_energy`).textContent = Math.round(baselineRegulatedEnergy).toLocaleString();
                                         document.getElementById(`bbrec_ghg`).textContent = Math.round(baselineRegulatedGHGEmissions).toLocaleString();
+                                        document.getElementById(`bbp_source_energy`).textContent = Math.round(parseFloat(document.getElementById('bbuec_source_energy').textContent.replace(/,/g, "")) + 
+                                                                                                parseFloat(document.getElementById('bbrec_source_energy').textContent.replace(/,/g, ""))).toLocaleString();
+                                        document.getElementById(`bbp_ghg`).textContent = Math.round(parseFloat(document.getElementById('bbuec_ghg').textContent.replace(/,/g, "")) + 
+                                                                                                parseFloat(document.getElementById('bbrec_ghg').textContent.replace(/,/g, ""))).toLocaleString();
                                         
-                                        document.getElementById(`pci_site_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_site_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pci_source_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_source_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pci_ghg`).textContent = Math.round(parseFloat(document.getElementById('pbp_ghg').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pci_nre_site_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_site_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pci_nre_source_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_source_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pci_nre_ghg`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_ghg').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toLocaleString();
+                                        document.getElementById(`pci_site_energy`).textContent = (parseFloat(document.getElementById('pbp_site_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_source_energy`).textContent = (parseFloat(document.getElementById('pbp_source_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_ghg`).textContent = (parseFloat(document.getElementById('pbp_ghg').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_nre_site_energy`).textContent = (parseFloat(document.getElementById('pbp_nre_site_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_nre_source_energy`).textContent = (parseFloat(document.getElementById('pbp_nre_source_energy').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toFixed(2);
+                                        document.getElementById(`pci_nre_ghg`).textContent = (parseFloat(document.getElementById('pbp_nre_ghg').textContent.replace(/,/g, "")) / 
+                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toFixed(2);
                                     }})
                                 }})
                                 inputs[0].dispatchEvent(new Event('input'));
