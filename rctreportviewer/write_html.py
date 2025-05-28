@@ -127,284 +127,6 @@ def write_html_file(rct_detailed_report):
                 </div>
         """)
 
-        # ----------------------- Compliance Calculations -----------------------
-        file.write(f"""
-                <div class="mb-3 me-4">
-                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-compliance-calcs" aria-expanded="false">
-                        Compliance Calculations
-                    </button>
-
-                    <div id="collapse-compliance-calcs" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <h3>Compliance Calculations</h3>
-                            <table class="table table-sm table-borderless" style="width: 800px;" id="energySourceTable">
-                                <thead>
-                                    <tr class="text-center">
-                                        <th style="border: 2px solid black;">Energy Source</th>
-                                        <th style="border: 2px solid black;">Baseline Unregulated Energy\n(MMBtu)</th>
-                                        <th style="border: 2px solid black;">Baseline Regulated Energy\n(MMBtu)</th>
-                                        <th style="border: 2px solid black;">Total Baseline Energy\n(MMBtu)</th>
-                                        <th style="border: 2px solid black;">Total Proposed Energy\n(MMBtu)</th>
-                                        <th style="border: 2px solid black;">Source-Site Ratio</th>
-                                        <th style="border: 2px solid black;">GHG Emission Factor\n(Metric Ton CO<sub>2</sub>/MMBtu)</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="border: 2px solid black;">
-                """)
-        row_number = 0
-        for energy_source, proposed_energy_use in rct_detailed_report.proposed_model_summary.get("energy_by_fuel_type", {}).items():
-            baseline_energy_use = rct_detailed_report.baseline_model_summary.get("energy_by_fuel_type", {}).get(energy_source, 0)
-            baseline_unregulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbuec", {}).get(energy_source, 0)
-            baseline_regulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbrec", {}).get(energy_source, 0)
-            if energy_source == "ELECTRICITY":
-                file.write(
-                    f"""
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td>Electricity</td>
-                                            <td class="baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
-                                            <td class="baselineRegulatedEnergy">{round(baseline_regulated_energy, 1):,}</td>
-                                            <td class="baselineEnergyUse">{round(baseline_energy_use, 1):,}</td>
-                                            <td class="proposedEnergyUse">{round(proposed_energy_use, 1):,}</td>
-                                            <td><input type="number" class="siteSourceRatio" value="2.80"></td>
-                                            <td><input type="number" class="ghgEmissionFactor" value="0.037"></td>
-                                    </tr>
-                    """
-                )
-            elif energy_source == "NATURAL_GAS":
-                file.write(
-                    f"""
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td>Natural Gas</td>
-                                            <td class="baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
-                                            <td class="baselineRegulatedEnergy">{round(baseline_regulated_energy, 1):,}</td>
-                                            <td class="baselineEnergyUse">{round(baseline_energy_use, 1):,}</td>
-                                            <td class="proposedEnergyUse">{round(proposed_energy_use, 1):,}</td>
-                                            <td><input type="number" class="siteSourceRatio" value="1.05"></td>
-                                            <td><input type="number" class="ghgEmissionFactor" value="0.053"></td>
-                                    </tr>
-                    """
-                )
-            else:
-                file.write(
-                    f"""
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td>{energy_source}</td>
-                                            <td class="baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
-                                            <td class="baselineRegulatedEnergy">{round(baseline_regulated_energy, 1):,}</td>
-                                            <td class="baselineEnergyUse">{round(baseline_energy_use, 1):,}</td>
-                                            <td class="proposedEnergyUse">{round(proposed_energy_use, 1):,}</td>
-                                            <td><input type="number" class="siteSourceRatio" value="0.0"></td>
-                                            <td><input type="number" class="ghgEmissionFactor" value="0.0"></td>
-                                    </tr>
-                    """
-                )
-            row_number += 1
-
-        output = rct_detailed_report.rpd_data.get("output", {})
-        baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {})
-        proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get("compliance_calcs_by_parameter", {})
-        bpf = 1.0
-        file.write(f"""
-                                </tbody>
-                            </table>
-                            <table class="table table-sm table-borderless" style="width: 1300px;" id="complianceCalcsTable">
-                                <thead>
-                                    <tr class="text-center">
-                                        <th colspan="2" class="col-4"></th>
-                                        <th colspan="4" class="col-4" style="border: 2px solid black;">Performance Metric</th>
-                                    </tr>
-                                    <tr class="text-center">
-                                        <th style="border: 2px solid black;">Parameter</th>
-                                        <th style="border: 2px solid black;">Symbol</th>
-                                        <th style="border: 2px solid black;">Cost ($)</th>
-                                        <th style="border: 2px solid black;">Site Energy (MMBtu)</th>
-                                        <th style="border: 2px solid black;">Source Energy (MMBtu)</th>
-                                        <th style="border: 2px solid black;">GHG Emissions (Mt CO<sub>2</sub>e)</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="border: 2px solid black;">
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Proposed building performance before site-generated renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PBP<sub>nre</sub></td>
-                                            <td>${round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)):,}</td>
-                                            <td id="pbp_nre_site_energy">{round(proposed_compliance_calcs.get("pbp_nre", {}).get("site_energy", 0)):,}</td>
-                                            <td id="pbp_nre_source_energy">-</td>
-                                            <td id="pbp_nre_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Proposed design on-site renewable savings</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
-                                            <td id="proposed_cost_savings">$0</td>
-                                            <td id="proposed_site_energy_savings">0</td>
-                                            <td id="proposed_source_energy_savings">0</td>
-                                            <td id="proposed_ghg_savings">0</td>
-                                    </tr>
-                            """)
-        if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
-            file.write("""
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
-                                            <td>$0</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                            <td>0</td>
-                                    </tr>
-                            """)
-        file.write(f"""
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
-                                            <td>${round(output.get("total_proposed_building_energy_cost_including_renewable_energy", 0)):,}</td>
-                                            <td id="pbp_site_energy">-</td>
-                                            <td id="pbp_source_energy">-</td>
-                                            <td id="pbp_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Baseline building unregulated energy, GHG emissions, and/or energy cost</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">BBUEC</td>
-                                            <td>${round(output.get("baseline_building_unregulated_energy_cost", 0)):,}</td>
-                                            <td id="bbuec_site_energy">{round(baseline_compliance_calcs.get("bbuec", {}).get("site_energy", 0)):,}</td>
-                                            <td id="bbuec_source_energy">-</td>
-                                            <td id="bbuec_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Baseline building regulated energy, GHG memissions, and/or energy cost</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">BBREC</td>
-                                            <td>${round(output.get("baseline_building_regulated_energy_cost", 0)):,}</td>
-                                            <td id="bbrec_site_energy">{round(baseline_compliance_calcs.get("bbrec", {}).get("site_energy", 0)):,}</td>
-                                            <td id="bbrec_source_energy"></td>
-                                            <td id="bbrec_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Baseline buidling performance</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">BBP</td>
-                                            <td>${round(output.get("baseline_building_performance_energy_cost", 0)):,}</td>
-                                            <td id="bbp_site_energy">{round(baseline_compliance_calcs.get("bbp", {}).get("site_energy", 0)):,}</td>
-                                            <td id="bbp_source_energy">-</td>
-                                            <td id="bbp_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Building Performance Factor</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">BPF</td>
-                                            <td>{bpf}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Performance Index Target</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>t</sub></td>
-                                            <td>{round(output.get("performance_cost_index_target", 0), 2):,}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Performance index without on-site renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>nre</sub></td>
-                                            <td>{round(output.get("total_proposed_building_energy_cost_excluding_renewable_energy", 0)/output.get("baseline_building_performance_energy_cost"), 2):,}</td>
-                                            <td id="pci_nre_site_energy">-</td>
-                                            <td id="pci_nre_source_energy">-</td>
-                                            <td id="pci_nre_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Performance index including on-site renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI</td>
-                                            <td>{round(output.get("performance_cost_index", 0), 2):,}</td>
-                                            <td id="pci_site_energy">-</td>
-                                            <td id="pci_source_energy">-</td>
-                                            <td id="pci_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Performance Index adjusted based upon ASHRAE 90.1-2019 Section 4.2.1.1</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>adjusted</sub></td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black; font-weight: bold;">% improvement beyond ASHRAE 90.1-2019, excluding proposed design on-site renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td style="background: black;"></td>
-                                            <td style="background: black;"></td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black; font-weight: bold;">% improvement beyond ASHRAE 90.1-2019, including proposed design on-site renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">-</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td style="background: black;"></td>
-                                            <td style="background: black;"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <script>
-                                const inputs = document.querySelectorAll('#energySourceTable input');
-                                const rows = document.querySelectorAll('#energySourceTable tbody tr');
-                                
-                                inputs.forEach(input => {{
-                                    input.addEventListener('input', (event) => {{
-                                    proposedSourceEnergy = 0;
-                                    proposedGHGEmissions = 0;
-                                    baselineUnregulatedEnergy = 0;
-                                    baselineUnregulatedGHGEmissions = 0;
-                                    baselineRegulatedEnergy = 0;
-                                    baselineRegulatedGHGEmissions = 0;
-                                    baselineSourceEnergy = 0;
-                                    baselineGHGEmissions = 0;
-                                        rows.forEach(row => {{
-                                            proposedSourceEnergy += parseFloat(row.querySelector('.proposedEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
-                                            proposedGHGEmissions += parseFloat(row.querySelector('.proposedEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
-                                            baselineUnregulatedEnergy += parseFloat(row.querySelector('.baselineUnregulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
-                                            baselineUnregulatedGHGEmissions += parseFloat(row.querySelector('.baselineUnregulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
-                                            baselineRegulatedEnergy += parseFloat(row.querySelector('.baselineRegulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
-                                            baselineRegulatedGHGEmissions += parseFloat(row.querySelector('.baselineRegulatedEnergy').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
-                                            baselineSourceEnergy += parseFloat(row.querySelector('.baselineEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.siteSourceRatio').value);
-                                            baselineGHGEmissions += parseFloat(row.querySelector('.baselineEnergyUse').textContent.replace(/,/g, "")) * parseFloat(row.querySelector('.ghgEmissionFactor').value);
-                                        }})
-                                        document.getElementById(`pbp_nre_source_energy`).textContent = Math.round(proposedSourceEnergy).toLocaleString();
-                                        document.getElementById(`pbp_nre_ghg`).textContent = Math.round(proposedGHGEmissions).toLocaleString();
-                                        document.getElementById(`pbp_site_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_site_energy').textContent.replace(/,/g, "")) - 
-                                                                                                parseFloat(document.getElementById('proposed_site_energy_savings').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pbp_source_energy`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_source_energy').textContent.replace(/,/g, "")) - 
-                                                                                                parseFloat(document.getElementById('proposed_source_energy_savings').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`pbp_ghg`).textContent = Math.round(parseFloat(document.getElementById('pbp_nre_ghg').textContent.replace(/,/g, "")) - 
-                                                                                                parseFloat(document.getElementById('proposed_ghg_savings').textContent.replace(/,/g, ""))).toLocaleString();
-                                        
-                                        document.getElementById(`bbuec_source_energy`).textContent = Math.round(baselineUnregulatedEnergy).toLocaleString();
-                                        document.getElementById(`bbuec_ghg`).textContent = Math.round(baselineUnregulatedGHGEmissions).toLocaleString();
-                                        document.getElementById(`bbrec_source_energy`).textContent = Math.round(baselineRegulatedEnergy).toLocaleString();
-                                        document.getElementById(`bbrec_ghg`).textContent = Math.round(baselineRegulatedGHGEmissions).toLocaleString();
-                                        document.getElementById(`bbp_source_energy`).textContent = Math.round(parseFloat(document.getElementById('bbuec_source_energy').textContent.replace(/,/g, "")) + 
-                                                                                                parseFloat(document.getElementById('bbrec_source_energy').textContent.replace(/,/g, ""))).toLocaleString();
-                                        document.getElementById(`bbp_ghg`).textContent = Math.round(parseFloat(document.getElementById('bbuec_ghg').textContent.replace(/,/g, "")) + 
-                                                                                                parseFloat(document.getElementById('bbrec_ghg').textContent.replace(/,/g, ""))).toLocaleString();
-                                        
-                                        document.getElementById(`pci_site_energy`).textContent = (parseFloat(document.getElementById('pbp_site_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toFixed(2);
-                                        document.getElementById(`pci_source_energy`).textContent = (parseFloat(document.getElementById('pbp_source_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toFixed(2);
-                                        document.getElementById(`pci_ghg`).textContent = (parseFloat(document.getElementById('pbp_ghg').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toFixed(2);
-                                        document.getElementById(`pci_nre_site_energy`).textContent = (parseFloat(document.getElementById('pbp_nre_site_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_site_energy').textContent.replace(/,/g, ""))).toFixed(2);
-                                        document.getElementById(`pci_nre_source_energy`).textContent = (parseFloat(document.getElementById('pbp_nre_source_energy').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_source_energy').textContent.replace(/,/g, ""))).toFixed(2);
-                                        document.getElementById(`pci_nre_ghg`).textContent = (parseFloat(document.getElementById('pbp_nre_ghg').textContent.replace(/,/g, "")) / 
-                                                                                                parseFloat(document.getElementById('bbp_ghg').textContent.replace(/,/g, ""))).toFixed(2);
-                                    }})
-                                }})
-                                inputs[0].dispatchEvent(new Event('input'));
-                          </script>
-                        </div>
-                    </div>
-                </div>
-        """)
-
         # ----------------------- Model Results Summary -----------------------
         file.write(f"""
                 <div class="mb-3 me-4">
@@ -1809,9 +1531,76 @@ def write_html_file(rct_detailed_report):
         file.write(
             f"""
             <script>
-            window.onscroll = function() {{
-                toggleBackToTopButton();
+            const inputs = document.querySelectorAll('#energySourceTable input');
+            const rows = document.querySelectorAll('#energySourceTable tbody tr');
+    
+            const parseNumber = (str) => parseFloat(str.replace(/,/g, "")) || 0;
+            const getText = (id) => parseNumber(document.getElementById(id).textContent);
+            const setText = (id, value) => {{
+                document.getElementById(id).textContent = Math.round(value).toLocaleString();
             }};
+            const setRatio = (id, numerator, denominator) => {{
+                const ratio = denominator !== 0 ? (numerator / denominator).toFixed(2) : "0.00";
+                document.getElementById(id).textContent = ratio;
+            }};
+    
+            function recalculateEnergyMetrics() {{
+                let proposedSourceEnergy = 0;
+                let proposedGHGEmissions = 0;
+                let baselineUnregulatedEnergy = 0;
+                let baselineUnregulatedGHGEmissions = 0;
+                let baselineRegulatedEnergy = 0;
+                let baselineRegulatedGHGEmissions = 0;
+        
+                rows.forEach(row => {{
+                    const getVal = (cls) => parseNumber(row.querySelector(`.${{cls}}`)?.textContent || "0");
+                    const getInputVal = (cls) => parseNumber(row.querySelector(`.${{cls}}`)?.value || "0");
+        
+                    const proposed = getVal('proposedEnergyUse');
+                    const unreg = getVal('baselineUnregulatedEnergy');
+                    const reg = getVal('baselineRegulatedEnergy');
+                    const ssr = getInputVal('siteSourceRatio');
+                    const ghg = getInputVal('ghgEmissionFactor');
+        
+                    proposedSourceEnergy += proposed * ssr;
+                    proposedGHGEmissions += proposed * ghg;
+                    baselineUnregulatedEnergy += unreg * ssr;
+                    baselineUnregulatedGHGEmissions += unreg * ghg;
+                    baselineRegulatedEnergy += reg * ssr;
+                    baselineRegulatedGHGEmissions += reg * ghg;
+                }});
+        
+                const baselineSourceEnergy = baselineUnregulatedEnergy + baselineRegulatedEnergy;
+                const baselineGHGEmissions = baselineUnregulatedGHGEmissions + baselineRegulatedGHGEmissions;
+        
+                const proposedSiteEnergy = getText('pbp_nre_site_energy') - getText('proposed_site_energy_savings');
+                const proposedSrcEnergy = proposedSourceEnergy - getText('proposed_source_energy_savings');
+                const proposedGHG = proposedGHGEmissions - getText('proposed_ghg_savings');
+        
+                const bbSite = getText('bbp_site_energy');
+                const bbSrc = baselineSourceEnergy;
+                const bbGHG = baselineGHGEmissions;
+        
+                setText('pbp_nre_source_energy', proposedSourceEnergy);
+                setText('pbp_nre_ghg', proposedGHGEmissions);
+                setText('pbp_site_energy', proposedSiteEnergy);
+                setText('pbp_source_energy', proposedSrcEnergy);
+                setText('pbp_ghg', proposedGHG);
+        
+                setText('bbuec_source_energy', baselineUnregulatedEnergy);
+                setText('bbuec_ghg', baselineUnregulatedGHGEmissions);
+                setText('bbrec_source_energy', baselineRegulatedEnergy);
+                setText('bbrec_ghg', baselineRegulatedGHGEmissions);
+                setText('bbp_source_energy', bbSrc);
+                setText('bbp_ghg', bbGHG);
+        
+                setRatio('pci_site_energy', proposedSiteEnergy, bbSite);
+                setRatio('pci_source_energy', proposedSrcEnergy, bbSrc);
+                setRatio('pci_ghg', proposedGHG, bbGHG);
+                setRatio('pci_nre_site_energy', getText('pbp_nre_site_energy'), bbSite);
+                setRatio('pci_nre_source_energy', proposedSourceEnergy, bbSrc);
+                setRatio('pci_nre_ghg', proposedGHGEmissions, bbGHG);
+            }}
 
             function toggleBackToTopButton() {{
                 const backToTopButton = document.getElementById("back-to-top");
@@ -1859,7 +1648,15 @@ def write_html_file(rct_detailed_report):
                     }});
                 }});
             }}
-
+            
+            window.onscroll = function() {{
+                toggleBackToTopButton();
+            }};
+            
+            inputs.forEach(input => {{
+                input.addEventListener('input', recalculateEnergyMetrics);
+            }});
+    
             document.addEventListener("DOMContentLoaded", () => {{
                 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
                 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl =>
@@ -1867,6 +1664,10 @@ def write_html_file(rct_detailed_report):
                     container: 'body',
                   }})
                 );
+                
+                if (inputs.length > 0) {{
+                    recalculateEnergyMetrics();
+                }}
                 
                 calculateSubtotals();
 
