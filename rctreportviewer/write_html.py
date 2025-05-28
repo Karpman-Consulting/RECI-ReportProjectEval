@@ -322,17 +322,17 @@ def write_html_file(rct_detailed_report):
                                             <td style="border-right: 2px solid black;">Building Performance Factor</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BPF</td>
                                             <td>{round(bpf, 2)}</td>
-                                            <td>{round(rct_detailed_report.bpfs_by_metric["Site Energy"], 2)}</td>
-                                            <td>{round(rct_detailed_report.bpfs_by_metric["Source Energy"], 2)}</td>
-                                            <td>{round(rct_detailed_report.bpfs_by_metric["GHG Emissions"], 2)}</td>
+                                            <td id="bpf_site_energy">{round(rct_detailed_report.bpfs_by_metric["Site Energy"], 2)}</td>
+                                            <td id="bpf_source_energy">{round(rct_detailed_report.bpfs_by_metric["Source Energy"], 2)}</td>
+                                            <td id="bpf_ghg_emissions">{round(rct_detailed_report.bpfs_by_metric["GHG Emissions"], 2)}</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance Index Target</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>t</sub></td>
                                             <td>{round(output.get("performance_cost_index_target", 0), 2):,}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            <td id="pcit_site_energy">-</td>
+                                            <td id="pcit_source_energy">-</td>
+                                            <td id="pcit_ghg_emissions">-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance index without on-site renewable energy</td>
@@ -1983,7 +1983,17 @@ def write_html_file(rct_detailed_report):
                 const bbSite = getText('bbp_site_energy');
                 const bbSrc = baselineSourceEnergy;
                 const bbGHG = baselineGHGEmissions;
-        
+                const bbuecSite = getText('bbuec_site_energy');
+                const bbrecSite = getText('bbrec_site_energy');
+                const bbuecSource = baselineUnregulatedEnergy;
+                const bbrecSource = baselineRegulatedEnergy;
+                const bbuecGHG = baselineUnregulatedGHGEmissions;
+                const bbrecGHG = baselineRegulatedGHGEmissions;
+                
+                const bpfSite = getText('bpf_site_energy');
+                const bpfSource = getText('bpf_source_energy');
+                const bpfGHG = getText('bpf_ghg_emissions');
+                
                 setText('pbp_nre_source_energy', proposedSourceEnergy);
                 setText('pbp_nre_ghg', proposedGHGEmissions);
                 setText('pbp_site_energy', proposedSiteEnergy);
@@ -1996,7 +2006,12 @@ def write_html_file(rct_detailed_report):
                 setText('bbrec_ghg', baselineRegulatedGHGEmissions);
                 setText('bbp_source_energy', bbSrc);
                 setText('bbp_ghg', bbGHG);
-        
+                
+                // PCIt ratios
+                setRatio('pcit_site_energy', bbuecSite + bpfSite * bbrecSite, bbSite);
+                setRatio('pcit_source_energy', bbuecSource + bpfSource * bbrecSource, bbSrc);
+                setRatio('pcit_ghg_emissions', bbuecGHG + bpfGHG * bbrecGHG, bbGHG);
+                
                 setRatio('pci_site_energy', proposedSiteEnergy, bbSite);
                 setRatio('pci_source_energy', proposedSrcEnergy, bbSrc);
                 setRatio('pci_ghg', proposedGHG, bbGHG);
