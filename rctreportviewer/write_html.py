@@ -72,7 +72,8 @@ def write_html_file(rct_detailed_report):
         rule_categories = {
             "Failing": rct_detailed_report.rules_failed,
             "Passing": rct_detailed_report.rules_passed,
-            "Undetermined": rct_detailed_report.full_eval_rules_undetermined + rct_detailed_report.appl_eval_rules_undetermined,
+            "Undetermined": rct_detailed_report.full_eval_rules_undetermined
+            + rct_detailed_report.appl_eval_rules_undetermined,
             "N/A": rct_detailed_report.rules_not_applicable,
         }
 
@@ -83,7 +84,9 @@ def write_html_file(rct_detailed_report):
         for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
             qty = len(systems)
             total_qty += qty
-            tooltip_lines.append(f"<div class='text-start'><b>{system_type}</b>: {qty}</div>")
+            tooltip_lines.append(
+                f"<div class='text-start'><b>{system_type}</b>: {qty}</div>"
+            )
 
         tooltip_html = "".join(tooltip_lines)
 
@@ -125,10 +128,12 @@ def write_html_file(rct_detailed_report):
                         </div>
                     </div>
                 </div>
-        """)
+        """
+        )
 
         # ----------------------- Compliance Calculations -----------------------
-        file.write(f"""
+        file.write(
+            f"""
                 <div class="mb-3 me-4">
                     <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-compliance-calcs" aria-expanded="false">
                         Compliance Calculations
@@ -150,12 +155,32 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-                """)
+                """
+        )
         row_number = 0
-        for energy_source, proposed_energy_use in rct_detailed_report.proposed_model_summary.get("energy_by_fuel_type", {}).items():
-            baseline_energy_use = rct_detailed_report.baseline_model_summary.get("energy_by_fuel_type", {}).get(energy_source, 0)
-            baseline_unregulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbuec", {}).get(energy_source, 0)
-            baseline_regulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbrec", {}).get(energy_source, 0)
+        for (
+            energy_source,
+            proposed_energy_use,
+        ) in rct_detailed_report.proposed_model_summary.get(
+            "energy_by_fuel_type", {}
+        ).items():
+            baseline_energy_use = rct_detailed_report.baseline_model_summary.get(
+                "energy_by_fuel_type", {}
+            ).get(energy_source, 0)
+            baseline_unregulated_energy = (
+                rct_detailed_report.baseline_model_summary.get(
+                    "compliance_calcs_by_parameter", {}
+                )
+                .get("bbuec", {})
+                .get(energy_source, 0)
+            )
+            baseline_regulated_energy = (
+                rct_detailed_report.baseline_model_summary.get(
+                    "compliance_calcs_by_parameter", {}
+                )
+                .get("bbrec", {})
+                .get(energy_source, 0)
+            )
             if energy_source == "ELECTRICITY":
                 file.write(
                     f"""
@@ -201,10 +226,15 @@ def write_html_file(rct_detailed_report):
             row_number += 1
 
         output = rct_detailed_report.rpd_data.get("output", {})
-        baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {})
-        proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get("compliance_calcs_by_parameter", {})
+        baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get(
+            "compliance_calcs_by_parameter", {}
+        )
+        proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get(
+            "compliance_calcs_by_parameter", {}
+        )
         bpf = 1.0
-        file.write(f"""
+        file.write(
+            f"""
                                 </tbody>
                             </table>
                             <table class="table table-sm table-borderless" style="width: 1300px;" id="complianceCalcsTable">
@@ -239,9 +269,11 @@ def write_html_file(rct_detailed_report):
                                             <td id="proposed_source_energy_savings">0</td>
                                             <td id="proposed_ghg_savings">0</td>
                                     </tr>
-                            """)
+                            """
+        )
         if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
-            file.write("""
+            file.write(
+                """
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
@@ -250,8 +282,10 @@ def write_html_file(rct_detailed_report):
                                             <td>0</td>
                                             <td>0</td>
                                     </tr>
-                            """)
-        file.write(f"""
+                            """
+            )
+        file.write(
+            f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
@@ -287,10 +321,10 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Building Performance Factor</td>
                                             <td style="border-right: 2px solid black; font-weight: bold;">BPF</td>
-                                            <td>{bpf}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            <td>{round(bpf, 2)}</td>
+                                            <td>{round(rct_detailed_report.bpfs_by_metric["Site Energy"], 2)}</td>
+                                            <td>{round(rct_detailed_report.bpfs_by_metric["Source Energy"], 2)}</td>
+                                            <td>{round(rct_detailed_report.bpfs_by_metric["GHG Emissions"], 2)}</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance Index Target</td>
@@ -345,10 +379,12 @@ def write_html_file(rct_detailed_report):
                         </div>
                     </div>
                 </div>
-        """)
+        """
+        )
 
         # ----------------------- Model Results Summary -----------------------
-        file.write(f"""
+        file.write(
+            f"""
                 <div class="mb-3 me-4">
                     <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
                         Results Summary
@@ -357,9 +393,11 @@ def write_html_file(rct_detailed_report):
                     <div id="collapse-model-results-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
                         
-        """)
+        """
+        )
 
-        file.write(f"""
+        file.write(
+            f"""
                             <div style="position: relative; left: 360px;" class="mb-3">
                                 <div class="btn-group" role="group" aria-label="Chart toggle">
                                     <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
@@ -434,10 +472,18 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-            """)
+            """
+        )
 
-        for building_segment_id in rct_detailed_report.baseline_model_summary["total_floor_area_by_building_segment"]:
-            if building_segment_id in rct_detailed_report.baseline_model_summary["total_roof_area_by_building_segment"]:
+        for building_segment_id in rct_detailed_report.baseline_model_summary[
+            "total_floor_area_by_building_segment"
+        ]:
+            if (
+                building_segment_id
+                in rct_detailed_report.baseline_model_summary[
+                    "total_roof_area_by_building_segment"
+                ]
+            ):
                 file.write(
                     f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -458,7 +504,12 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                     """
                 )
-            if building_segment_id in rct_detailed_report.baseline_model_summary["total_wall_area_by_building_segment"]:
+            if (
+                building_segment_id
+                in rct_detailed_report.baseline_model_summary[
+                    "total_wall_area_by_building_segment"
+                ]
+            ):
                 file.write(
                     f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -480,7 +531,8 @@ def write_html_file(rct_detailed_report):
                     """
                 )
 
-        file.write("""          </tbody>
+        file.write(
+            """          </tbody>
                             </table>
                             <p style="font-size: 0.75rem;" class="ms-2">*U-Factors represent area-weighted averages for the corresponding Building Area & Surface Type</p>
                         </div>
@@ -515,9 +567,12 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-        """)
+        """
+        )
 
-        for space_type in rct_detailed_report.baseline_model_summary["total_floor_area_by_space_type"]:
+        for space_type in rct_detailed_report.baseline_model_summary[
+            "total_floor_area_by_space_type"
+        ]:
             file.write(
                 f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -533,7 +588,8 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                 """
             )
-        file.write(f"""
+        file.write(
+            f"""
                                     <tr  style="font-size: 12px; border-top: 1px solid black;" class="lh-1 fw-bold text-center">
                                         <td>Total</td>
                                         <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_floor_area']):,}</td>
@@ -547,10 +603,12 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </tbody>
                             </table>
-        """)
+        """
+        )
 
         # ----------------------- Schedule Summary Table -----------------------
-        file.write(f"""
+        file.write(
+            f"""
                             <h3>Schedule Summary</h3>
                             <table class="table table-sm table-borderless" style="width: 1250px;">
                                 <thead>
@@ -574,16 +632,19 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-        """)
+        """
+        )
 
-        baseline_schedule_summaries = rct_detailed_report.baseline_model_summary["schedule_summaries"]
+        baseline_schedule_summaries = rct_detailed_report.baseline_model_summary[
+            "schedule_summaries"
+        ]
         for schedule_id in baseline_schedule_summaries.keys():
-            baseline_schedule_summary = (
-                rct_detailed_report.baseline_model_summary["schedule_summaries"].get(schedule_id, {})
-            )
-            proposed_schedule_summary = (
-                rct_detailed_report.proposed_model_summary["schedule_summaries"].get(schedule_id, {})
-            )
+            baseline_schedule_summary = rct_detailed_report.baseline_model_summary[
+                "schedule_summaries"
+            ].get(schedule_id, {})
+            proposed_schedule_summary = rct_detailed_report.proposed_model_summary[
+                "schedule_summaries"
+            ].get(schedule_id, {})
             file.write(
                 f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -601,7 +662,8 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                 """
             )
-        file.write(f"""
+        file.write(
+            f"""
                                     
                                 </tbody>
                             </table>
@@ -617,12 +679,16 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-hvac-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
-        """)
+        """
+        )
 
-        if (rct_detailed_report.proposed_model_summary["chiller_count"] + rct_detailed_report.baseline_model_summary[
-            "chiller_count"]) > 0:
+        if (
+            rct_detailed_report.proposed_model_summary["chiller_count"]
+            + rct_detailed_report.baseline_model_summary["chiller_count"]
+        ) > 0:
             # -------------------------- Cooling Plant Summary Table-------------------------
-            file.write(f"""   
+            file.write(
+                f"""   
                                 <h3> Cooling Plant Summary</h3>
                                 <table class="table table-sm table-borderless fan-summary" style="width: 1150px;">
                                     <thead>
@@ -643,16 +709,25 @@ def write_html_file(rct_detailed_report):
                                         </tr>
                                     </thead>
                                     <tbody style="border: 2px solid black;">
-            """)
+            """
+            )
             # Check if there is any chiller plant info for electricity in the baseline model
             write_row = False
             for val in [
-                rct_detailed_report.baseline_model_summary.get("electric_chiller_count", 0),
-                rct_detailed_report.baseline_model_summary.get("electric_chiller_plant_capacity", 0),
+                rct_detailed_report.baseline_model_summary.get(
+                    "electric_chiller_count", 0
+                ),
+                rct_detailed_report.baseline_model_summary.get(
+                    "electric_chiller_plant_capacity", 0
+                ),
                 rct_detailed_report.baseline_model_summary.get("cooling_tower_gpm", 0),
                 rct_detailed_report.baseline_model_summary.get("cooling_tower_hp", 0),
-                rct_detailed_report.proposed_model_summary.get("electric_chiller_count", 0),
-                rct_detailed_report.proposed_model_summary.get("electric_chiller_plant_capacity", 0),
+                rct_detailed_report.proposed_model_summary.get(
+                    "electric_chiller_count", 0
+                ),
+                rct_detailed_report.proposed_model_summary.get(
+                    "electric_chiller_plant_capacity", 0
+                ),
                 rct_detailed_report.proposed_model_summary.get("cooling_tower_gpm", 0),
                 rct_detailed_report.proposed_model_summary.get("cooling_tower_hp", 0),
             ]:
@@ -660,7 +735,8 @@ def write_html_file(rct_detailed_report):
                     write_row = True
                     break
             if write_row:
-                file.write(f"""
+                file.write(
+                    f"""
                                         <tr style="font-size: 12px;" class="text-center">
                                             <td style="border-right: 2px solid black;">Electricity</td>
                                             <td>{round(rct_detailed_report.baseline_model_summary.get("electric_chiller_count", 0)):,}</td>
@@ -672,17 +748,23 @@ def write_html_file(rct_detailed_report):
                                             <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_gpm", 0), 1):,}</td>
                                             <td>{round(rct_detailed_report.proposed_model_summary.get("cooling_tower_hp", 0), 1):,}</td>
                                         </tr>
-                """)
+                """
+                )
             write_row = False
             for val in [
-                rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_count", 0),
-                rct_detailed_report.proposed_model_summary.get("fossil_fuel_chiller_plant_capacity", 0.0),
+                rct_detailed_report.proposed_model_summary.get(
+                    "fossil_fuel_chiller_count", 0
+                ),
+                rct_detailed_report.proposed_model_summary.get(
+                    "fossil_fuel_chiller_plant_capacity", 0.0
+                ),
             ]:
                 if val > 0:
                     write_row = True
                     break
             if write_row:
-                file.write(f"""
+                file.write(
+                    f"""
                                         <tr style="font-size: 12px;" class="text-center">
                                             <td style="border-right: 2px solid black;">Fossil Fuel</td>
                                             <td style="background: black;"></td>
@@ -694,8 +776,10 @@ def write_html_file(rct_detailed_report):
                                             <td style="background: black;"></td>
                                             <td style="background: black;"></td>
                                         </tr>
-                """)
-            file.write(f"""
+                """
+                )
+            file.write(
+                f"""
                                         <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                             <td style="border-right: 2px solid black;">Total</td>
                                             <td>{round(rct_detailed_report.baseline_model_summary.get("electric_chiller_count", 0)):,}</td>
@@ -710,12 +794,16 @@ def write_html_file(rct_detailed_report):
                                         </tr>
                                     </tbody>
                                 </table>
-            """)
+            """
+            )
 
         # -------------------------- Heating Plant Summary Table-------------------------
-        if (rct_detailed_report.proposed_model_summary["boiler_count"] + rct_detailed_report.baseline_model_summary[
-            "boiler_count"]) > 0:
-            file.write(f"""   
+        if (
+            rct_detailed_report.proposed_model_summary["boiler_count"]
+            + rct_detailed_report.baseline_model_summary["boiler_count"]
+        ) > 0:
+            file.write(
+                f"""   
                                         <h3> Heating Plant Summary</h3>
                                         <table class="table table-sm table-borderless fan-summary" style="width: 800px;">
                                             <thead>
@@ -732,19 +820,25 @@ def write_html_file(rct_detailed_report):
                                                 </tr>
                                             </thead>
                                             <tbody style="border: 2px solid black;">
-            """)
+            """
+            )
 
             # Check if there is any boiler plant info for electricity in the proposed model
             write_row = False
             for val in [
-                rct_detailed_report.proposed_model_summary.get("electric_boiler_count", 0),
-                rct_detailed_report.proposed_model_summary.get("electric_boiler_plant_capacity", 0.0)
+                rct_detailed_report.proposed_model_summary.get(
+                    "electric_boiler_count", 0
+                ),
+                rct_detailed_report.proposed_model_summary.get(
+                    "electric_boiler_plant_capacity", 0.0
+                ),
             ]:
                 if val > 0:
                     write_row = True
                     break
             if write_row:
-                file.write(f"""
+                file.write(
+                    f"""
                                                 <tr style="font-size: 12px;" class="text-center">
                                                     <td style="border-right: 2px solid black;">Electricity</td>
                                                     <td style="background: black;"></td>
@@ -752,20 +846,30 @@ def write_html_file(rct_detailed_report):
                                                     <td>{round(rct_detailed_report.proposed_model_summary.get("electric_boiler_count", 0)):,}</td>
                                                     <td>{round(rct_detailed_report.proposed_model_summary.get("electric_boiler_plant_capacity", 0)):,}</td>
                                                 </tr>
-                """)
+                """
+                )
             # Check if there is any boiler plant info for fossil fuel
             write_row = False
             for val in [
-                rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0),
-                rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_plant_capacity", 0.0),
-                rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_count", 0),
-                rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0.0)
+                rct_detailed_report.baseline_model_summary.get(
+                    "fossil_fuel_boiler_count", 0
+                ),
+                rct_detailed_report.baseline_model_summary.get(
+                    "fossil_fuel_boiler_plant_capacity", 0.0
+                ),
+                rct_detailed_report.proposed_model_summary.get(
+                    "fossil_fuel_boiler_count", 0
+                ),
+                rct_detailed_report.proposed_model_summary.get(
+                    "fossil_fuel_boiler_plant_capacity", 0.0
+                ),
             ]:
                 if val > 0:
                     write_row = True
                     break
             if write_row:
-                file.write(f"""
+                file.write(
+                    f"""
                                                 <tr style="font-size: 12px;" class="text-center">
                                                     <td style="border-right: 2px solid black;">Fossil Fuel</td>
                                                     <td>{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
@@ -773,8 +877,10 @@ def write_html_file(rct_detailed_report):
                                                     <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
                                                     <td>{round(rct_detailed_report.proposed_model_summary.get("fossil_fuel_boiler_plant_capacity", 0), 1):,}</td>
                                                 </tr>
-                """)
-            file.write(f"""
+                """
+                )
+            file.write(
+                f"""
                                             <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                                 <td style="border-right: 2px solid black;">Total</td>
                                                 <td>{round(rct_detailed_report.baseline_model_summary.get("fossil_fuel_boiler_count", 0)):,}</td>
@@ -785,10 +891,12 @@ def write_html_file(rct_detailed_report):
                                             </tr>
                                         </tbody>
                                     </table>
-            """)
+            """
+            )
 
         # -------------------------- Air-Side HVAC Capacity Summary Table-------------------------
-        file.write(f"""   
+        file.write(
+            f"""   
                             <h3> Air-side HVAC Capacity Summary</h3>
                             <table class="table table-sm table-borderless fan-summary" style="width: 750px;">
                                 <thead>
@@ -805,20 +913,30 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-        """)
+        """
+        )
         # Check if there are any electricity heating or cooling capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0),
-            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0),
-            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0),
-            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0)
+            rct_detailed_report.baseline_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("Electricity", 0.0),
+            rct_detailed_report.baseline_model_summary[
+                "cooling_capacity_by_fuel_type"
+            ].get("Electricity", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("Electricity", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "cooling_capacity_by_fuel_type"
+            ].get("Electricity", 0.0),
         ]:
             if val > 0:
                 write_row = True
                 break
         if write_row:
-            file.write(f"""
+            file.write(
+                f"""
                                     <tr style="font-size: 12px;" class="text-center">
                                         <td style="border-right: 2px solid black;">Electricity</td>
                                         <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
@@ -826,18 +944,24 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Electricity", 0.0)):,}</td>
                                     </tr>
-            """)
+            """
+            )
         # Check if there are any fossil fuel heating capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0),
-            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0),
+            rct_detailed_report.baseline_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("Fossil Fuel", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("Fossil Fuel", 0.0),
         ]:
             if val > 0:
                 write_row = True
                 break
         if write_row:
-            file.write(f"""
+            file.write(
+                f"""
                                     <tr style="font-size: 12px;" class="text-center">
                                         <td style="border-right: 2px solid black;">Fossil Fuel</td>
                                         <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0)):,}</td>
@@ -845,20 +969,24 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Fossil Fuel", 0.0)):,}</td>
                                         <td style="background: black;"></td>
                                     </tr>
-            """)
+            """
+            )
         # Check if there are any On-site Boiler Plant heating capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant",
-                                                                                            0.0),
-            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant",
-                                                                                            0.0),
+            rct_detailed_report.baseline_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("On-site Boiler Plant", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("On-site Boiler Plant", 0.0),
         ]:
             if val > 0:
                 write_row = True
                 break
         if write_row:
-            file.write(f"""
+            file.write(
+                f"""
                                     <tr style="font-size: 12px;" class="text-center">
                                         <td style="border-right: 2px solid black;">On-site Boiler Plant</td>
                                         <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant", 0.0)):,}</td>
@@ -866,18 +994,24 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("On-site Boiler Plant", 0.0)):,}</td>
                                         <td style="background: black;"></td>
                                     </tr>
-            """)
+            """
+            )
         # Check if there are any Purchased Heat heating capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0),
-            rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0),
+            rct_detailed_report.baseline_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("Purchased Heat", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "heating_capacity_by_fuel_type"
+            ].get("Purchased Heat", 0.0),
         ]:
             if val > 0:
                 write_row = True
                 break
         if write_row:
-            file.write(f"""
+            file.write(
+                f"""
                                     <tr style="font-size: 12px;" class="text-center">
                                         <td style="border-right: 2px solid black;">Purchased Heat</td>
                                         <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0)):,}</td>
@@ -885,20 +1019,24 @@ def write_html_file(rct_detailed_report):
                                         <td>{round(rct_detailed_report.proposed_model_summary['heating_capacity_by_fuel_type'].get("Purchased Heat", 0.0)):,}</td>
                                         <td style="background: black;"></td>
                                     </tr>
-            """)
+            """
+            )
         # Check if there are any On-site Chiller Plant cooling capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant",
-                                                                                            0.0),
-            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant",
-                                                                                            0.0)
+            rct_detailed_report.baseline_model_summary[
+                "cooling_capacity_by_fuel_type"
+            ].get("On-site Chiller Plant", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "cooling_capacity_by_fuel_type"
+            ].get("On-site Chiller Plant", 0.0),
         ]:
             if val > 0:
                 write_row = True
                 break
         if write_row:
-            file.write(f"""
+            file.write(
+                f"""
                                     <tr style="font-size: 12px;" class="text-center">
                                         <td style="border-right: 2px solid black;">On-site Chiller Plant</td>
                                         <td style="background: black;"></td>
@@ -906,18 +1044,24 @@ def write_html_file(rct_detailed_report):
                                         <td style="background: black;"></td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("On-site Chiller Plant", 0.0)):,}</td>
                                     </tr>
-            """)
+            """
+            )
         # Check if there are any Purchased CHW cooling capacities in the baseline or proposed models
         write_row = False
         for val in [
-            rct_detailed_report.baseline_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0),
-            rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0)
+            rct_detailed_report.baseline_model_summary[
+                "cooling_capacity_by_fuel_type"
+            ].get("Purchased CHW", 0.0),
+            rct_detailed_report.proposed_model_summary[
+                "cooling_capacity_by_fuel_type"
+            ].get("Purchased CHW", 0.0),
         ]:
             if val > 0:
                 write_row = True
                 break
         if write_row:
-            file.write(f"""
+            file.write(
+                f"""
                                     <tr style="font-size: 12px;" class="text-center">
                                         <td style="border-right: 2px solid black;">Purchased CHW</td>
                                         <td style="background: black;"></td>
@@ -925,8 +1069,10 @@ def write_html_file(rct_detailed_report):
                                         <td style="background: black;"></td>
                                         <td>{round(rct_detailed_report.proposed_model_summary['cooling_capacity_by_fuel_type'].get("Purchased CHW", 0.0)):,}</td>
                                     </tr>
-            """)
-        file.write(f"""
+            """
+            )
+        file.write(
+            f"""
                                 <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                     <td style="border-right: 2px solid black;">Total</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary['heating_capacity_by_fuel_type'].get("Total", 0.0)):,}</td>
@@ -936,10 +1082,12 @@ def write_html_file(rct_detailed_report):
                                 </tr>
                             </tbody>
                         </table>
-        """)
+        """
+        )
 
         # ----------------------- HVAC Fan Summary Table -----------------------
-        file.write(f"""
+        file.write(
+            f"""
                             <h3>Baseline HVAC Fan Summary</h3>
                             <p><strong>Outdoor Airflow:</strong> {round(rct_detailed_report.baseline_model_summary['total_zone_minimum_oa_flow']):,} CFM</p>
                             <table class="table table-sm table-borderless fan-summary" style="width: 1250px;">
@@ -976,7 +1124,8 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-        """)
+        """
+        )
 
         for fan_type in ["Supply", "Return/Relief", "Exhaust", "Zonal Exhaust"]:
             file.write(
@@ -1006,7 +1155,8 @@ def write_html_file(rct_detailed_report):
                 """
             )
         # --------- Subtotal Row -------------
-        file.write(f"""
+        file.write(
+            f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                         <td style="border-right: 2px solid black;">Subtotal</td>
                                         <td></td>
@@ -1029,9 +1179,11 @@ def write_html_file(rct_detailed_report):
                                         <td></td>
                                         <td>0</td>
                                     </tr>
-                    """)
+                    """
+        )
         # --------- Terminal Units Row ------------
-        file.write(f"""
+        file.write(
+            f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
                                         <td style="border-right: 2px solid black;">Terminal Units</td>
                                         <td style="background: black;"></td>
@@ -1054,8 +1206,10 @@ def write_html_file(rct_detailed_report):
                                         <td style="background: black;"></td>
                                         <td style="background: black;"></td>
                                     </tr>
-        """)
-        file.write(f"""
+        """
+        )
+        file.write(
+            f"""
                                 </tbody>
                             </table>
 
@@ -1095,7 +1249,8 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
-        """)
+        """
+        )
 
         for fan_type in ["Supply", "Return/Relief", "Exhaust", "Zonal Exhaust"]:
             file.write(
@@ -1125,7 +1280,8 @@ def write_html_file(rct_detailed_report):
                 """
             )
         # ---------- Subtotal Row -------------
-        file.write(f"""
+        file.write(
+            f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="fw-bold text-center subtotal">
                                         <td style="border-right: 2px solid black;">Subtotal</td>
                                         <td></td>
@@ -1148,9 +1304,11 @@ def write_html_file(rct_detailed_report):
                                         <td></td>
                                         <td>0</td>
                                     </tr>
-        """)
+        """
+        )
         # --------- Terminal Units Row -----------
-        file.write(f"""
+        file.write(
+            f"""
                                     <tr style="font-size: 12px; border-top: 1px solid black;" class="text-center">
                                         <td>Terminal Units</td>
                                         <td style="background: black;"></td>
@@ -1175,9 +1333,11 @@ def write_html_file(rct_detailed_report):
                                     </tr>
                                 </tbody>
                             </table>
-        """)
+        """
+        )
 
-        file.write(f""" 
+        file.write(
+            f""" 
                     </div>
                 </div>
             </div>
@@ -1190,10 +1350,11 @@ def write_html_file(rct_detailed_report):
                 <div id="collapse-hvac-details" class="accordion-collapse collapse">
                     <div class="accordion-body">
         """
-                   )
+        )
 
         # -------------------------- Air-Side HVAC System Type, Capacity, and Efficiency Summary Table-------------------------
-        file.write(f"""   
+        file.write(
+            f"""   
                                                 <h3> Baseline Air-Side HVAC System Type, Capacity, and Efficiency</h3>
                                                 <table class="table table-sm table-borderless fan-summary">
                                                     <thead>
@@ -1219,10 +1380,14 @@ def write_html_file(rct_detailed_report):
                                                         </tr>
                                                     </thead>
                                                     <tbody style="border: 2px solid black;">
-                            """)
+                            """
+        )
         # A row for every system
-        for system_summary in rct_detailed_report.baseline_model_summary["hvac_system_summaries"]:
-            file.write(f"""
+        for system_summary in rct_detailed_report.baseline_model_summary[
+            "hvac_system_summaries"
+        ]:
+            file.write(
+                f"""
                                                         <tr style="font-size: 12px;" class="text-center">
                                                             <td>{system_summary.get("name", "-")}</td>
                                                             <td>{system_summary.get("type", "-")}</td>
@@ -1231,49 +1396,76 @@ def write_html_file(rct_detailed_report):
                                                             <td>{system_summary.get("heating_energy_source", "-").replace("_", " ").title()}</td>
                                                             <td>{round(system_summary.get("heating_capacity", 0)):,}</td>
                                                             <td>{system_summary.get("heating_capacity_units", "-")}</td>
-                        """)
-            if system_summary.get("heating_efficiency_metric_values") and system_summary.get("heating_efficiency_metric_types"):
-                efficiency_values = ", ".join(str(round(x, 3)) for x in system_summary["heating_efficiency_metric_values"])
-                efficiency_types = ", ".join(system_summary["heating_efficiency_metric_types"])
-                file.write(f"""
+                        """
+            )
+            if system_summary.get(
+                "heating_efficiency_metric_values"
+            ) and system_summary.get("heating_efficiency_metric_types"):
+                efficiency_values = ", ".join(
+                    str(round(x, 3))
+                    for x in system_summary["heating_efficiency_metric_values"]
+                )
+                efficiency_types = ", ".join(
+                    system_summary["heating_efficiency_metric_types"]
+                )
+                file.write(
+                    f"""
                                                             <td>{efficiency_values}</td>
                                                             <td style="border-right: 2px solid black;">{efficiency_types}</td>
                                                             <td>{system_summary.get("cooling_equipment_type", "-").replace("_", " ").title()}</td>
                                                             <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
                                                             <td>{system_summary.get("cooling_capacity_units", "-")}</td>
-                                """)
+                                """
+                )
             else:
-                file.write(f"""
+                file.write(
+                    f"""
                                                             <td>-</td>
                                                             <td style="border-right: 2px solid black;">-</td>
                                                             <td>{system_summary.get("cooling_equipment_type", "-").replace("_", " ").title()}</td>
                                                             <td>{round(system_summary.get("cooling_capacity", 0)):,}</td>
                                                             <td>{system_summary.get("cooling_capacity_units", "-")}</td>
-                                """)
-            if system_summary.get("cooling_efficiency_metric_values") and system_summary.get("cooling_efficiency_metric_types"):
-                efficiency_values = ", ".join(str(round(x, 3)) for x in system_summary["cooling_efficiency_metric_values"])
-                efficiency_types = ", ".join(system_summary["cooling_efficiency_metric_types"])
-                file.write(f"""
+                                """
+                )
+            if system_summary.get(
+                "cooling_efficiency_metric_values"
+            ) and system_summary.get("cooling_efficiency_metric_types"):
+                efficiency_values = ", ".join(
+                    str(round(x, 3))
+                    for x in system_summary["cooling_efficiency_metric_values"]
+                )
+                efficiency_types = ", ".join(
+                    system_summary["cooling_efficiency_metric_types"]
+                )
+                file.write(
+                    f"""
                                                         <td>{efficiency_values}</td>
                                                         <td style="border-right: 2px solid black;">{efficiency_types}</td>
-                """)
+                """
+                )
             else:
-                file.write(f"""
+                file.write(
+                    f"""
                                                         <td>-</td>
                                                         <td style="border-right: 2px solid black;">-</td>
-                """)
+                """
+                )
             # End of system summary row
-            file.write(f"""
+            file.write(
+                f"""
                                                     </tr>
-                                """)
+                                """
+            )
         # End of table
-        file.write(f"""
+        file.write(
+            f"""
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                            """)
+                            """
+        )
 
         for category, rules in rule_categories.items():
             btn_class = (
@@ -1328,12 +1520,8 @@ def write_html_file(rct_detailed_report):
                     section = rule_id.split("-")[0]
                     if section not in sections_seen:
                         sections_seen.add(section)
-                        section_title = section_titles_with_colors.get(
-                            int(section)
-                        )[0]
-                        section_color = section_titles_with_colors.get(
-                            int(section)
-                        )[1]
+                        section_title = section_titles_with_colors.get(int(section))[0]
+                        section_color = section_titles_with_colors.get(int(section))[1]
                         file.write(
                             f"""
                             </tbody>
@@ -1349,7 +1537,13 @@ def write_html_file(rct_detailed_report):
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
                     outcome_summary = " | ".join(
-                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                        [
+                            f"{k}: {v}"
+                            for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                                rule_id
+                            ].items()
+                        ]
+                    )
 
                     file.write(
                         f"""
@@ -1391,9 +1585,7 @@ def write_html_file(rct_detailed_report):
                         }
 
                         # Select the appropriate style based on outcome
-                        li_style = styles.get(
-                            evaluation["outcome"], styles["DEFAULT"]
-                        )
+                        li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
                         file.write(
                             f"""
                                 <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
@@ -1424,8 +1616,7 @@ def write_html_file(rct_detailed_report):
                                 """
                             )
                             if any(
-                                    cv.get("unit")
-                                    for cv in evaluation["calculated_values"]
+                                cv.get("unit") for cv in evaluation["calculated_values"]
                             ):
                                 has_any_units = True
                                 file.write("<th>Unit</th>")
@@ -1442,9 +1633,7 @@ def write_html_file(rct_detailed_report):
                                     """
                                 )
                                 if calculated_value.get("unit"):
-                                    file.write(
-                                        f"<td>{calculated_value['unit']}</td>"
-                                    )
+                                    file.write(f"<td>{calculated_value['unit']}</td>")
                                 elif has_any_units:
                                     file.write("<td></td>")
                                 file.write("</tr>")
@@ -1479,12 +1668,8 @@ def write_html_file(rct_detailed_report):
                     section = rule_id.split("-")[0]
                     if section not in sections_seen:
                         sections_seen.add(section)
-                        section_title = section_titles_with_colors.get(
-                            int(section)
-                        )[0]
-                        section_color = section_titles_with_colors.get(
-                            int(section)
-                        )[1]
+                        section_title = section_titles_with_colors.get(int(section))[0]
+                        section_color = section_titles_with_colors.get(int(section))[1]
                         file.write(
                             f"""
                             </tbody>
@@ -1500,7 +1685,13 @@ def write_html_file(rct_detailed_report):
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
                     outcome_summary = " | ".join(
-                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                        [
+                            f"{k}: {v}"
+                            for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                                rule_id
+                            ].items()
+                        ]
+                    )
 
                     file.write(
                         f"""
@@ -1542,9 +1733,7 @@ def write_html_file(rct_detailed_report):
                         }
 
                         # Select the appropriate style based on outcome
-                        li_style = styles.get(
-                            evaluation["outcome"], styles["DEFAULT"]
-                        )
+                        li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
                         file.write(
                             f"""
                                 <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
@@ -1575,8 +1764,7 @@ def write_html_file(rct_detailed_report):
                                 """
                             )
                             if any(
-                                    cv.get("unit")
-                                    for cv in evaluation["calculated_values"]
+                                cv.get("unit") for cv in evaluation["calculated_values"]
                             ):
                                 has_any_units = True
                                 file.write("<th>Unit</th>")
@@ -1593,9 +1781,7 @@ def write_html_file(rct_detailed_report):
                                     """
                                 )
                                 if calculated_value.get("unit"):
-                                    file.write(
-                                        f"<td>{calculated_value['unit']}</td>"
-                                    )
+                                    file.write(f"<td>{calculated_value['unit']}</td>")
                                 elif has_any_units:
                                     file.write("<td></td>")
                                 file.write("</tr>")
@@ -1613,12 +1799,8 @@ def write_html_file(rct_detailed_report):
                     section = rule_id.split("-")[0]
                     if section not in sections_seen:
                         sections_seen.add(section)
-                        section_title = section_titles_with_colors.get(
-                            int(section)
-                        )[0]
-                        section_color = section_titles_with_colors.get(
-                            int(section)
-                        )[1]
+                        section_title = section_titles_with_colors.get(int(section))[0]
+                        section_color = section_titles_with_colors.get(int(section))[1]
                         file.write(
                             f"""
                             </tbody>
@@ -1634,7 +1816,13 @@ def write_html_file(rct_detailed_report):
                     description = rule_data.get("description", "N/A")
                     standard_section = rule_data.get("standard_section", "N/A")
                     outcome_summary = " | ".join(
-                        [f"{k}: {v}" for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()])
+                        [
+                            f"{k}: {v}"
+                            for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                                rule_id
+                            ].items()
+                        ]
+                    )
 
                     file.write(
                         f"""
@@ -1676,9 +1864,7 @@ def write_html_file(rct_detailed_report):
                         }
 
                         # Select the appropriate style based on outcome
-                        li_style = styles.get(
-                            evaluation["outcome"], styles["DEFAULT"]
-                        )
+                        li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
                         file.write(
                             f"""
                                 <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
@@ -1709,8 +1895,7 @@ def write_html_file(rct_detailed_report):
                                 """
                             )
                             if any(
-                                    cv.get("unit")
-                                    for cv in evaluation["calculated_values"]
+                                cv.get("unit") for cv in evaluation["calculated_values"]
                             ):
                                 has_any_units = True
                                 file.write("<th>Unit</th>")
@@ -1727,9 +1912,7 @@ def write_html_file(rct_detailed_report):
                                     """
                                 )
                                 if calculated_value.get("unit"):
-                                    file.write(
-                                        f"<td>{calculated_value['unit']}</td>"
-                                    )
+                                    file.write(f"<td>{calculated_value['unit']}</td>")
                                 elif has_any_units:
                                     file.write("<td></td>")
                                 file.write("</tr>")
@@ -2136,7 +2319,6 @@ def write_html_file(rct_detailed_report):
                 }}
 
                 function updateTotalColors(source) {{
-                  console.log(source);
                   const baselineEl = document.getElementById('baselineTotal');
                   const proposedEl = document.getElementById('proposedTotal');
 
@@ -2153,7 +2335,6 @@ def write_html_file(rct_detailed_report):
                 }}
 
                 function updateTotals(source, unitType) {{
-                  console.log(source);
                   let baseline, proposed;
 
                   if (source === 'elec') {{
