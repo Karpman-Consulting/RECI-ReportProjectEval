@@ -35,6 +35,40 @@ class RCTDetailedReport:
         "STEAM": "Fossil Fuel",
         "OTHER": "Other"
     }
+    bpf_area_type_map = {
+        "AUTOMOTIVE_FACILITY": "All Others",
+        "CONVENTION_CENTER": "All Others",
+        "COURTHOUSE": "All Others",
+        "DINING_BAR_LOUNGE_LEISURE": "Restaurant",
+        "DINING_CAFETERIA_FAST_FOOD": "Restaurant",
+        "DINING_FAMILY": "Restaurant",
+        "DORMITORY": "Multifamily",
+        "EXERCISE_CENTER": "All Others",
+        "FIRE_STATION": "All Others",
+        "GYMNASIUM": "All Others",
+        "HEALTH_CARE_CLINIC": "Healthcare/hospital",
+        "HOSPITAL": "Healthcare/hospital",
+        "HOTEL_MOTEL": "Hotel/motel",
+        "LIBRARY": "All Others",
+        "MANUFACTURING_FACILITY": "All Others",
+        "MOTION_PICTURE_THEATER": "All Others",
+        "MULTIFAMILY": "Multifamily",
+        "MUSEUM": "All Others",
+        "OFFICE": "Office",
+        "PARKING_GARAGE": "All Others",
+        "PENITENTIARY": "All Others",
+        "PERFORMING_ARTS_THEATER": "All Others",
+        "POLICE_STATION": "All Others",
+        "POST_OFFICE": "All Others",
+        "RELIGIOUS_FACILITY": "All Others",
+        "RETAIL": "Retail",
+        "SCHOOL_UNIVERSITY": "School",
+        "SPORTS_ARENA": "All Others",
+        "TOWN_HALL": "Office",
+        "TRANSPORTATION": "All Others",
+        "WAREHOUSE": "Warehouse",
+        "WORKSHOP": "All Others"
+    }
 
     def __init__(
             self,
