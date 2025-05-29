@@ -266,6 +266,103 @@ def write_html_file(rct_detailed_report):
                         </div>
                     </div>
                 </div>
+                
+                <div class="mb-3 me-4">
+                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-energy-performance-summary" aria-expanded="false">
+                        Energy Performance Summary
+                    </button>
+
+                    <div id="collapse-energy-performance-summary" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <table class="table table-sm table-borderless" style="width: 1250px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="1" class="col-4"></th>
+                                        <th colspan="3" class="col-4" style="border: 2px solid black;">Site Energy Use Intensity (kBtu/sf/yr)</th>
+                                        <th colspan="3" class="col-4" style="border: 2px solid black;">Source Energy Use Intensity (kBtu/sf/yr)</th>
+                                        <th colspan="3" class="col-4" style="border: 2px solid black;">Energy Cost Intensity ($/sf/yr)</th>
+                                        <th colspan="3" class="col-4" style="border: 2px solid black;">GHG Emission Intensity (kg CO<sub>2</sub>/sf/yr)</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">End-use</th>
+                                        <th style="border: 2px solid black;">Proposed</th>
+                                        <th style="border: 2px solid black;">Baseline</th>
+                                        <th style="border: 2px solid black;">% Savings</th>
+                                        <th style="border: 2px solid black;">Proposed</th>
+                                        <th style="border: 2px solid black;">Baseline</th>
+                                        <th style="border: 2px solid black;">% Savings</th>
+                                        <th style="border: 2px solid black;">Proposed</th>
+                                        <th style="border: 2px solid black;">Baseline</th>
+                                        <th style="border: 2px solid black;">% Savings</th>
+                                        <th style="border: 2px solid black;">Proposed</th>
+                                        <th style="border: 2px solid black;">Baseline</th>
+                                        <th style="border: 2px solid black;">% Savings</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+        """)
+        # TODO: Condense after determining what we need for source, cost, and ghg
+        # TODO: Move above chart in Results Summary section with its own header
+        proposed_energy_by_end_use = rct_detailed_report.proposed_model_summary["energy_by_end_use_eui"]
+        baseline_energy_by_end_use = rct_detailed_report.baseline_model_summary["energy_by_end_use_eui"]
+        end_uses = set((baseline_energy_by_end_use | proposed_energy_by_end_use).keys())
+        for end_use in end_uses:
+            baseline_site_energy = baseline_energy_by_end_use.get(end_use, 0)
+            proposed_site_energy = proposed_energy_by_end_use.get(end_use, 0)
+            if not baseline_site_energy and not proposed_site_energy:
+                continue
+            site_improvement = (
+                (baseline_site_energy - proposed_site_energy) / baseline_site_energy * 100
+                if baseline_site_energy
+                else (0 - proposed_site_energy) * 100  # Avoid division by zero
+            )
+            file.write(
+                f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                        <td style="border-right: 2px solid black;">{end_use.replace('_', ' ').title()}</td>
+                                        <td>{round(proposed_site_energy, 1):,}</td>
+                                        <td>{round(baseline_site_energy, 1):,}</td>
+                                        <td style="border-right: 2px solid black;">{round(site_improvement, 1):,}%</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                    </tr>
+                """
+            )
+        proposed_site_total_energy = sum(rct_detailed_report.proposed_model_summary.get("energy_by_end_use_eui", {}).values())
+        baseline_site_total_energy = sum(rct_detailed_report.baseline_model_summary.get("energy_by_end_use_eui", {}).values())
+        site_total_improvement = (
+            (baseline_site_total_energy - proposed_site_total_energy) / baseline_site_total_energy * 100
+            if baseline_site_total_energy
+            else (0 - proposed_site_total_energy) * 100  # Avoid division by zero
+        )
+        file.write(f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                        <td style="border-right: 2px solid black;">Total</td>
+                                        <td>{round(proposed_site_total_energy, 1):,}</td>
+                                        <td>{round(baseline_site_total_energy, 1):,}</td>
+                                        <td style="border-right: 2px solid black;">{round(site_total_improvement, 1):,}%</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="mb-3 me-4">
                     <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-internal-loads-summary" aria-expanded="false">
