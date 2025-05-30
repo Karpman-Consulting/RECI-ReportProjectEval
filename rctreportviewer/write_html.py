@@ -267,6 +267,57 @@ def write_html_file(rct_detailed_report):
                     </div>
                 </div>
 
+                
+                <div class="mb-3 me-4">
+                    <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-swh-summary" aria-expanded="false">
+                        Service Water Heating Summary
+                    </button>
+
+                    <div id="collapse-swh-summary" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <table class="table table-sm table-borderless" style="width: 1250px;">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th colspan="1" class="col-4"></th>
+                                        <th colspan="3" class="col-4" style="border: 2px solid black;">Proposed Water Heater</th>
+                                        <th colspan="3" class="col-4" style="border: 2px solid black;">Baseline Water Heater</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th style="border: 2px solid black;">Building Area Type</th>
+                                        <th style="border: 2px solid black;">Type</th>
+                                        <th style="border: 2px solid black;">Fuel</th>
+                                        <th style="border: 2px solid black;">Efficiency</th>
+                                        <th style="border: 2px solid black;">Type</th>
+                                        <th style="border: 2px solid black;">Fuel</th>
+                                        <th style="border: 2px solid black;">Efficiency</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border: 2px solid black;">
+        """)
+        # TODO: Does this need to support multiple water heaters per building area type?
+        # TODO: Get building area types from the model summary
+        placeholder = ['-', '-', '-']
+        for building_area_type in placeholder:
+            file.write(
+                f"""
+                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                        <td style="border-right: 2px solid black;">{building_area_type}</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td style="border-right: 2px solid black;">-</td>
+                                    </tr>
+                """
+            )
+        file.write(f"""
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3 me-4">
                     <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-internal-loads-summary" aria-expanded="false">
                         Internal Loads Summary
