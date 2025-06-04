@@ -274,7 +274,8 @@ def write_html_file(rct_detailed_report):
 
                     <div id="collapse-energy-performance-summary" class="accordion-collapse collapse">
                         <div class="accordion-body">
-                            <table class="table table-sm table-borderless" style="width: 900px; mt-2" id="energySourcePerformanceTable">
+                            <h3>Energy Performance Summary</h3>
+                            <table class="table table-sm table-borderless" style="width: 600px;" id="energySourcePerformanceTable">
                                 <thead>
                                     <tr class="text-center">
                                         <th style="border: 2px solid black;">Energy Source</th>
@@ -286,22 +287,18 @@ def write_html_file(rct_detailed_report):
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td class="align-middle">Electricity</td>
                                             <td><input type="number" class="electricitySiteSourceRatio" value="2.80" step="0.01" style="width: 60px;"></td>
-                                            <td><input type="number" class="electricityGhgEmissionFactor" value="0.37" step="0.001" style="width: 60px;"></td>
+                                            <td><input type="number" class="electricityGhgEmissionFactor" value="0.37" step="0.01" style="width: 60px;"></td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td class="align-middle">Natural Gas</td>
                                             <td><input type="number" class="naturalGasSiteSourceRatio" value="1.05" step="0.01" style="width: 60px;"></td>
-                                            <td><input type="number" class="naturalGasGhgEmissionFactor" value="0.53" step="0.001" style="width: 60px;"></td>
+                                            <td><input type="number" class="naturalGasGhgEmissionFactor" value="0.53" step="0.01" style="width: 60px;"></td>
                                     </tr>
                                 </tbody>
                             </table>
                     """
                 )
 
-        output = rct_detailed_report.rpd_data.get("output", {})
-        baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {})
-        proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get("compliance_calcs_by_parameter", {})
-        bpf = 1.0
         file.write(f"""
                             <table class="table table-sm table-borderless" style="width: 1250px;" id="energyPerformanceTable">
                                 <thead>
@@ -336,8 +333,6 @@ def write_html_file(rct_detailed_report):
                                 </thead>
                                 <tbody style="border: 2px solid black;">
         """)
-        # TODO: Condense after determining what we need for source, cost, and ghg
-        # TODO: Move above chart in Results Summary section with its own header
         proposed_energy_by_end_use = rct_detailed_report.proposed_model_summary["energy_by_end_use_eui"]
         baseline_energy_by_end_use = rct_detailed_report.baseline_model_summary["energy_by_end_use_eui"]
         end_uses = set((baseline_energy_by_end_use | proposed_energy_by_end_use).keys())
@@ -348,12 +343,19 @@ def write_html_file(rct_detailed_report):
             baseline_electricity = rct_detailed_report.baseline_model_summary["elec_by_end_use_eui"].get(end_use, 0)
             proposed_natural_gas = rct_detailed_report.proposed_model_summary["gas_by_end_use_eui"].get(end_use, 0)
             baseline_natural_gas = rct_detailed_report.baseline_model_summary["gas_by_end_use_eui"].get(end_use, 0)
+            proposed_cost = rct_detailed_report.proposed_model_summary["cost_by_end_use_eui"].get(end_use, 0)
+            baseline_cost = rct_detailed_report.baseline_model_summary["cost_by_end_use_eui"].get(end_use, 0)
             if not baseline_site_energy and not proposed_site_energy:
                 continue
             site_improvement = (
                 (baseline_site_energy - proposed_site_energy) / baseline_site_energy * 100
                 if baseline_site_energy
                 else (0 - proposed_site_energy) * 100  # Avoid division by zero
+            )
+            cost_improvement = (
+                (baseline_cost - proposed_cost) / baseline_cost * 100
+                if baseline_cost
+                else (0 - proposed_cost) * 100  # Avoid division by zero
             )
             file.write(
                 f"""
@@ -369,9 +371,9 @@ def write_html_file(rct_detailed_report):
                                         <td class="sourceEnergyProposed">-</td>
                                         <td class="sourceEnergyBaseline">-</td>
                                         <td class="sourceEnergySavings" style="border-right: 2px solid black;">-</td>
-                                        <td class="energyCostProposed">-</td>
-                                        <td class="energyCostBaseline">-</td>
-                                        <td class="energyCostSavings" style="border-right: 2px solid black;">-</td>
+                                        <td class="energyCostProposed">${round(proposed_cost):,}</td>
+                                        <td class="energyCostBaseline">${round(baseline_cost):,}</td>
+                                        <td class="energyCostSavings" style="border-right: 2px solid black;">{round(cost_improvement, 1):,}%</td>
                                         <td class="ghgEmissionsProposed">-</td>
                                         <td class="ghgEmissionsBaseline">-</td>
                                         <td class="ghgEmissionsSavings" style="border-right: 2px solid black;">-</td>
@@ -386,20 +388,20 @@ def write_html_file(rct_detailed_report):
             else (0 - proposed_site_total_energy) * 100  # Avoid division by zero
         )
         file.write(f"""
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                                    <tr style="font-size: 12px;" class="energyPerformanceTotals lh-1 text-center">
                                         <td style="border-right: 2px solid black;">Total</td>
-                                        <td>{round(proposed_site_total_energy, 1):,}</td>
-                                        <td>{round(baseline_site_total_energy, 1):,}</td>
-                                        <td style="border-right: 2px solid black;">{round(site_total_improvement, 1):,}%</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td style="border-right: 2px solid black;">-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td style="border-right: 2px solid black;">-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td class="totSiteEnergyProposed">-</td>
+                                        <td class="totSiteEnergyBaseline">-</td>
+                                        <td class="totSiteEnergySavings"style="border-right: 2px solid black;">-</td>
+                                        <td class="totSourceEnergyProposed">-</td>
+                                        <td class="totSourceEnergyBaseline">-</td>
+                                        <td class="totSourceEnergySavings" style="border-right: 2px solid black;">-</td>
+                                        <td class="totCostProposed">-</td>
+                                        <td class="totCostBaseline">-</td>
+                                        <td class="totCostSavings" style="border-right: 2px solid black;">-</td>
+                                        <td class="totGhgEmissionsProposed">-</td>
+                                        <td class="totGhgEmissionsBaseline">-</td>
+                                        <td class="totGhgEmissionsSavings" style="border-right: 2px solid black;">-</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1745,17 +1747,61 @@ def write_html_file(rct_detailed_report):
             }}
             
             function recalculateEnergyPerformanceMetrics() {{
+                let totProposedSiteEnergy = 0;
+                let totBaselineSiteEnergy = 0;
+                let totProposedSourceEnergy = 0;
+                let totBaselineSourceEnergy = 0;
+                let totProposedCost = 0;
+                let totBaselineCost = 0;
+                let totProposedGHGEmissions = 0;
+                let totBaselineGHGEmissions = 0;
+            
                 const electricitySiteSourceRatio = parseFloat(document.querySelector('.electricitySiteSourceRatio').value || 2.80);
                 const naturalGasSiteSourceRatio = parseFloat(document.querySelector('.naturalGasSiteSourceRatio').value || 1.05);
-                const electricityGHGEmissionFactor = "0.37";
-                const naturalGasGHGEmissionFactor = "0.53";
+                const electricityGHGEmissionFactor = parseFloat(document.querySelector('.electricityGhgEmissionFactor').value || 0.37);
+                const naturalGasGHGEmissionFactor = parseFloat(document.querySelector('.naturalGasGhgEmissionFactor').value || 0.53);
                 energyPerformanceRows.forEach(row => {{
-                    const getRowText = (id) => parseFloat(row.getElementsByClassName(id)[0].textContent);
-                    const setRowText = (id, value) => {{
-                        row.getElementsByClassName(id)[0].textContent = Math.round(value).toLocaleString();
+                    const getRowText = (id) => parseFloat(row.getElementsByClassName(id)[0].textContent.replace(/[^0-9]/g, ''));
+                    const setRowText = (id, value, percentile, currency) => {{
+                        if (percentile) {{
+                            row.getElementsByClassName(id)[0].textContent = value.toFixed(1).toLocaleString() + "%";
+                        }}
+                        else if (currency) {{
+                            row.getElementsByClassName(id)[0].textContent = value.toLocaleString('en-US', {{
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            }});
+                        }}
+                        else {{
+                            row.getElementsByClassName(id)[0].textContent = value.toFixed(1).toLocaleString();
+                        }} 
+                    }};
+                    if (row === energyPerformanceRows[energyPerformanceRows.length - 1]){{
+                        totSiteSavings = totBaselineSiteEnergy ? (totBaselineSiteEnergy - totProposedSiteEnergy) / totBaselineSiteEnergy * 100 : (0 - totProposedSiteEnergy) * 100;
+                        totSourceSavings = totBaselineSourceEnergy ? (totBaselineSourceEnergy - totProposedSourceEnergy) / totBaselineSourceEnergy * 100 : (0 - totProposedSourceEnergy) * 100;
+                        totCostSavings = totBaselineCost ? (totBaselineCost - totProposedCost) / totBaselineCost * 100 : (0 - totProposedCost) * 100;
+                        totGHGSavings = totBaselineGHGEmissions ? (totBaselineGHGEmissions - totProposedGHGEmissions) / totBaselineGHGEmissions * 100 : (0 - totProposedGHGEmissions) * 100;
+                        
+                        setRowText('totSiteEnergyProposed', totProposedSiteEnergy);
+                        setRowText('totSiteEnergyBaseline', totBaselineSiteEnergy);
+                        setRowText('totSiteEnergySavings', totSiteSavings, true);
+                        setRowText('totSourceEnergyProposed', totProposedSourceEnergy);
+                        setRowText('totSourceEnergyBaseline', totBaselineSourceEnergy);
+                        setRowText('totSourceEnergySavings', totSourceSavings, true);
+                        setRowText('totCostProposed', totProposedCost, false, true);
+                        setRowText('totCostBaseline', totBaselineCost, false, true);
+                        setRowText('totCostSavings', totCostSavings, true);
+                        setRowText('totGhgEmissionsProposed', totProposedGHGEmissions);
+                        setRowText('totGhgEmissionsBaseline', totBaselineGHGEmissions);
+                        setRowText('totGhgEmissionsSavings', totGHGSavings, true);
+                        return;
                     }};
                     const proposedSiteEnergy = getRowText('siteEnergyProposed');
                     const baselineSiteEnergy = getRowText('siteEnergyBaseline');
+                    const proposedCost = getRowText('energyCostProposed');
+                    const baselineCost = getRowText('energyCostBaseline');
                     
                     proposedSourceEnergy = ((getRowText('electricityProposed') * electricitySiteSourceRatio) + (getRowText('naturalGasProposed') * naturalGasSiteSourceRatio));
                     baselineSourceEnergy = ((getRowText('electricityBaseline') * electricitySiteSourceRatio) + (getRowText('naturalGasBaseline') * naturalGasSiteSourceRatio));
@@ -1770,6 +1816,15 @@ def write_html_file(rct_detailed_report):
                     setRowText('ghgEmissionsProposed', proposedGHGEmissions);
                     setRowText('ghgEmissionsBaseline', baselineGHGEmissions);
                     setRowText('ghgEmissionsSavings', ghgSavings);
+                    
+                    totProposedSiteEnergy += proposedSiteEnergy;
+                    totBaselineSiteEnergy += baselineSiteEnergy;
+                    totProposedSourceEnergy += proposedSourceEnergy;
+                    totBaselineSourceEnergy += baselineSourceEnergy;
+                    totProposedCost += proposedCost;
+                    totBaselineCost += baselineCost;
+                    totProposedGHGEmissions += proposedGHGEmissions;
+                    totBaselineGHGEmissions += baselineGHGEmissions;
                 }});
             }}
 
@@ -1842,6 +1897,10 @@ def write_html_file(rct_detailed_report):
                 
                 if (inputs.length > 0) {{
                     recalculateEnergyMetrics();
+                }}
+                
+                if (energyPerformanceInputs.length > 0) {{
+                    recalculateEnergyPerformanceMetrics();
                 }}
                 
                 calculateSubtotals();
