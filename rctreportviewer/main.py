@@ -222,11 +222,16 @@ class RCTDetailedReport:
             "schedule_summaries": {},
             "boiler_loops": [],
             "chw_loops": [],
+            "service_water_heating_equipment": rmd_data.get("service_water_heating_equipment", []),
+            "water_heaters_data": [],
+            "service_water_heating_uses": rmd_data.get("service_water_heating_uses", []),
         }
 
         output = rmd_data.get("output")
         if output is not None:
             self.summarize_output_data(output, rmd_building_summary)
+
+        self.summarize_swh_data(rmd_building_summary)
 
         for chiller in rmd_data.get("chillers", []):
             condensing_loop = chiller.get("condensing_loop")
@@ -374,6 +379,16 @@ class RCTDetailedReport:
                 )
             )
 
+            # Add HVAC system area types to the swh data summaries
+            swh_area_type = building_segment.get("service_water_heating_area_type")
+            for use in building_segment.get("service_water_heating_uses", []):
+                if not swh_area_type:
+                    break
+                for water_heater in rmd_building_summary.get("water_heaters_data", []):
+                    use_in_water_heater = any(uses['id'] == use for uses in water_heater["uses"])
+                    if use_in_water_heater and swh_area_type not in water_heater["area_types"]:
+                        water_heater["area_types"].append(swh_area_type)
+
             self.summarize_rmd_zone_data(building_segment, rmd_building_summary)
 
             self.summarize_rmd_system_data(building_segment, rmd_building_summary)
@@ -427,6 +442,16 @@ class RCTDetailedReport:
             rmd_building_summary["occ_peak_internal_gain_by_schedule"][sch] += occupancy_gain
 
         for space in zone.get("spaces", []):
+            # Add water heater area types to water heaters by spaces
+            swh_area_type = space.get("service_water_heating_area_type")
+            for use in space.get("service_water_heating_uses", []):
+                if not swh_area_type:
+                    break
+                for water_heater in rmd_building_summary.get("water_heaters_data", []):
+                    use_in_water_heater = any(uses['id'] == use for uses in water_heater["uses"])
+                    if use_in_water_heater and swh_area_type not in water_heater["area_types"]:
+                        water_heater["area_types"].append(swh_area_type)
+
             schedule_areas_added = []
             if "floor_area" in space:
                 rmd_building_summary[
@@ -636,6 +661,39 @@ class RCTDetailedReport:
                     if not uses_external_source:
                         cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
                         cooling_capacity_data["Total"] += cooling_capacity
+
+    @staticmethod
+    def summarize_swh_data(rmd_building_summary):
+        use_by_distribution_system = {}
+        for use in rmd_building_summary.get("service_water_heating_uses", []):
+            distribution_system = use.get("served_by_distribution_system")
+            if distribution_system in use_by_distribution_system and (
+                use not in use_by_distribution_system[distribution_system]
+            ):
+                use_by_distribution_system[distribution_system].append(use)
+            else:
+                use_by_distribution_system[distribution_system] = [use]
+
+        for water_heater in rmd_building_summary.get("service_water_heating_equipment", []):
+            def concatenate_efficiency_metrics():
+                if water_heater.get("efficiency_metric_types") and water_heater.get("efficiency_metric_values"):
+                    rounded_efficiency_values = [round(x, 1) for x in water_heater["efficiency_metric_values"]]
+                    return "\n".join(
+                        f"{metric_type}: {metric_value}"
+                        for metric_type, metric_value in zip(
+                            water_heater["efficiency_metric_types"],
+                            rounded_efficiency_values
+                        )
+                    )
+                return ""
+
+            water_heater_data = {"id": water_heater.get("id"),
+                                 "distribution_system": water_heater.get("distribution_system"),
+                                 "uses": use_by_distribution_system.get(water_heater.get("distribution_system"), []),
+                                 "area_types": [],
+                                 "fuel_type": water_heater.get("heater_fuel_type"),
+                                 "efficiency": concatenate_efficiency_metrics()}
+            rmd_building_summary["water_heaters_data"].append(water_heater_data)
 
     @staticmethod
     def summarize_rmd_surface_data(building_segment, zone, rmd_building_summary):

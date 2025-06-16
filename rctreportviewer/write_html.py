@@ -283,34 +283,63 @@ def write_html_file(rct_detailed_report):
                                         <th colspan="3" class="col-4" style="border: 2px solid black;">Baseline Water Heater</th>
                                     </tr>
                                     <tr class="text-center">
-                                        <th style="border: 2px solid black;">Building Area Type</th>
-                                        <th style="border: 2px solid black;">Type</th>
+                                        <th style="border: 2px solid black;">Water Heater</th>
+                                        <th style="border: 2px solid black;">Area Type</th>
                                         <th style="border: 2px solid black;">Fuel</th>
                                         <th style="border: 2px solid black;">Efficiency</th>
-                                        <th style="border: 2px solid black;">Type</th>
+                                        <th style="border: 2px solid black;">Area Type</th>
                                         <th style="border: 2px solid black;">Fuel</th>
                                         <th style="border: 2px solid black;">Efficiency</th>
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
         """)
-        # TODO: Does this need to support multiple water heaters per building area type?
-        # TODO: Get building area types from the model summary
-        placeholder = ['-', '-', '-']
-        for building_area_type in placeholder:
-            file.write(
-                f"""
+        proposed_water_heaters = rct_detailed_report.proposed_model_summary.get("water_heaters_data", [])
+        baseline_water_heaters = rct_detailed_report.baseline_model_summary.get("water_heaters_data", [])
+        combined_water_heaters = set(
+            wh["id"] for wh in proposed_water_heaters + baseline_water_heaters
+        )
+        for water_heater in combined_water_heaters:
+            def get_combined_area_types():
+                areas = []
+                for wh in proposed_water_heaters + baseline_water_heaters:
+                    if wh['id'] == water_heater:
+                        areas.append(wh.get("area_types", []))
+                return set(area for sublist in areas for area in sublist)
+
+            for area_type in get_combined_area_types():
+                proposed_wh = next((pwh for pwh in proposed_water_heaters if pwh['id'] == water_heater), None)
+                proposed_area_type = "-"
+                proposed_fuel = "-"
+                proposed_efficiency = "-"
+                if proposed_wh and area_type in proposed_wh.get("area_types", []):
+                    proposed_area_type = area_type
+                    proposed_fuel = proposed_wh.get("fuel_type", "-")
+                    proposed_efficiency = proposed_wh.get("efficiency", "-")
+
+                baseline_wh = next((bwh for bwh in baseline_water_heaters if bwh['id'] == water_heater), None)
+                baseline_area_type = "-"
+                baseline_fuel = "-"
+                baseline_efficiency = "-"
+                if baseline_wh and area_type in baseline_wh.get("area_types", []):
+                    baseline_area_type = area_type
+                    baseline_fuel = baseline_wh.get("fuel_type", "-")
+                    baseline_efficiency = baseline_wh.get("efficiency", "-")
+
+                file.write(
+                    f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
-                                        <td style="border-right: 2px solid black;">{building_area_type}</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td style="border-right: 2px solid black;">-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td style="border-right: 2px solid black;">-</td>
+                                        <td style="border-right: 2px solid black;">{water_heater}</td>
+                                        <td>{proposed_area_type.replace("_", " ").title()}</td>
+                                        <td>{proposed_fuel.replace("_", " ").title()}</td>
+                                        <td style="border-right: 2px solid black;">{proposed_efficiency.replace("_", " ").title()}</td>
+                                        <td>{baseline_area_type.replace("_", " ").title()}</td>
+                                        <td>{baseline_fuel.replace("_", " ").title()}</td>
+                                        <td style="border-right: 2px solid black;">{baseline_efficiency.replace("_", " ").title()}</td>
                                     </tr>
-                """
-            )
+                    """
+                )
+
         file.write(f"""
                                 </tbody>
                             </table>
