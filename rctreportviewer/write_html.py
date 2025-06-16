@@ -1429,7 +1429,8 @@ def write_html_file(rct_detailed_report):
                     for x in system_summary["heating_efficiency_metric_values"]
                 )
                 efficiency_types = ", ".join(
-                    system_summary["heating_efficiency_metric_types"]
+                    efficiency_display_map.get(metric, metric)
+                    for metric in system_summary["heating_efficiency_metric_types"]
                 )
                 file.write(
                     f"""
@@ -1458,7 +1459,8 @@ def write_html_file(rct_detailed_report):
                     for x in system_summary["cooling_efficiency_metric_values"]
                 )
                 efficiency_types = ", ".join(
-                    system_summary["cooling_efficiency_metric_types"]
+                    efficiency_display_map.get(metric, metric)
+                    for metric in system_summary["cooling_efficiency_metric_types"]
                 )
                 file.write(
                     f"""
