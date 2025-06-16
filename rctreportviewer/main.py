@@ -33,14 +33,14 @@ class RCTDetailedReport:
         "PROPANE": "Fossil Fuel",
         "FUEL_OIL": "Fossil Fuel",
         "STEAM": "Fossil Fuel",
-        "OTHER": "Other"
+        "OTHER": "Other",
     }
 
     def __init__(
-            self,
-            detailed_evaluation_report_file_path: str,
-            rpd_file_paths: list[str],
-            output_file_path: str = "report.html",
+        self,
+        detailed_evaluation_report_file_path: str,
+        rpd_file_paths: list[str],
+        output_file_path: str = "report.html",
     ):
         """
         Args:
@@ -97,23 +97,17 @@ class RCTDetailedReport:
     def determine_fan_power(fan):
         if "design_electric_power" in fan:
             return fan["design_electric_power"]
+        elif "shaft_power" in fan and "motor_efficiency" in fan:
+            return fan["shaft_power"] / fan["motor_efficiency"]
         elif (
-                "shaft_power" in fan
-                and "motor_efficiency" in fan
+            "total_efficiency" in fan
+            and "design_pressure_rise" in fan
+            and "design_airflow" in fan
         ):
             return (
-                    fan["shaft_power"]
-                    / fan["motor_efficiency"]
-            )
-        elif (
-                "total_efficiency" in fan
-                and "design_pressure_rise" in fan
-                and "design_airflow" in fan
-        ):
-            return (
-                    fan["design_airflow"]
-                    * fan["design_pressure_rise"]
-                    / fan["total_efficiency"]
+                fan["design_airflow"]
+                * fan["design_pressure_rise"]
+                / fan["total_efficiency"]
             )
 
     @staticmethod
@@ -121,18 +115,15 @@ class RCTDetailedReport:
         if "design_electric_power" in pump:
             return pump["design_electric_power"]
         elif (
-                "design_flow" in pump
-                and "design_head" in pump
-                and "impeller_efficiency" in pump
-                and "motor_efficiency" in pump
+            "design_flow" in pump
+            and "design_head" in pump
+            and "impeller_efficiency" in pump
+            and "motor_efficiency" in pump
         ):
             return (
-                    pump["design_flow"]
-                    * pump["design_head"]
-                    / (
-                            pump["impeller_efficiency"]
-                            * pump["motor_efficiency"]
-                    )
+                pump["design_flow"]
+                * pump["design_head"]
+                / (pump["impeller_efficiency"] * pump["motor_efficiency"])
             )
 
     def summarize_rmd_data(self, rmd_data, model_type):
@@ -159,8 +150,10 @@ class RCTDetailedReport:
             "design_flow_by_loop_id": {},
             "heat_rejection_count": len(rmd_data.get("heat_rejections", [])),
             "pump_count": len(rmd_data.get("pumps", [])),
-            "fluid_loop_types": {proposed_fluid_loop.get("type") for proposed_fluid_loop in
-                                 rmd_data.get("fluid_loops", [])},
+            "fluid_loop_types": {
+                proposed_fluid_loop.get("type")
+                for proposed_fluid_loop in rmd_data.get("fluid_loops", [])
+            },
             "heating_capacity_by_fuel_type": {},
             "cooling_capacity_by_fuel_type": {},
             "external_fluid_sources": rmd_data.get("external_fluid_sources", []),
@@ -235,7 +228,9 @@ class RCTDetailedReport:
                 for heat_rejection in rmd_data.get("heat_rejections", []):
                     if heat_rejection.get("loop") == condensing_loop:
                         cooling_towers.append(heat_rejection)
-            self.summarize_cooling_plant_data(chiller, cooling_towers, rmd_building_summary)
+            self.summarize_cooling_plant_data(
+                chiller, cooling_towers, rmd_building_summary
+            )
 
         for boiler in rmd_data.get("boilers", []):
             self.summarize_heating_plant_data(boiler, rmd_building_summary)
@@ -251,7 +246,9 @@ class RCTDetailedReport:
             pump_power = self.determine_pump_power(pump)
             if pump_power:
                 rmd_building_summary["total_pump_power"] += pump_power
-                rmd_building_summary[pump.get("loop_or_piping", "Undefined")] = pump_power
+                rmd_building_summary[
+                    pump.get("loop_or_piping", "Undefined")
+                ] = pump_power
 
         for schedule in rmd_data.get("schedules", []):
             # Skip temperature schedules
@@ -266,7 +263,9 @@ class RCTDetailedReport:
 
     def summarize_schedule_data(self, schedule, rmd_building_summary):
         schedule_id = schedule.get("id")
-        schedule_area = rmd_building_summary.get("floor_area_by_schedule", {}).get(schedule_id)
+        schedule_area = rmd_building_summary.get("floor_area_by_schedule", {}).get(
+            schedule_id
+        )
 
         # If the schedule area is not defined, skip summarizing this schedule
         if not schedule_area:
@@ -275,14 +274,30 @@ class RCTDetailedReport:
         rmd_building_summary["schedule_summaries"][schedule_id] = {
             "EFLH": sum(schedule.get("hourly_values", [])),
             "associated_floor_area": schedule_area,
-            "percent_total_lighting_power": (rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) /
-                                             rmd_building_summary.get("total_lighting_power", 1.0)) * 100,
-            "percent_total_equipment_power": (rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) /
-                                              rmd_building_summary.get("total_equipment_power", 1.0)) * 100,
+            "percent_total_lighting_power": (
+                rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(
+                    schedule_id, 0.0
+                )
+                / rmd_building_summary.get("total_lighting_power", 1.0)
+            )
+            * 100,
+            "percent_total_equipment_power": (
+                rmd_building_summary.get("equip_power_by_schedule", {}).get(
+                    schedule_id, 0.0
+                )
+                / rmd_building_summary.get("total_equipment_power", 1.0)
+            )
+            * 100,
             "associated_peak_internal_gain": (
-                rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(schedule_id, 0.0) +
-                rmd_building_summary.get("equip_power_by_schedule", {}).get(schedule_id, 0.0) +
-                rmd_building_summary.get("occ_peak_internal_gain_by_schedule", {}).get(schedule_id, 0.0)
+                rmd_building_summary.get("int_ltg_power_by_schedule", {}).get(
+                    schedule_id, 0.0
+                )
+                + rmd_building_summary.get("equip_power_by_schedule", {}).get(
+                    schedule_id, 0.0
+                )
+                + rmd_building_summary.get(
+                    "occ_peak_internal_gain_by_schedule", {}
+                ).get(schedule_id, 0.0)
             ),
         }
 
@@ -297,11 +312,21 @@ class RCTDetailedReport:
                 "unmet_cooling_hours", 0
             )
 
-            bbp_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("bbp", {})
-            bbuec_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("bbuec", {})
-            bbrec_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("bbrec", {})
-            pbp_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("pbp", {})
-            pbp_nre_summary = rmd_building_summary["compliance_calcs_by_parameter"].get("pbp_nre", {})
+            bbp_summary = rmd_building_summary["compliance_calcs_by_parameter"].get(
+                "bbp", {}
+            )
+            bbuec_summary = rmd_building_summary["compliance_calcs_by_parameter"].get(
+                "bbuec", {}
+            )
+            bbrec_summary = rmd_building_summary["compliance_calcs_by_parameter"].get(
+                "bbrec", {}
+            )
+            pbp_summary = rmd_building_summary["compliance_calcs_by_parameter"].get(
+                "pbp", {}
+            )
+            pbp_nre_summary = rmd_building_summary["compliance_calcs_by_parameter"].get(
+                "pbp_nre", {}
+            )
 
             source_results = output_instance.get("annual_source_results", [])
             for source_result in source_results:
@@ -309,14 +334,19 @@ class RCTDetailedReport:
 
                 annual_consumption = source_result.get("annual_consumption", 0)
                 rmd_building_summary["total_energy"] += annual_consumption
-                rmd_building_summary["total_cost"] += source_result.get("annual_cost", 0)
+                rmd_building_summary["total_cost"] += source_result.get(
+                    "annual_cost", 0
+                )
                 rmd_building_summary["energy_by_fuel_type"][source] = (
                     rmd_building_summary["energy_by_fuel_type"].get(source, 0)
                     + annual_consumption
                 )
-                rmd_building_summary["cost_by_fuel_type"][source] = (
-                    rmd_building_summary["cost_by_fuel_type"].get(source, 0)
-                    + source_result.get("annual_cost", 0)
+                rmd_building_summary["cost_by_fuel_type"][
+                    source
+                ] = rmd_building_summary["cost_by_fuel_type"].get(
+                    source, 0
+                ) + source_result.get(
+                    "annual_cost", 0
                 )
 
             end_use_results = output_instance.get("annual_end_use_results", [])
@@ -326,14 +356,26 @@ class RCTDetailedReport:
                 energy_use = end_use.get("annual_site_energy_use", 0)
 
                 if end_use.get("is_regulated"):
-                    bbrec_summary["site_energy"] = bbrec_summary.get("site_energy", 0) + energy_use
-                    bbrec_summary[end_use.get("energy_source")] = bbrec_summary.get(end_use.get("energy_source"), 0) + (energy_use / 1000000)
+                    bbrec_summary["site_energy"] = (
+                        bbrec_summary.get("site_energy", 0) + energy_use
+                    )
+                    bbrec_summary[end_use.get("energy_source")] = bbrec_summary.get(
+                        end_use.get("energy_source"), 0
+                    ) + (energy_use / 1000000)
                 else:
-                    bbuec_summary["site_energy"] = bbuec_summary.get("site_energy", 0) + energy_use
-                    bbuec_summary[end_use.get("energy_source")] = bbuec_summary.get(end_use.get("energy_source"), 0) + (energy_use / 1000000)
+                    bbuec_summary["site_energy"] = (
+                        bbuec_summary.get("site_energy", 0) + energy_use
+                    )
+                    bbuec_summary[end_use.get("energy_source")] = bbuec_summary.get(
+                        end_use.get("energy_source"), 0
+                    ) + (energy_use / 1000000)
 
-                bbp_summary["site_energy"] = bbp_summary.get("site_energy", 0) + energy_use
-                pbp_nre_summary["site_energy"] = pbp_nre_summary.get("site_energy", 0) + energy_use
+                bbp_summary["site_energy"] = (
+                    bbp_summary.get("site_energy", 0) + energy_use
+                )
+                pbp_nre_summary["site_energy"] = (
+                    pbp_nre_summary.get("site_energy", 0) + energy_use
+                )
                 rmd_building_summary["total_energy"] += energy_use
                 rmd_building_summary["energy_by_end_use"][end_use_name] = (
                     rmd_building_summary["energy_by_end_use"].get(end_use_name, 0)
@@ -354,54 +396,59 @@ class RCTDetailedReport:
 
             # Update compliance calculations dictionary with new values
             if rmd_building_summary["rmd_type"] == "Baseline":
-                rmd_building_summary["compliance_calcs_by_parameter"]["bbp"] = bbp_summary
-                rmd_building_summary["compliance_calcs_by_parameter"]["bbuec"] = bbuec_summary
-                rmd_building_summary["compliance_calcs_by_parameter"]["bbrec"] = bbrec_summary
+                rmd_building_summary["compliance_calcs_by_parameter"][
+                    "bbp"
+                ] = bbp_summary
+                rmd_building_summary["compliance_calcs_by_parameter"][
+                    "bbuec"
+                ] = bbuec_summary
+                rmd_building_summary["compliance_calcs_by_parameter"][
+                    "bbrec"
+                ] = bbrec_summary
             elif rmd_building_summary["rmd_type"] == "Proposed":
-                rmd_building_summary["compliance_calcs_by_parameter"]["pbp"] = pbp_summary
-                rmd_building_summary["compliance_calcs_by_parameter"]["pbp_nre"] = pbp_nre_summary
+                rmd_building_summary["compliance_calcs_by_parameter"][
+                    "pbp"
+                ] = pbp_summary
+                rmd_building_summary["compliance_calcs_by_parameter"][
+                    "pbp_nre"
+                ] = pbp_nre_summary
 
     def summarize_building_segment_data(self, building, rmd_building_summary):
-        for building_segment in building.get(
-                "building_segments", []
-        ):
-            rmd_building_summary["zone_count"] += len(
-                building_segment.get("zones", [])
-            )
+        for building_segment in building.get("building_segments", []):
+            rmd_building_summary["zone_count"] += len(building_segment.get("zones", []))
             rmd_building_summary["system_count"] += len(
-                building_segment.get(
-                    "heating_ventilating_air_conditioning_systems", []
-                )
+                building_segment.get("heating_ventilating_air_conditioning_systems", [])
             )
 
             self.summarize_rmd_zone_data(building_segment, rmd_building_summary)
 
             self.summarize_rmd_system_data(building_segment, rmd_building_summary)
 
-            self.summarize_heating_cooling_capacity_data(building_segment, rmd_building_summary)
+            self.summarize_heating_cooling_capacity_data(
+                building_segment, rmd_building_summary
+            )
 
     def summarize_rmd_zone_data(self, building_segment, rmd_building_summary):
         for zone in building_segment.get("zones", []):
-            rmd_building_summary["space_count"] += len(
-                zone.get("spaces", [])
-            )
+            rmd_building_summary["space_count"] += len(zone.get("spaces", []))
 
             infiltration = zone.get("infiltration")
             if infiltration and "flow_rate" in infiltration:
-                rmd_building_summary[
-                    "total_infiltration"
-                ] += infiltration["flow_rate"]
+                rmd_building_summary["total_infiltration"] += infiltration["flow_rate"]
 
             zonal_exhaust_fan = zone.get("zonal_exhaust_fan")
             if zonal_exhaust_fan:
                 fan_power = self.determine_fan_power(zonal_exhaust_fan)
                 if fan_power:
-                    if "Undefined" not in rmd_building_summary[
-                        "total_fan_power_by_fan_control_by_fan_type"
-                    ]:
-                        rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
-                            "Undefined"
-                        ] = {
+                    if (
+                        "Undefined"
+                        not in rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ]
+                    ):
+                        rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ]["Undefined"] = {
                             "Supply": 0,
                             "Return/Relief": 0,
                             "Exhaust": 0,
@@ -409,12 +456,16 @@ class RCTDetailedReport:
                             "Terminal Unit": 0,
                         }
 
-                    rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"]["Undefined"]["Zonal Exhaust"] += fan_power
+                    rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
+                        "Undefined"
+                    ]["Zonal Exhaust"] += fan_power
                     rmd_building_summary["total_fan_power"] += fan_power
 
             self.summarize_rmd_space_data(building_segment, zone, rmd_building_summary)
 
-            self.summarize_rmd_surface_data(building_segment, zone, rmd_building_summary)
+            self.summarize_rmd_surface_data(
+                building_segment, zone, rmd_building_summary
+            )
 
             self.summarize_rmd_terminal_data(zone, rmd_building_summary)
 
@@ -423,70 +474,68 @@ class RCTDetailedReport:
             """Calculate the occupant internal heat gain for a space."""
             sensible_gain = spc.get("occupant_sensible_heat_gain", 0.0)
             latent_gain = spc.get("occupant_latent_heat_gain", 0.0)
-            occupancy_gain = (sensible_gain + latent_gain) * spc.get("number_of_occupants", 0)
-            rmd_building_summary["occ_peak_internal_gain_by_schedule"][sch] += occupancy_gain
+            occupancy_gain = (sensible_gain + latent_gain) * spc.get(
+                "number_of_occupants", 0
+            )
+            rmd_building_summary["occ_peak_internal_gain_by_schedule"][
+                sch
+            ] += occupancy_gain
 
         for space in zone.get("spaces", []):
             schedule_areas_added = []
             if "floor_area" in space:
-                rmd_building_summary[
-                    "total_floor_area"
-                ] += space["floor_area"]
-                rmd_building_summary[
-                    "total_floor_area_by_building_segment"
-                ][building_segment["id"]] = (
-                        rmd_building_summary[
-                            "total_floor_area_by_building_segment"
-                        ].get(building_segment["id"], 0)
-                        + space["floor_area"]
+                rmd_building_summary["total_floor_area"] += space["floor_area"]
+                rmd_building_summary["total_floor_area_by_building_segment"][
+                    building_segment["id"]
+                ] = (
+                    rmd_building_summary["total_floor_area_by_building_segment"].get(
+                        building_segment["id"], 0
+                    )
+                    + space["floor_area"]
                 )
-                self.space_areas[space["id"]] = space[
-                    "floor_area"
-                ]
-            if "lighting_space_type" in space and rmd_building_summary["rmd_type"] == "Baseline":
+                self.space_areas[space["id"]] = space["floor_area"]
+            if (
+                "lighting_space_type" in space
+                and rmd_building_summary["rmd_type"] == "Baseline"
+            ):
                 self.baseline_space_space_types[space["id"]] = space[
                     "lighting_space_type"
                 ]
             if "number_of_occupants" in space:
-                rmd_building_summary[
-                    "total_occupants"
-                ] += space["number_of_occupants"]
+                rmd_building_summary["total_occupants"] += space["number_of_occupants"]
                 if "lighting_space_type" in space:
-                    rmd_building_summary[
-                        "total_occupants_by_space_type"
-                    ][space["lighting_space_type"]] = (
-                            rmd_building_summary[
-                                "total_occupants_by_space_type"
-                            ].get(space["lighting_space_type"], 0)
-                            + space.get("number_of_occupants", 0)
+                    rmd_building_summary["total_occupants_by_space_type"][
+                        space["lighting_space_type"]
+                    ] = rmd_building_summary["total_occupants_by_space_type"].get(
+                        space["lighting_space_type"], 0
+                    ) + space.get(
+                        "number_of_occupants", 0
                     )
 
             for interior_lighting in space.get(
-                    "interior_lighting", [{"power_per_area": 0}]
+                "interior_lighting", [{"power_per_area": 0}]
             ):
-                if (
-                        "power_per_area" in interior_lighting
-                        and "floor_area" in space
-                ):
-                    int_ltg_power = interior_lighting["power_per_area"] * space["floor_area"]
+                if "power_per_area" in interior_lighting and "floor_area" in space:
+                    int_ltg_power = (
+                        interior_lighting["power_per_area"] * space["floor_area"]
+                    )
                     rmd_building_summary["total_lighting_power"] += int_ltg_power
                     if "lighting_space_type" in space:
-                        rmd_building_summary[
-                            "total_floor_area_by_space_type"
-                        ][space["lighting_space_type"]] = (
-                                rmd_building_summary[
-                                    "total_floor_area_by_space_type"
-                                ].get(space["lighting_space_type"], 0)
-                                + space["floor_area"]
+                        rmd_building_summary["total_floor_area_by_space_type"][
+                            space["lighting_space_type"]
+                        ] = (
+                            rmd_building_summary["total_floor_area_by_space_type"].get(
+                                space["lighting_space_type"], 0
+                            )
+                            + space["floor_area"]
                         )
-                        rmd_building_summary[
-                            "total_lighting_power_by_space_type"
-                        ][space["lighting_space_type"]] = (
-                                rmd_building_summary[
-                                    "total_lighting_power_by_space_type"
-                                ].get(space["lighting_space_type"], 0)
-                                + interior_lighting["power_per_area"]
-                                * space["floor_area"]
+                        rmd_building_summary["total_lighting_power_by_space_type"][
+                            space["lighting_space_type"]
+                        ] = (
+                            rmd_building_summary[
+                                "total_lighting_power_by_space_type"
+                            ].get(space["lighting_space_type"], 0)
+                            + interior_lighting["power_per_area"] * space["floor_area"]
                         )
 
                     # Save lighting schedule data
@@ -494,23 +543,24 @@ class RCTDetailedReport:
                     for dictionary in [
                         rmd_building_summary["int_ltg_power_by_schedule"],
                         rmd_building_summary["floor_area_by_schedule"],
-                        rmd_building_summary["occ_peak_internal_gain_by_schedule"]
+                        rmd_building_summary["occ_peak_internal_gain_by_schedule"],
                     ]:
                         if schedule and schedule not in dictionary:
                             dictionary[schedule] = 0.0
-                    rmd_building_summary["int_ltg_power_by_schedule"][schedule] += int_ltg_power
+                    rmd_building_summary["int_ltg_power_by_schedule"][
+                        schedule
+                    ] += int_ltg_power
                     if schedule not in schedule_areas_added:
-                        rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                        rmd_building_summary["floor_area_by_schedule"][
+                            schedule
+                        ] += space["floor_area"]
                         schedule_areas_added.append(schedule)
                     add_internal_gain_from_occupancy(space, schedule)
 
             for miscellaneous_equipment in space.get(
-                    "miscellaneous_equipment", [{"power": 0}]
+                "miscellaneous_equipment", [{"power": 0}]
             ):
-                if (
-                        "power" in miscellaneous_equipment
-                        and "floor_area" in space
-                ):
+                if "power" in miscellaneous_equipment and "floor_area" in space:
                     rmd_building_summary[
                         "total_equipment_power"
                     ] += miscellaneous_equipment["power"]
@@ -518,10 +568,10 @@ class RCTDetailedReport:
                         rmd_building_summary[
                             "total_miscellaneous_equipment_power_by_space_type"
                         ][space["lighting_space_type"]] = (
-                                rmd_building_summary[
-                                    "total_miscellaneous_equipment_power_by_space_type"
-                                ].get(space["lighting_space_type"], 0)
-                                + miscellaneous_equipment["power"]
+                            rmd_building_summary[
+                                "total_miscellaneous_equipment_power_by_space_type"
+                            ].get(space["lighting_space_type"], 0)
+                            + miscellaneous_equipment["power"]
                         )
 
                     # Save equipment schedule data
@@ -529,13 +579,17 @@ class RCTDetailedReport:
                     for dictionary in [
                         rmd_building_summary["equip_power_by_schedule"],
                         rmd_building_summary["floor_area_by_schedule"],
-                        rmd_building_summary["occ_peak_internal_gain_by_schedule"]
+                        rmd_building_summary["occ_peak_internal_gain_by_schedule"],
                     ]:
                         if schedule and schedule not in dictionary:
                             dictionary[schedule] = 0.0
-                    rmd_building_summary["equip_power_by_schedule"][schedule] += miscellaneous_equipment["power"]
+                    rmd_building_summary["equip_power_by_schedule"][
+                        schedule
+                    ] += miscellaneous_equipment["power"]
                     if schedule not in schedule_areas_added:
-                        rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                        rmd_building_summary["floor_area_by_schedule"][
+                            schedule
+                        ] += space["floor_area"]
                         schedule_areas_added.append(schedule)
                     add_internal_gain_from_occupancy(space, schedule)
 
@@ -544,16 +598,20 @@ class RCTDetailedReport:
                 schedule = space["occupant_multiplier_schedule"]
                 for dictionary in [
                     rmd_building_summary["floor_area_by_schedule"],
-                    rmd_building_summary["occ_peak_internal_gain_by_schedule"]
+                    rmd_building_summary["occ_peak_internal_gain_by_schedule"],
                 ]:
                     if schedule and schedule not in dictionary:
                         dictionary[schedule] = 0.0
                 if schedule not in schedule_areas_added:
-                    rmd_building_summary["floor_area_by_schedule"][schedule] += space["floor_area"]
+                    rmd_building_summary["floor_area_by_schedule"][schedule] += space[
+                        "floor_area"
+                    ]
                     schedule_areas_added.append(schedule)
                 add_internal_gain_from_occupancy(space, schedule)
 
-    def summarize_heating_cooling_capacity_data(self, building_segment, rmd_building_summary):
+    def summarize_heating_cooling_capacity_data(
+        self, building_segment, rmd_building_summary
+    ):
         def get_external_fluid_source_capacity(loop, is_heating):
             for fluid_source in external_fluid_sources:
                 if loop == fluid_source.get("loop"):
@@ -584,11 +642,17 @@ class RCTDetailedReport:
                 cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
                 cooling_capacity_data["Total"] += cooling_capacity
 
-        heating_capacity_data = rmd_building_summary.get("heating_capacity_by_fuel_type")
-        cooling_capacity_data = rmd_building_summary.get("cooling_capacity_by_fuel_type")
+        heating_capacity_data = rmd_building_summary.get(
+            "heating_capacity_by_fuel_type"
+        )
+        cooling_capacity_data = rmd_building_summary.get(
+            "cooling_capacity_by_fuel_type"
+        )
         external_fluid_sources = rmd_building_summary.get("external_fluid_sources", [])
 
-        for hvac_system in building_segment.get("heating_ventilating_air_conditioning_systems", []):
+        for hvac_system in building_segment.get(
+            "heating_ventilating_air_conditioning_systems", []
+        ):
             # Heating systems
             heating_system = hvac_system.get("heating_system")
             if heating_system:
@@ -611,7 +675,9 @@ class RCTDetailedReport:
                         cooling_capacity_data["Electricity"] = 0.0
                     if "Total" not in cooling_capacity_data:
                         cooling_capacity_data["Total"] = 0.0
-                    design_total_cool_capacity = cooling_system.get("design_total_cool_capacity", 0.0)
+                    design_total_cool_capacity = cooling_system.get(
+                        "design_total_cool_capacity", 0.0
+                    )
                     cooling_capacity_data["Electricity"] += design_total_cool_capacity
                     cooling_capacity_data["Total"] += design_total_cool_capacity
 
@@ -626,155 +692,148 @@ class RCTDetailedReport:
                 chilled_water_loop = terminal.get("cooling_from_loop")
 
                 if heating_capacity and heating_loop:
-                    uses_external_source = get_external_fluid_source_capacity(heating_loop, True)
+                    uses_external_source = get_external_fluid_source_capacity(
+                        heating_loop, True
+                    )
                     if not uses_external_source:
-                        heating_capacity_data["On-site Boiler Plant"] += heating_capacity
+                        heating_capacity_data[
+                            "On-site Boiler Plant"
+                        ] += heating_capacity
                         heating_capacity_data["Total"] += heating_capacity
 
                 if cooling_capacity and chilled_water_loop:
-                    uses_external_source = get_external_fluid_source_capacity(chilled_water_loop, False)
+                    uses_external_source = get_external_fluid_source_capacity(
+                        chilled_water_loop, False
+                    )
                     if not uses_external_source:
-                        cooling_capacity_data["On-site Chiller Plant"] += cooling_capacity
+                        cooling_capacity_data[
+                            "On-site Chiller Plant"
+                        ] += cooling_capacity
                         cooling_capacity_data["Total"] += cooling_capacity
 
     @staticmethod
     def summarize_rmd_surface_data(building_segment, zone, rmd_building_summary):
         for surface in zone.get("surfaces", []):
             if (
-                    surface.get("classification") == "WALL"
-                    and surface.get("adjacent_to") == "EXTERIOR"
+                surface.get("classification") == "WALL"
+                and surface.get("adjacent_to") == "EXTERIOR"
             ):
                 if "area" in surface:
-                    rmd_building_summary[
-                        "total_exterior_wall_area"
-                    ] += surface["area"]
-                    rmd_building_summary[
-                        "total_wall_area_by_building_segment"
-                    ][building_segment["id"]] = (
-                            rmd_building_summary[
-                                "total_wall_area_by_building_segment"
-                            ].get(building_segment["id"], 0)
-                            + surface["area"]
+                    rmd_building_summary["total_exterior_wall_area"] += surface["area"]
+                    rmd_building_summary["total_wall_area_by_building_segment"][
+                        building_segment["id"]
+                    ] = (
+                        rmd_building_summary["total_wall_area_by_building_segment"].get(
+                            building_segment["id"], 0
+                        )
+                        + surface["area"]
                     )
                 construction = surface.get("construction")
-                if (
-                        construction
-                        and "u_factor" in construction
-                ):
-                    rmd_building_summary[
-                        "overall_wall_ua_by_building_segment"
-                    ][building_segment["id"]] = (
-                            rmd_building_summary[
-                                "overall_wall_ua_by_building_segment"
-                            ].get(building_segment["id"], 0)
-                            + construction["u_factor"]
-                            * surface["area"]
+                if construction and "u_factor" in construction:
+                    rmd_building_summary["overall_wall_ua_by_building_segment"][
+                        building_segment["id"]
+                    ] = (
+                        rmd_building_summary["overall_wall_ua_by_building_segment"].get(
+                            building_segment["id"], 0
+                        )
+                        + construction["u_factor"] * surface["area"]
                     )
             if (
-                    surface.get("classification") == "CEILING"
-                    and surface.get("adjacent_to") == "EXTERIOR"
+                surface.get("classification") == "CEILING"
+                and surface.get("adjacent_to") == "EXTERIOR"
             ):
                 if "area" in surface:
-                    rmd_building_summary[
-                        "total_roof_area"
-                    ] += surface["area"]
-                    rmd_building_summary[
-                        "total_roof_area_by_building_segment"
-                    ][building_segment["id"]] = (
-                            rmd_building_summary[
-                                "total_roof_area_by_building_segment"
-                            ].get(building_segment["id"], 0)
-                            + surface["area"]
+                    rmd_building_summary["total_roof_area"] += surface["area"]
+                    rmd_building_summary["total_roof_area_by_building_segment"][
+                        building_segment["id"]
+                    ] = (
+                        rmd_building_summary["total_roof_area_by_building_segment"].get(
+                            building_segment["id"], 0
+                        )
+                        + surface["area"]
                     )
                 construction = surface.get("construction")
-                if (
-                        construction
-                        and "u_factor" in construction
-                ):
-                    rmd_building_summary[
-                        "overall_roof_ua_by_building_segment"
-                    ][building_segment["id"]] = (
-                            rmd_building_summary[
-                                "overall_roof_ua_by_building_segment"
-                            ].get(building_segment["id"], 0)
-                            + construction["u_factor"]
-                            * surface["area"]
+                if construction and "u_factor" in construction:
+                    rmd_building_summary["overall_roof_ua_by_building_segment"][
+                        building_segment["id"]
+                    ] = (
+                        rmd_building_summary["overall_roof_ua_by_building_segment"].get(
+                            building_segment["id"], 0
+                        )
+                        + construction["u_factor"] * surface["area"]
                     )
 
-            for subsurface in surface.get(
-                    "subsurfaces", []
-            ):
+            for subsurface in surface.get("subsurfaces", []):
                 if (
-                        surface.get("adjacent_to") == "EXTERIOR"
-                        and subsurface.get("classification")
-                        == "WINDOW"
+                    surface.get("adjacent_to") == "EXTERIOR"
+                    and subsurface.get("classification") == "WINDOW"
                 ):
                     if "glazed_area" in subsurface:
-                        rmd_building_summary[
-                            "total_window_area"
-                        ] += subsurface["glazed_area"]
-                        rmd_building_summary[
-                            "total_window_area_by_building_segment"
-                        ][building_segment["id"]] = (
-                                rmd_building_summary[
-                                    "total_window_area_by_building_segment"
-                                ].get(building_segment["id"], 0)
-                                + subsurface["glazed_area"]
+                        rmd_building_summary["total_window_area"] += subsurface[
+                            "glazed_area"
+                        ]
+                        rmd_building_summary["total_window_area_by_building_segment"][
+                            building_segment["id"]
+                        ] = (
+                            rmd_building_summary[
+                                "total_window_area_by_building_segment"
+                            ].get(building_segment["id"], 0)
+                            + subsurface["glazed_area"]
                         )
                     if "u_factor" in subsurface:
-                        rmd_building_summary[
-                            "overall_window_ua_by_building_segment"
-                        ][building_segment["id"]] = (
-                                rmd_building_summary[
-                                    "overall_window_ua_by_building_segment"
-                                ].get(building_segment["id"], 0)
-                                + subsurface["u_factor"]
-                                * subsurface["glazed_area"]
+                        rmd_building_summary["overall_window_ua_by_building_segment"][
+                            building_segment["id"]
+                        ] = (
+                            rmd_building_summary[
+                                "overall_window_ua_by_building_segment"
+                            ].get(building_segment["id"], 0)
+                            + subsurface["u_factor"] * subsurface["glazed_area"]
                         )
                 elif (
-                        surface.get("adjacent_to") == "EXTERIOR"
-                        and subsurface.get("classification")
-                        == "SKYLIGHT"
+                    surface.get("adjacent_to") == "EXTERIOR"
+                    and subsurface.get("classification") == "SKYLIGHT"
                 ):
                     if "glazed_area" in subsurface:
-                        rmd_building_summary[
-                            "total_skylight_area"
-                        ] += subsurface["glazed_area"]
-                        rmd_building_summary[
-                            "total_skylight_area_by_building_segment"
-                        ][building_segment["id"]] = (
-                                rmd_building_summary[
-                                    "total_skylight_area_by_building_segment"
-                                ].get(building_segment["id"], 0)
-                                + subsurface["glazed_area"]
+                        rmd_building_summary["total_skylight_area"] += subsurface[
+                            "glazed_area"
+                        ]
+                        rmd_building_summary["total_skylight_area_by_building_segment"][
+                            building_segment["id"]
+                        ] = (
+                            rmd_building_summary[
+                                "total_skylight_area_by_building_segment"
+                            ].get(building_segment["id"], 0)
+                            + subsurface["glazed_area"]
                         )
                     if "u_factor" in subsurface:
-                        rmd_building_summary[
-                            "overall_skylight_ua_by_building_segment"
-                        ][building_segment["id"]] = (
-                                rmd_building_summary[
-                                    "overall_skylight_ua_by_building_segment"
-                                ].get(building_segment["id"], 0)
-                                + subsurface["u_factor"]
-                                * subsurface["glazed_area"]
+                        rmd_building_summary["overall_skylight_ua_by_building_segment"][
+                            building_segment["id"]
+                        ] = (
+                            rmd_building_summary[
+                                "overall_skylight_ua_by_building_segment"
+                            ].get(building_segment["id"], 0)
+                            + subsurface["u_factor"] * subsurface["glazed_area"]
                         )
 
     def summarize_rmd_terminal_data(self, zone, rmd_building_summary):
         for terminal in zone["terminals"]:
             if "minimum_outdoor_airflow" in terminal:
-                rmd_building_summary[
-                    "total_zone_minimum_oa_flow"
-                ] += terminal["minimum_outdoor_airflow"]
+                rmd_building_summary["total_zone_minimum_oa_flow"] += terminal[
+                    "minimum_outdoor_airflow"
+                ]
 
             if "fan" in terminal:
                 fan_power = self.determine_fan_power(terminal["fan"])
                 if fan_power:
-                    if "Undefined" not in rmd_building_summary[
-                        "total_fan_power_by_fan_control_by_fan_type"
-                    ]:
-                        rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
-                            "Undefined"
-                        ] = {
+                    if (
+                        "Undefined"
+                        not in rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ]
+                    ):
+                        rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ]["Undefined"] = {
                             "Supply": 0,
                             "Return/Relief": 0,
                             "Exhaust": 0,
@@ -782,7 +841,9 @@ class RCTDetailedReport:
                             "Terminal Unit": 0,
                         }
 
-                    rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"]["Undefined"]["Terminal Unit"] += fan_power
+                    rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
+                        "Undefined"
+                    ]["Terminal Unit"] += fan_power
                     rmd_building_summary["total_fan_power"] += fan_power
 
     def summarize_rmd_system_data(self, building_segment, rmd_building_summary):
@@ -793,7 +854,7 @@ class RCTDetailedReport:
             return None
 
         for hvac_system in building_segment.get(
-                "heating_ventilating_air_conditioning_systems", []
+            "heating_ventilating_air_conditioning_systems", []
         ):
             # Add hvac system to the summary list if not already present
             system_in_summaries = False
@@ -809,10 +870,7 @@ class RCTDetailedReport:
 
             hvac_fan_system = hvac_system.get("fan_system")
             if hvac_fan_system:
-                supply_fan_controls = hvac_fan_system.get(
-                    "fan_control",
-                    "Undefined"
-                )
+                supply_fan_controls = hvac_fan_system.get("fan_control", "Undefined")
                 if supply_fan_controls == "CONSTANT":
                     occupied_operation = hvac_fan_system.get(
                         "operation_during_occupied", "Undefined"
@@ -820,9 +878,12 @@ class RCTDetailedReport:
                     if occupied_operation == "CYCLING":
                         supply_fan_controls = "Constant Cycling"
 
-                if supply_fan_controls not in rmd_building_summary[
-                    "total_fan_power_by_fan_control_by_fan_type"
-                ]:
+                if (
+                    supply_fan_controls
+                    not in rmd_building_summary[
+                        "total_fan_power_by_fan_control_by_fan_type"
+                    ]
+                ):
                     rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
                         supply_fan_controls
                     ] = {
@@ -832,9 +893,12 @@ class RCTDetailedReport:
                         "Zonal Exhaust": 0,
                         "Terminal Unit": 0,
                     }
-                if supply_fan_controls not in rmd_building_summary[
-                    "total_air_flow_by_fan_control_by_fan_type"
-                ]:
+                if (
+                    supply_fan_controls
+                    not in rmd_building_summary[
+                        "total_air_flow_by_fan_control_by_fan_type"
+                    ]
+                ):
                     rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
                         supply_fan_controls
                     ] = {
@@ -848,80 +912,119 @@ class RCTDetailedReport:
                 for fan in hvac_fan_system.get("supply_fans", []):
                     fan_power = self.determine_fan_power(fan)
                     if fan_power:
-                        rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
-                            supply_fan_controls]["Supply"] += fan_power
+                        rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ][supply_fan_controls]["Supply"] += fan_power
                         rmd_building_summary["total_fan_power"] += fan_power
                     if "design_airflow" in fan:
-                        rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
-                            supply_fan_controls
-                        ]["Supply"] += fan["design_airflow"]
+                        rmd_building_summary[
+                            "total_air_flow_by_fan_control_by_fan_type"
+                        ][supply_fan_controls]["Supply"] += fan["design_airflow"]
 
                 for fan in hvac_fan_system.get("return_fans", []) + hvac_fan_system.get(
-                        "relief_fans", []):
+                    "relief_fans", []
+                ):
                     fan_power = self.determine_fan_power(fan)
                     if fan_power:
-                        rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
-                            supply_fan_controls]["Return/Relief"] += fan_power
+                        rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ][supply_fan_controls]["Return/Relief"] += fan_power
                         rmd_building_summary["total_fan_power"] += fan_power
                     if "design_airflow" in fan:
-                        rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
-                            supply_fan_controls
-                        ]["Return/Relief"] += fan["design_airflow"]
+                        rmd_building_summary[
+                            "total_air_flow_by_fan_control_by_fan_type"
+                        ][supply_fan_controls]["Return/Relief"] += fan["design_airflow"]
 
                 for fan in hvac_fan_system.get("exhaust_fans", []):
                     fan_power = self.determine_fan_power(fan)
                     if fan_power:
-                        rmd_building_summary["total_fan_power_by_fan_control_by_fan_type"][
-                            supply_fan_controls]["Exhaust"] += fan_power
+                        rmd_building_summary[
+                            "total_fan_power_by_fan_control_by_fan_type"
+                        ][supply_fan_controls]["Exhaust"] += fan_power
                         rmd_building_summary["total_fan_power"] += fan_power
                     if "design_airflow" in fan:
-                        rmd_building_summary["total_air_flow_by_fan_control_by_fan_type"][
-                            supply_fan_controls
-                        ]["Exhaust"] += fan["design_airflow"]
+                        rmd_building_summary[
+                            "total_air_flow_by_fan_control_by_fan_type"
+                        ][supply_fan_controls]["Exhaust"] += fan["design_airflow"]
 
             hvac_heating_system = hvac_system.get("heating_system")
             if hvac_heating_system:
                 # Add heating system info to the summary list if it exists
                 # TODO Change this to area where capacities are calculated with consideration of terminal capacity
-                system_summary["heating_equipment_type"] = hvac_heating_system.get("type")
-                system_summary["heating_energy_source"] = hvac_heating_system.get("energy_source_type")
-                system_summary["heating_capacity"] = hvac_heating_system.get("design_capacity", 0.0)
+                system_summary["heating_equipment_type"] = hvac_heating_system.get(
+                    "type"
+                )
+                system_summary["heating_energy_source"] = hvac_heating_system.get(
+                    "energy_source_type"
+                )
+                system_summary["heating_capacity"] = hvac_heating_system.get(
+                    "design_capacity", 0.0
+                )
                 system_summary["heating_capacity_units"] = "Btu/h"
-                system_summary["heating_efficiency_metric_types"] = hvac_heating_system.get("efficiency_metric_types",[])
-                system_summary["heating_efficiency_metric_values"] = hvac_heating_system.get("efficiency_metric_values", [])
+                system_summary[
+                    "heating_efficiency_metric_types"
+                ] = hvac_heating_system.get("efficiency_metric_types", [])
+                system_summary[
+                    "heating_efficiency_metric_values"
+                ] = hvac_heating_system.get("efficiency_metric_values", [])
 
             hvac_cooling_system = hvac_system.get("cooling_system")
             if hvac_cooling_system:
                 # Add cooling system to the summary list if it exists
                 # TODO Change this to area where capacities are calculated with consideration of terminal capacity
-                system_summary["cooling_equipment_type"] = hvac_cooling_system.get("type")
-                system_summary["cooling_capacity"] = hvac_cooling_system.get("design_total_cool_capacity", 0.0)
+                system_summary["cooling_equipment_type"] = hvac_cooling_system.get(
+                    "type"
+                )
+                system_summary["cooling_capacity"] = hvac_cooling_system.get(
+                    "design_total_cool_capacity", 0.0
+                )
                 system_summary["cooling_capacity_units"] = "Btu/h"
-                system_summary["cooling_efficiency_metric_types"] = hvac_cooling_system.get("efficiency_metric_types", [])
-                system_summary["cooling_efficiency_metric_values"] = hvac_cooling_system.get("efficiency_metric_values", [])
+                system_summary[
+                    "cooling_efficiency_metric_types"
+                ] = hvac_cooling_system.get("efficiency_metric_types", [])
+                system_summary[
+                    "cooling_efficiency_metric_values"
+                ] = hvac_cooling_system.get("efficiency_metric_values", [])
 
             # Count the number of zones served by system
             for zone in building_segment.get("zones", []):
                 for terminal in zone.get("terminals", []):
-                    if terminal.get("served_by_heating_ventilating_air_conditioning_system") == system_name:
-                        system_summary["zone_qty"] = system_summary.get("zone_qty", 0) + 1
+                    if (
+                        terminal.get(
+                            "served_by_heating_ventilating_air_conditioning_system"
+                        )
+                        == system_name
+                    ):
+                        system_summary["zone_qty"] = (
+                            system_summary.get("zone_qty", 0) + 1
+                        )
 
             if system_summary:
                 rmd_building_summary["hvac_system_summaries"].append(system_summary)
 
-    def summarize_cooling_plant_data(self, chiller, cooling_towers, rmd_building_summary):
+    def summarize_cooling_plant_data(
+        self, chiller, cooling_towers, rmd_building_summary
+    ):
         fuel = self.fuel_type_map.get(chiller.get("energy_source_type"))
         if fuel == "Electricity":
             rmd_building_summary["electric_chiller_count"] += 1
-            rmd_building_summary["electric_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
+            rmd_building_summary["electric_chiller_plant_capacity"] += chiller.get(
+                "design_capacity", 0.0
+            )
         elif fuel == "Fossil Fuel":
             rmd_building_summary["fossil_fuel_chiller_count"] += 1
-            rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get("design_capacity", 0.0)
+            rmd_building_summary["fossil_fuel_chiller_plant_capacity"] += chiller.get(
+                "design_capacity", 0.0
+            )
         for cooling_tower in cooling_towers:
-            rmd_building_summary["cooling_tower_gpm"] += cooling_tower.get("rated_water_flowrate", 0.0)
+            rmd_building_summary["cooling_tower_gpm"] += cooling_tower.get(
+                "rated_water_flowrate", 0.0
+            )
             fan = cooling_tower.get("fan")
             if fan:
-                rmd_building_summary["cooling_tower_hp"] += self.determine_fan_power(fan)
+                rmd_building_summary["cooling_tower_hp"] += self.determine_fan_power(
+                    fan
+                )
         loop = chiller.get("loop")
         if loop:
             rmd_building_summary["chw_loops"].append(loop)
@@ -930,10 +1033,14 @@ class RCTDetailedReport:
         fuel = self.fuel_type_map.get(boiler.get("energy_source_type"))
         if fuel == "Electricity":
             rmd_building_summary["electric_boiler_count"] += 1
-            rmd_building_summary["electric_boiler_plant_capacity"] += boiler.get("design_capacity", 0.0)
+            rmd_building_summary["electric_boiler_plant_capacity"] += boiler.get(
+                "design_capacity", 0.0
+            )
         elif fuel == "Fossil Fuel":
             rmd_building_summary["fossil_fuel_boiler_count"] += 1
-            rmd_building_summary["fossil_fuel_boiler_plant_capacity"] += boiler.get("design_capacity", 0.0)
+            rmd_building_summary["fossil_fuel_boiler_plant_capacity"] += boiler.get(
+                "design_capacity", 0.0
+            )
         loop = boiler.get("loop")
         if loop:
             rmd_building_summary["boiler_loops"].append(loop)
@@ -1001,24 +1108,30 @@ class RCTDetailedReport:
                             for calc_value in evaluation["calculated_values"]
                             if calc_value["variable"] == "lpd_allowance_b"
                         ),
-                        None
+                        None,
                     )
                     if lpd_allowance_calc_value:
                         self.space_lpd_allowances[evaluation["data_group_id"]] = float(
                             lpd_allowance_calc_value["value"]
                         )
 
-                if rule_id == "18-1" and "calculated_values" in evaluation and not self.hvac_system_types_b:
+                if (
+                    rule_id == "18-1"
+                    and "calculated_values" in evaluation
+                    and not self.hvac_system_types_b
+                ):
                     hvac_system_types_b_value = next(
                         (
                             calc_value
                             for calc_value in evaluation["calculated_values"]
                             if calc_value["variable"] == "hvac_system_types_b"
                         ),
-                        None
+                        None,
                     )
                     if hvac_system_types_b_value:
-                        self.hvac_system_types_b = ast.literal_eval(hvac_system_types_b_value["value"])
+                        self.hvac_system_types_b = ast.literal_eval(
+                            hvac_system_types_b_value["value"]
+                        )
 
             # Determine rule status
             if outcomes == {"Failing"} and messages == {" ::TOLERANCE::"}:
@@ -1043,7 +1156,9 @@ class RCTDetailedReport:
 
             for rpd in self.rpd_data[1:]:
                 # Extend the ruleset_model_descriptions list
-                merged["ruleset_model_descriptions"].extend(rpd["ruleset_model_descriptions"])
+                merged["ruleset_model_descriptions"].extend(
+                    rpd["ruleset_model_descriptions"]
+                )
 
                 for key in rpd:
                     if key == "ruleset_model_descriptions":
@@ -1058,7 +1173,11 @@ class RCTDetailedReport:
                     if not isinstance(val, (list, dict)):
                         if merged[key] != val:
                             # TODO log this conflict visible to users
-                            print("Conflicting value for key:", key, " keeping the first occurrence")
+                            print(
+                                "Conflicting value for key:",
+                                key,
+                                " keeping the first occurrence",
+                            )
                             pass
                         continue
 
@@ -1071,7 +1190,11 @@ class RCTDetailedReport:
                                 merged[key][subkey] = subval
                             elif merged[key][subkey] != subval:
                                 # TODO log this conflict visible to users
-                                print("Conflicting value for key:", subkey, " keeping the first occurrence")
+                                print(
+                                    "Conflicting value for key:",
+                                    subkey,
+                                    " keeping the first occurrence",
+                                )
                                 pass
 
             self.rpd_data = merged
@@ -1082,7 +1205,7 @@ class RCTDetailedReport:
                 for rmd in self.rpd_data["ruleset_model_descriptions"]
                 if rmd["type"] == "PROPOSED"
             ),
-            None
+            None,
         )
         baseline_rmd = next(
             (
@@ -1090,15 +1213,19 @@ class RCTDetailedReport:
                 for rmd in self.rpd_data["ruleset_model_descriptions"]
                 if rmd["type"] == "BASELINE_0"
             ),
-            None
+            None,
         )
         if not proposed_rmd or not baseline_rmd:
             # TODO Handle the case where the proposed or baseline RMD is not found
             print("Proposed or Baseline RMD not found in the RPD data.")
             return
 
-        self.proposed_model_summary = self.summarize_rmd_data(proposed_rmd, model_type="Proposed")
-        self.baseline_model_summary = self.summarize_rmd_data(baseline_rmd, model_type="Baseline")
+        self.proposed_model_summary = self.summarize_rmd_data(
+            proposed_rmd, model_type="Proposed"
+        )
+        self.baseline_model_summary = self.summarize_rmd_data(
+            baseline_rmd, model_type="Baseline"
+        )
 
     def perform_analytic_calculations(self):
         """
@@ -1107,15 +1234,19 @@ class RCTDetailedReport:
         # Calculate the LPD allowance based on evaluation data + RPD data combined
         for space_id in self.space_areas:
             self.baseline_total_lighting_power_allowance += (
-                    self.space_lpd_allowances.get(space_id, 0)
-                    * self.convert_unit(self.space_areas[space_id], "m2", "ft2")
+                self.space_lpd_allowances.get(space_id, 0)
+                * self.convert_unit(self.space_areas[space_id], "m2", "ft2")
             )
             space_type = self.baseline_space_space_types.get(space_id)
             if space_type:
-                self.baseline_lighting_power_allowance_by_space_type[space_type] = (
-                        self.baseline_lighting_power_allowance_by_space_type.get(space_type, 0)
-                        + self.space_lpd_allowances.get(space_id, 0)
-                        * self.convert_unit(self.space_areas[space_id], "m2", "ft2")
+                self.baseline_lighting_power_allowance_by_space_type[
+                    space_type
+                ] = self.baseline_lighting_power_allowance_by_space_type.get(
+                    space_type, 0
+                ) + self.space_lpd_allowances.get(
+                    space_id, 0
+                ) * self.convert_unit(
+                    self.space_areas[space_id], "m2", "ft2"
                 )
 
         # Calculate the average U-factors by building segment
@@ -1125,12 +1256,12 @@ class RCTDetailedReport:
             self.baseline_model_summary["overall_wall_u_factor_by_building_segment"][
                 building_segment_id
             ] = (
-                    self.baseline_model_summary["overall_wall_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.baseline_model_summary["total_wall_area_by_building_segment"][
-                        building_segment_id
-                    ]
+                self.baseline_model_summary["overall_wall_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.baseline_model_summary["total_wall_area_by_building_segment"][
+                    building_segment_id
+                ]
             )
         for building_segment_id in self.baseline_model_summary[
             "overall_roof_ua_by_building_segment"
@@ -1138,12 +1269,12 @@ class RCTDetailedReport:
             self.baseline_model_summary["overall_roof_u_factor_by_building_segment"][
                 building_segment_id
             ] = (
-                    self.baseline_model_summary["overall_roof_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.baseline_model_summary["total_roof_area_by_building_segment"][
-                        building_segment_id
-                    ]
+                self.baseline_model_summary["overall_roof_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.baseline_model_summary["total_roof_area_by_building_segment"][
+                    building_segment_id
+                ]
             )
         for building_segment_id in self.baseline_model_summary[
             "overall_window_ua_by_building_segment"
@@ -1151,25 +1282,25 @@ class RCTDetailedReport:
             self.baseline_model_summary["overall_window_u_factor_by_building_segment"][
                 building_segment_id
             ] = (
-                    self.baseline_model_summary["overall_window_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.baseline_model_summary["total_window_area_by_building_segment"][
-                        building_segment_id
-                    ]
+                self.baseline_model_summary["overall_window_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.baseline_model_summary["total_window_area_by_building_segment"][
+                    building_segment_id
+                ]
             )
         for building_segment_id in self.baseline_model_summary[
             "overall_skylight_ua_by_building_segment"
         ]:
-            self.baseline_model_summary["overall_skylight_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                    self.baseline_model_summary["overall_skylight_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.baseline_model_summary["total_skylight_area_by_building_segment"][
-                        building_segment_id
-                    ]
+            self.baseline_model_summary[
+                "overall_skylight_u_factor_by_building_segment"
+            ][building_segment_id] = (
+                self.baseline_model_summary["overall_skylight_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.baseline_model_summary[
+                    "total_skylight_area_by_building_segment"
+                ][building_segment_id]
             )
         for building_segment_id in self.proposed_model_summary[
             "overall_wall_ua_by_building_segment"
@@ -1177,12 +1308,12 @@ class RCTDetailedReport:
             self.proposed_model_summary["overall_wall_u_factor_by_building_segment"][
                 building_segment_id
             ] = (
-                    self.proposed_model_summary["overall_wall_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.proposed_model_summary["total_wall_area_by_building_segment"][
-                        building_segment_id
-                    ]
+                self.proposed_model_summary["overall_wall_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.proposed_model_summary["total_wall_area_by_building_segment"][
+                    building_segment_id
+                ]
             )
         for building_segment_id in self.proposed_model_summary[
             "overall_roof_ua_by_building_segment"
@@ -1190,12 +1321,12 @@ class RCTDetailedReport:
             self.proposed_model_summary["overall_roof_u_factor_by_building_segment"][
                 building_segment_id
             ] = (
-                    self.proposed_model_summary["overall_roof_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.proposed_model_summary["total_roof_area_by_building_segment"][
-                        building_segment_id
-                    ]
+                self.proposed_model_summary["overall_roof_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.proposed_model_summary["total_roof_area_by_building_segment"][
+                    building_segment_id
+                ]
             )
         for building_segment_id in self.proposed_model_summary[
             "overall_window_ua_by_building_segment"
@@ -1203,53 +1334,53 @@ class RCTDetailedReport:
             self.proposed_model_summary["overall_window_u_factor_by_building_segment"][
                 building_segment_id
             ] = (
-                    self.proposed_model_summary["overall_window_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.proposed_model_summary["total_window_area_by_building_segment"][
-                        building_segment_id
-                    ]
+                self.proposed_model_summary["overall_window_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.proposed_model_summary["total_window_area_by_building_segment"][
+                    building_segment_id
+                ]
             )
         for building_segment_id in self.proposed_model_summary[
             "overall_skylight_ua_by_building_segment"
         ]:
-            self.proposed_model_summary["overall_skylight_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                    self.proposed_model_summary["overall_skylight_ua_by_building_segment"][
-                        building_segment_id
-                    ]
-                    / self.proposed_model_summary["total_skylight_area_by_building_segment"][
-                        building_segment_id
-                    ]
+            self.proposed_model_summary[
+                "overall_skylight_u_factor_by_building_segment"
+            ][building_segment_id] = (
+                self.proposed_model_summary["overall_skylight_ua_by_building_segment"][
+                    building_segment_id
+                ]
+                / self.proposed_model_summary[
+                    "total_skylight_area_by_building_segment"
+                ][building_segment_id]
             )
 
         # Calculate the average LPD by lighting space type
         for lighting_space_type in self.baseline_model_summary[
             "total_lighting_power_by_space_type"
         ]:
-            self.baseline_model_summary[
-                "average_lighting_power_by_space_type"
-            ][lighting_space_type] = (
-                    self.baseline_model_summary[
-                        "total_lighting_power_by_space_type"
-                    ][lighting_space_type]
-                    / self.baseline_model_summary[
-                        "total_floor_area_by_space_type"
-                    ][lighting_space_type]
+            self.baseline_model_summary["average_lighting_power_by_space_type"][
+                lighting_space_type
+            ] = (
+                self.baseline_model_summary["total_lighting_power_by_space_type"][
+                    lighting_space_type
+                ]
+                / self.baseline_model_summary["total_floor_area_by_space_type"][
+                    lighting_space_type
+                ]
             )
         for lighting_space_type in self.proposed_model_summary[
             "total_lighting_power_by_space_type"
         ]:
-            self.proposed_model_summary[
-                "average_lighting_power_by_space_type"
-            ][lighting_space_type] = (
-                    self.proposed_model_summary[
-                        "total_lighting_power_by_space_type"
-                    ][lighting_space_type]
-                    / self.proposed_model_summary[
-                        "total_floor_area_by_space_type"
-                    ][lighting_space_type]
+            self.proposed_model_summary["average_lighting_power_by_space_type"][
+                lighting_space_type
+            ] = (
+                self.proposed_model_summary["total_lighting_power_by_space_type"][
+                    lighting_space_type
+                ]
+                / self.proposed_model_summary["total_floor_area_by_space_type"][
+                    lighting_space_type
+                ]
             )
 
         # Calculate the Other and Total fan summary details
@@ -1292,10 +1423,20 @@ class RCTDetailedReport:
                     fan_type
                 ] += self.baseline_model_summary[
                     "total_fan_power_by_fan_control_by_fan_type"
-                ][fan_control][fan_type]
-                self.baseline_model_summary["total_fan_power"] += self.baseline_model_summary[
+                ][
+                    fan_control
+                ][
+                    fan_type
+                ]
+                self.baseline_model_summary[
+                    "total_fan_power"
+                ] += self.baseline_model_summary[
                     "total_fan_power_by_fan_control_by_fan_type"
-                ][fan_control][fan_type]
+                ][
+                    fan_control
+                ][
+                    fan_type
+                ]
 
         for fan_control in self.baseline_model_summary[
             "total_air_flow_by_fan_control_by_fan_type"
@@ -1307,7 +1448,11 @@ class RCTDetailedReport:
                     fan_type
                 ] += self.baseline_model_summary[
                     "total_air_flow_by_fan_control_by_fan_type"
-                ][fan_control][fan_type]
+                ][
+                    fan_control
+                ][
+                    fan_type
+                ]
 
         for fan_control in self.proposed_model_summary[
             "total_fan_power_by_fan_control_by_fan_type"
@@ -1319,10 +1464,20 @@ class RCTDetailedReport:
                     fan_type
                 ] += self.proposed_model_summary[
                     "total_fan_power_by_fan_control_by_fan_type"
-                ][fan_control][fan_type]
-                self.proposed_model_summary["total_fan_power"] += self.proposed_model_summary[
+                ][
+                    fan_control
+                ][
+                    fan_type
+                ]
+                self.proposed_model_summary[
+                    "total_fan_power"
+                ] += self.proposed_model_summary[
                     "total_fan_power_by_fan_control_by_fan_type"
-                ][fan_control][fan_type]
+                ][
+                    fan_control
+                ][
+                    fan_type
+                ]
 
         for fan_control in self.proposed_model_summary[
             "total_air_flow_by_fan_control_by_fan_type"
@@ -1334,7 +1489,11 @@ class RCTDetailedReport:
                     fan_type
                 ] += self.proposed_model_summary[
                     "total_air_flow_by_fan_control_by_fan_type"
-                ][fan_control][fan_type]
+                ][
+                    fan_control
+                ][
+                    fan_type
+                ]
 
         self.baseline_model_summary["other_fan_power_by_fan_type"] = {
             "Supply": 0,
@@ -1379,7 +1538,11 @@ class RCTDetailedReport:
                         fan_type
                     ] += self.baseline_model_summary[
                         "total_fan_power_by_fan_control_by_fan_type"
-                    ][fan_control][fan_type]
+                    ][
+                        fan_control
+                    ][
+                        fan_type
+                    ]
 
         for fan_control in self.baseline_model_summary[
             "total_air_flow_by_fan_control_by_fan_type"
@@ -1392,7 +1555,11 @@ class RCTDetailedReport:
                         fan_type
                     ] += self.baseline_model_summary[
                         "total_air_flow_by_fan_control_by_fan_type"
-                    ][fan_control][fan_type]
+                    ][
+                        fan_control
+                    ][
+                        fan_type
+                    ]
 
         for fan_control in self.proposed_model_summary[
             "total_fan_power_by_fan_control_by_fan_type"
@@ -1405,7 +1572,11 @@ class RCTDetailedReport:
                         fan_type
                     ] += self.proposed_model_summary[
                         "total_fan_power_by_fan_control_by_fan_type"
-                    ][fan_control][fan_type]
+                    ][
+                        fan_control
+                    ][
+                        fan_type
+                    ]
 
         for fan_control in self.proposed_model_summary[
             "total_air_flow_by_fan_control_by_fan_type"
@@ -1418,7 +1589,11 @@ class RCTDetailedReport:
                         fan_type
                     ] += self.proposed_model_summary[
                         "total_air_flow_by_fan_control_by_fan_type"
-                    ][fan_control][fan_type]
+                    ][
+                        fan_control
+                    ][
+                        fan_type
+                    ]
 
     def convert_model_data_units(self):
         """
@@ -1427,13 +1602,25 @@ class RCTDetailedReport:
         """
         units_dict = {
             "overall_wall_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_wall_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
+            "overall_wall_u_factor_by_building_segment": (
+                "W / m2 / K",
+                "Btu / h / ft2 / degR",
+            ),
             "overall_roof_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_roof_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
+            "overall_roof_u_factor_by_building_segment": (
+                "W / m2 / K",
+                "Btu / h / ft2 / degR",
+            ),
             "overall_window_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_window_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
+            "overall_window_u_factor_by_building_segment": (
+                "W / m2 / K",
+                "Btu / h / ft2 / degR",
+            ),
             "overall_skylight_ua_by_building_segment": ("W / K", "Btu / h / degR"),
-            "overall_skylight_u_factor_by_building_segment": ("W / m2 / K", "Btu / h / ft2 / degR"),
+            "overall_skylight_u_factor_by_building_segment": (
+                "W / m2 / K",
+                "Btu / h / ft2 / degR",
+            ),
             "average_lighting_power_by_space_type": ("W / m2", "W / ft2"),
             "total_floor_area_by_building_segment": ("m2", "ft2"),
             "floor_area_by_schedule": ("m2", "ft2"),
@@ -1490,9 +1677,13 @@ class RCTDetailedReport:
                 for sub_key, sub_value in value.items():
                     if isinstance(sub_value, dict):
                         for sub_sub_key, sub_sub_value in sub_value.items():
-                            value[sub_key][sub_sub_key] = self.convert_unit(sub_sub_value, from_unit, to_unit)
+                            value[sub_key][sub_sub_key] = self.convert_unit(
+                                sub_sub_value, from_unit, to_unit
+                            )
                     else:
-                        value[sub_key] = self.convert_unit(sub_value, from_unit, to_unit)
+                        value[sub_key] = self.convert_unit(
+                            sub_value, from_unit, to_unit
+                        )
             else:
                 summary[key] = self.convert_unit(value, from_unit, to_unit)
 
@@ -1526,9 +1717,7 @@ class RCTDetailedReport:
         for parameter_data in summary.get("compliance_calcs_by_parameter", {}).values():
             for data_name, data in parameter_data.items():
                 if data_name in ["source_energy", "site_energy"]:
-                    parameter_data[data_name] = self.convert_unit(
-                        data, "Btu", "MMBtu"
-                    )
+                    parameter_data[data_name] = self.convert_unit(data, "Btu", "MMBtu")
 
     def run(self):
         self.load_files()
