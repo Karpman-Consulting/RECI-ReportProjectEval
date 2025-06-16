@@ -31,6 +31,37 @@ def write_html_file(rct_detailed_report):
         23: ("Baseline HVAC - Air Side Requirements", "#F0FFFF"),
     }
 
+    efficiency_display_map = {
+        "FULL_LOAD_COEFFICIENT_OF_PERFORMANCE": "Full Load COP",
+        "FULL_LOAD_COEFFICIENT_OF_PERFORMANCE_NO_FAN": "Full Load COP<sub>nf</sub>",
+        "ENERGY_EFFICIENCY_RATIO": "EER",
+        "SEASONAL_ENERGY_EFFICIENCY_RATIO": "SEER",
+        "SEASONAL_ENERGY_EFFICIENCY_RATIO_2": "SEER2",
+        "INTEGRATED_ENERGY_EFFICIENCY_RATIO": "IEER",
+        "INTEGRATED_PART_LOAD_VALUE": "IPLV",
+        "COMBINED_ENERGY_EFFICIENCY_RATIO": "CEER",
+        "COEFFICIENT_OF_PERFORMANCE_WATER_TO_AIR_WATER_LOOP": "COP<sub>water-to-air</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_WATER_TO_AIR_WATER_LOOP_NO_FAN": "COP<sub>water-to-air-nf</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_WATER_TO_AIR_GROUND_WATER": "COP<sub>ground-water-to-air</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_WATER_TO_AIR_GROUND_WATER_NO_FAN": "COP<sub>ground-water-to-air-nf</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_BRINE_TO_AIR_GROUND_LOOP": "COP<sub>ground-loop-to-air</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_BRINE_TO_AIR_GROUND_LOOP_NO_FAN": "COP<sub>ground-loop-to-air-nf</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_WATER_TO_WATER_WATER_LOOP": "COP<sub>water-to-water</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_WATER_TO_WATER_GROUND_WATER": "COP<sub>ground-water-to-water</sub>",
+        "COEFFICIENT_OF_PERFORMANCE_BRINE_TO_WATER_GROUND_LOOP": "COP<sub>ground-loop-to-water</sub>",
+        "NONE": "None",
+        "OTHER": "Other",
+        "HEAT_PUMP_COEFFICIENT_OF_PERFORMANCE_HIGH_TEMPERATURE": "Heat Pump COP<sub>high</sub>",
+        "HEAT_PUMP_COEFFICIENT_OF_PERFORMANCE_LOW_TEMPERATURE": "Heat Pump COP<sub>low</sub>",
+        "HEAT_PUMP_COEFFICIENT_OF_PERFORMANCE_HIGH_TEMPERATURE_NO_FAN": "Heat Pump COP<sub>high-nf</sub>",
+        "HEAT_PUMP_COEFFICIENT_OF_PERFORMANCE_LOW_TEMPERATURE_NO_FAN": "Heat Pump COP<sub>low-nf</sub>",
+        "THERMAL_EFFICIENCY": "E<sub>t</sub>",
+        "COMBUSTION_EFFICIENCY": "Combustion E<sub>c</sub>",
+        "ANNUAL_FUEL_UTILIZATION_EFFICIENCY": "AFUE",
+        "HEATING_SEASONAL_PERFORMANCE_FACTOR": "HSPF",
+        "HEATING_SEASONAL_PERFORMANCE_FACTOR_2": "HSPF2",
+    }
+
     with open(rct_detailed_report.output_file_path, "w", encoding="utf-8") as file:
         file.write(
             """
@@ -1398,7 +1429,8 @@ def write_html_file(rct_detailed_report):
                     for x in system_summary["heating_efficiency_metric_values"]
                 )
                 efficiency_types = ", ".join(
-                    system_summary["heating_efficiency_metric_types"]
+                    efficiency_display_map.get(metric, metric)
+                    for metric in system_summary["heating_efficiency_metric_types"]
                 )
                 file.write(
                     f"""
@@ -1427,7 +1459,8 @@ def write_html_file(rct_detailed_report):
                     for x in system_summary["cooling_efficiency_metric_values"]
                 )
                 efficiency_types = ", ".join(
-                    system_summary["cooling_efficiency_metric_types"]
+                    efficiency_display_map.get(metric, metric)
+                    for metric in system_summary["cooling_efficiency_metric_types"]
                 )
                 file.write(
                     f"""
