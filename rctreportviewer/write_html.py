@@ -343,16 +343,8 @@ def write_html_file(rct_detailed_report):
                                             <td id="pci_nre_ghg">-</td>
                                     </tr>
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">Performance index including on-site renewable energy</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI</td>
-                                            <td id="pci_cost"></td>
-                                            <td id="pci_site_energy">-</td>
-                                            <td id="pci_source_energy">-</td>
-                                            <td id="pci_ghg">-</td>
-                                    </tr>
-                                    <tr style="font-size: 12px;" class="lh-1 text-center">
                                             <td style="border-right: 2px solid black;">Performance Index adjusted based upon ASHRAE 90.1-2019 Section 4.2.1.1</td>
-                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI<sub>adjusted</sub></td>
+                                            <td style="border-right: 2px solid black; font-weight: bold;">PCI</td>
                                             <td id="pci_adjusted_cost">{round(output.get("performance_cost_index", 0), 2):,}</td>
                                             <td id="pci_adjusted_site_energy">-</td>
                                             <td id="pci_adjusted_source_energy">-</td>
@@ -2012,9 +2004,6 @@ def write_html_file(rct_detailed_report):
                 setRatio('pcit_source_energy', bbuecSource + bpfSource * bbrecSource, bbSrc);
                 setRatio('pcit_ghg_emissions', bbuecGHG + bpfGHG * bbrecGHG, bbGHG);
                 
-                setRatio('pci_site_energy', proposedSiteEnergy, bbSite);
-                setRatio('pci_source_energy', proposedSrcEnergy, bbSrc);
-                setRatio('pci_ghg', proposedGHG, bbGHG);
                 setRatio('pci_nre_site_energy', getText('pbp_nre_site_energy'), bbSite);
                 setRatio('pci_nre_source_energy', proposedSourceEnergy, bbSrc);
                 setRatio('pci_nre_ghg', proposedGHGEmissions, bbGHG);
