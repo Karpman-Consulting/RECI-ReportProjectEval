@@ -8,6 +8,7 @@ def write_html_file(rct_detailed_report):
         write_compliance_calculations(file, rct_detailed_report)
         write_results_summary(file, rct_detailed_report)
         write_envelope_summary(file, rct_detailed_report)
+        write_interior_lighting_summary(file, rct_detailed_report)
         write_internal_loads_summary(file, rct_detailed_report)
         write_hvac_summary(file, rct_detailed_report)
         write_hvac_details(file, rct_detailed_report)
@@ -983,6 +984,11 @@ def write_envelope_summary(file, report):
                 <p style="font-size: 0.75rem;" class="ms-2">*U-Factors represent area-weighted averages for the corresponding Building Area & Surface Type</p>
             </div></div></div>
          """)
+
+def write_interior_lighting_summary(file, report):
+    # Placeholder
+    # Insert interior lighting table here
+    pass
 
 def write_internal_loads_summary(file, report):
     file.write(
