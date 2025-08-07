@@ -263,6 +263,7 @@ class RCTDetailedReport:
             "water_heater_summary": {},
             "boiler_loops": [],
             "chw_loops": [],
+            "int_ltg_summaries": {},
         }
 
         output = rmd_data.get("output")
@@ -606,10 +607,54 @@ class RCTDetailedReport:
             for interior_lighting in space.get(
                 "interior_lighting", [{"power_per_area": 0}]
             ):
+                interior_lighting_summary = {
+                    "space_id": space.get("id"),
+                    "lighting_space_type": space.get("lighting_space_type"),
+                    "floor_area": space.get("floor_area", 0),
+                    "power_per_area": interior_lighting.get("power_per_area", 0),
+                    "int_ltg_power_general": 0,
+                    "int_ltg_power_retail": 0,
+                    "int_ltg_power_decorative": 0,
+                    "int_ltg_power_exempt": 0,
+                    "int_ltg_power_total": 0,
+                }
+                int_ltg_id = interior_lighting.get("id")
+
                 if "power_per_area" in interior_lighting and "floor_area" in space:
                     int_ltg_power = (
                         interior_lighting["power_per_area"] * space["floor_area"]
                     )
+
+                    # Populate interior lighting summary data
+                    if "purpose_type" in interior_lighting:
+                        interior_lighting_summary["purpose_type"] = interior_lighting[
+                            "purpose_type"
+                        ]
+                        if interior_lighting["purpose_type"] in ["GENERAL", "TASK"]:
+                            interior_lighting_summary[
+                                "int_ltg_power_general"
+                            ] = int_ltg_power
+                        elif interior_lighting["purpose_type"] == "RETAIL_DISPLAY":
+                            interior_lighting_summary[
+                                "int_ltg_power_retail"
+                            ] = int_ltg_power
+                        elif interior_lighting["purpose_type"] == "DECORATIVE":
+                            interior_lighting_summary[
+                                "int_ltg_power_decorative"
+                            ] = int_ltg_power
+                        elif interior_lighting["purpose_type"] == "UNREGULATED":
+                            interior_lighting_summary[
+                                "int_ltg_power_exempt"
+                            ] = int_ltg_power
+                    else:
+                        interior_lighting_summary[
+                            "int_ltg_power_general"
+                        ] = int_ltg_power
+                    interior_lighting_summary["int_ltg_power_total"] = int_ltg_power
+                    rmd_building_summary["int_ltg_summaries"][
+                        int_ltg_id
+                    ] = interior_lighting_summary
+
                     rmd_building_summary["total_lighting_power"] += int_ltg_power
                     if "lighting_space_type" in space:
                         rmd_building_summary["total_floor_area_by_space_type"][
@@ -1369,7 +1414,8 @@ class RCTDetailedReport:
                         u_factor_data[segment_id] = ua_value / area_value
 
         climate_zone_vals = set(
-            model.get("weather", {}).get("climate_zone") for model in self.rpd_data["ruleset_model_descriptions"]
+            model.get("weather", {}).get("climate_zone")
+            for model in self.rpd_data["ruleset_model_descriptions"]
         )
         if len(climate_zone_vals) != 1:
             print("Multiple climate zones found in the RPD data, using the first one.")
@@ -1380,7 +1426,9 @@ class RCTDetailedReport:
         if ruleset_key:
             ruleset_key = ruleset_key.group()
         if climate_zone:
-            climate_zone = climate_zone.split("CZ")[1]  # Extract the climate zone without 'CZ'
+            climate_zone = climate_zone.split("CZ")[
+                1
+            ]  # Extract the climate zone without 'CZ'
             for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
                 metric_key = f"{ruleset_key} {metric}"
                 bpf_data = self.bpf_data[metric_key][climate_zone]
@@ -1740,6 +1788,9 @@ class RCTDetailedReport:
         self._convert_compliance_summary_energies(self.baseline_model_summary)
         self._convert_compliance_summary_energies(self.proposed_model_summary)
 
+        self._convert_int_ltg_summary_units(self.baseline_model_summary)
+        self._convert_int_ltg_summary_units(self.proposed_model_summary)
+
     def _convert_summary_units(self, summary: dict, units_dict: dict):
         for key, value in summary.items():
             if key not in units_dict:
@@ -1791,6 +1842,17 @@ class RCTDetailedReport:
             for data_name, data in parameter_data.items():
                 if data_name in ["source_energy", "site_energy"]:
                     parameter_data[data_name] = self.convert_unit(data, "Btu", "MMBtu")
+
+    def _convert_int_ltg_summary_units(self, summary: dict):
+        for int_ltg_summary in summary.get("interior_lighting_summaries", {}).values():
+            if "floor_area" in int_ltg_summary:
+                int_ltg_summary["floor_area"] = self.convert_unit(
+                    int_ltg_summary["floor_area"], "m2", "ft2"
+                )
+            if "power_per_area" in int_ltg_summary:
+                int_ltg_summary["power_per_area"] = self.convert_unit(
+                    int_ltg_summary["power_per_area"], "W / m2", "W / ft2"
+                )
 
     def run(self):
         self.load_files()
