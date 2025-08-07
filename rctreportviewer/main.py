@@ -2,6 +2,7 @@ import ast
 import json
 import pint
 import os
+import re
 
 from rctreportviewer.write_html import write_html_file
 
@@ -10,6 +11,10 @@ path_to_ureg = os.path.join(
     "unit_registry.txt",
 )
 ureg = pint.UnitRegistry(path_to_ureg, autoconvert_offset_to_baseunit=True)
+path_to_bpf_data = os.path.join(
+    os.path.dirname(__file__),
+    "BPFs.json",
+)
 
 
 class RCTDetailedReport:
@@ -35,6 +40,40 @@ class RCTDetailedReport:
         "STEAM": "Fossil Fuel",
         "OTHER": "Other",
     }
+    bpf_area_type_map = {
+        "AUTOMOTIVE_FACILITY": "All Others",
+        "CONVENTION_CENTER": "All Others",
+        "COURTHOUSE": "All Others",
+        "DINING_BAR_LOUNGE_LEISURE": "Restaurant",
+        "DINING_CAFETERIA_FAST_FOOD": "Restaurant",
+        "DINING_FAMILY": "Restaurant",
+        "DORMITORY": "Multifamily",
+        "EXERCISE_CENTER": "All Others",
+        "FIRE_STATION": "All Others",
+        "GYMNASIUM": "All Others",
+        "HEALTH_CARE_CLINIC": "Healthcare/hospital",
+        "HOSPITAL": "Healthcare/hospital",
+        "HOTEL_MOTEL": "Hotel/motel",
+        "LIBRARY": "All Others",
+        "MANUFACTURING_FACILITY": "All Others",
+        "MOTION_PICTURE_THEATER": "All Others",
+        "MULTIFAMILY": "Multifamily",
+        "MUSEUM": "All Others",
+        "OFFICE": "Office",
+        "PARKING_GARAGE": "All Others",
+        "PENITENTIARY": "All Others",
+        "PERFORMING_ARTS_THEATER": "All Others",
+        "POLICE_STATION": "All Others",
+        "POST_OFFICE": "All Others",
+        "RELIGIOUS_FACILITY": "All Others",
+        "RETAIL": "Retail",
+        "SCHOOL_UNIVERSITY": "School",
+        "SPORTS_ARENA": "All Others",
+        "TOWN_HALL": "Office",
+        "TRANSPORTATION": "All Others",
+        "WAREHOUSE": "Warehouse",
+        "WORKSHOP": "All Others",
+    }
 
     def __init__(
         self,
@@ -53,6 +92,7 @@ class RCTDetailedReport:
         self.output_file_path = output_file_path
         self.rpd_data = None
         self.evaluation_data = None
+        self.bpf_data = None
         self.ruleset = None
 
         self.model_types = set()
@@ -62,6 +102,7 @@ class RCTDetailedReport:
         self.hvac_system_types_b = {}
         self.baseline_total_lighting_power_allowance = 0
         self.baseline_lighting_power_allowance_by_space_type = {}
+        self.bpfs_by_metric = {}
         self.proposed_model_summary = {}
         self.baseline_model_summary = {}
 
@@ -169,6 +210,7 @@ class RCTDetailedReport:
             "overall_window_u_factor_by_building_segment": {},
             "overall_skylight_ua_by_building_segment": {},
             "overall_skylight_u_factor_by_building_segment": {},
+            "lighting_area_type_by_building_segment": {},
             "total_floor_area_by_building_segment": {},
             "total_wall_area_by_building_segment": {},
             "total_roof_area_by_building_segment": {},
@@ -428,6 +470,10 @@ class RCTDetailedReport:
             rmd_building_summary["system_count"] += len(
                 building_segment.get("heating_ventilating_air_conditioning_systems", [])
             )
+
+            rmd_building_summary["lighting_area_type_by_building_segment"][
+                building_segment["id"]
+            ] = building_segment.get("lighting_building_area_type")
 
             for swh_use_id in building_segment.get("service_water_heating_uses", []):
                 rmd_building_summary["swh_use_id_to_area_types"].setdefault(
@@ -1101,6 +1147,7 @@ class RCTDetailedReport:
         """
         self.evaluation_data = self.load_file(self.detailed_evaluation_report_file_path)
         self.rpd_data = [self.load_file(file_path) for file_path in self.rpd_file_paths]
+        self.bpf_data = self.load_file(path_to_bpf_data)
 
     def extract_evaluation_data(self):
         """
@@ -1281,6 +1328,52 @@ class RCTDetailedReport:
         """
         Perform calculations on the model data to extract additional information.
         """
+
+        # Calculate area-weighted BPF from baseline model summary
+        def compute_area_weighted_bpf_for_metric(metric_bpf_data):
+            total_weighted = 0
+            total_area = 0
+            for building_segment_id in self.baseline_model_summary["lighting_area_type_by_building_segment"]:
+                lighting_building_area_type = self.baseline_model_summary["lighting_area_type_by_building_segment"][building_segment_id]
+                bpf_area_type = self.bpf_area_type_map.get(lighting_building_area_type)
+                if not bpf_area_type:
+                    continue
+                try:
+                    bpf = metric_bpf_data[bpf_area_type]
+                    area = self.baseline_model_summary["total_floor_area_by_building_segment"].get(
+                        building_segment_id, 0
+                    )
+                    total_weighted += bpf * area
+                    total_area += area
+                except KeyError:
+                    continue
+            return total_weighted / total_area if total_area else None
+
+        def compute_u_factors(model_summary):
+            for surface in ["wall", "roof", "window", "skylight"]:
+                ua_key = f"overall_{surface}_ua_by_building_segment"
+                area_key = f"total_{surface}_area_by_building_segment"
+                u_factor_key = f"overall_{surface}_u_factor_by_building_segment"
+
+                ua_data = model_summary.get(ua_key, {})
+                area_data = model_summary.get(area_key, {})
+                u_factor_data = model_summary.setdefault(u_factor_key, {})
+
+                for segment_id, ua_value in ua_data.items():
+                    area_value = area_data.get(segment_id)
+                    if area_value:  # Avoid division by zero or None
+                        u_factor_data[segment_id] = ua_value / area_value
+
+        climate_zone = self.rpd_data.get("weather", {}).get("climate_zone").split("CZ")[-1]
+        ruleset_key = re.search(r'90\.1-\d{4}', self.ruleset)
+        if ruleset_key:
+            ruleset_key = ruleset_key.group()
+        if climate_zone:
+            for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
+                metric_key = f"{ruleset_key} {metric}"
+                bpf_data = self.bpf_data[metric_key][climate_zone]
+                self.bpfs_by_metric[metric] = compute_area_weighted_bpf_for_metric(bpf_data)
+
         # Calculate the LPD allowance based on evaluation data + RPD data combined
         for space_id in self.space_areas:
             self.baseline_total_lighting_power_allowance += (
@@ -1299,113 +1392,9 @@ class RCTDetailedReport:
                     self.space_areas[space_id], "m2", "ft2"
                 )
 
-        # Calculate the average U-factors by building segment
-        for building_segment_id in self.baseline_model_summary[
-            "overall_wall_ua_by_building_segment"
-        ]:
-            self.baseline_model_summary["overall_wall_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                self.baseline_model_summary["overall_wall_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.baseline_model_summary["total_wall_area_by_building_segment"][
-                    building_segment_id
-                ]
-            )
-        for building_segment_id in self.baseline_model_summary[
-            "overall_roof_ua_by_building_segment"
-        ]:
-            self.baseline_model_summary["overall_roof_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                self.baseline_model_summary["overall_roof_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.baseline_model_summary["total_roof_area_by_building_segment"][
-                    building_segment_id
-                ]
-            )
-        for building_segment_id in self.baseline_model_summary[
-            "overall_window_ua_by_building_segment"
-        ]:
-            self.baseline_model_summary["overall_window_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                self.baseline_model_summary["overall_window_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.baseline_model_summary["total_window_area_by_building_segment"][
-                    building_segment_id
-                ]
-            )
-        for building_segment_id in self.baseline_model_summary[
-            "overall_skylight_ua_by_building_segment"
-        ]:
-            self.baseline_model_summary[
-                "overall_skylight_u_factor_by_building_segment"
-            ][building_segment_id] = (
-                self.baseline_model_summary["overall_skylight_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.baseline_model_summary[
-                    "total_skylight_area_by_building_segment"
-                ][building_segment_id]
-            )
-        for building_segment_id in self.proposed_model_summary[
-            "overall_wall_ua_by_building_segment"
-        ]:
-            self.proposed_model_summary["overall_wall_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                self.proposed_model_summary["overall_wall_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.proposed_model_summary["total_wall_area_by_building_segment"][
-                    building_segment_id
-                ]
-            )
-        for building_segment_id in self.proposed_model_summary[
-            "overall_roof_ua_by_building_segment"
-        ]:
-            self.proposed_model_summary["overall_roof_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                self.proposed_model_summary["overall_roof_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.proposed_model_summary["total_roof_area_by_building_segment"][
-                    building_segment_id
-                ]
-            )
-        for building_segment_id in self.proposed_model_summary[
-            "overall_window_ua_by_building_segment"
-        ]:
-            self.proposed_model_summary["overall_window_u_factor_by_building_segment"][
-                building_segment_id
-            ] = (
-                self.proposed_model_summary["overall_window_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.proposed_model_summary["total_window_area_by_building_segment"][
-                    building_segment_id
-                ]
-            )
-        for building_segment_id in self.proposed_model_summary[
-            "overall_skylight_ua_by_building_segment"
-        ]:
-            self.proposed_model_summary[
-                "overall_skylight_u_factor_by_building_segment"
-            ][building_segment_id] = (
-                self.proposed_model_summary["overall_skylight_ua_by_building_segment"][
-                    building_segment_id
-                ]
-                / self.proposed_model_summary[
-                    "total_skylight_area_by_building_segment"
-                ][building_segment_id]
-            )
+        compute_u_factors(self.baseline_model_summary)
+        compute_u_factors(self.proposed_model_summary)
 
-        # Calculate the average LPD by lighting space type
         for lighting_space_type in self.baseline_model_summary[
             "total_lighting_power_by_space_type"
         ]:
@@ -1433,34 +1422,45 @@ class RCTDetailedReport:
                 ]
             )
 
-        # Calculate the Other and Total fan summary details
         self.baseline_model_summary["total_fan_power_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
         self.baseline_model_summary["total_air_flow_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
         self.proposed_model_summary["total_fan_power_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
         self.proposed_model_summary["total_air_flow_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
 
         for fan_control in self.baseline_model_summary[
@@ -1546,35 +1546,44 @@ class RCTDetailedReport:
                 ]
 
         self.baseline_model_summary["other_fan_power_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
-
         self.baseline_model_summary["other_air_flow_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
-
         self.proposed_model_summary["other_fan_power_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
-
         self.proposed_model_summary["other_air_flow_by_fan_type"] = {
-            "Supply": 0,
-            "Return/Relief": 0,
-            "Exhaust": 0,
-            "Zonal Exhaust": 0,
-            "Terminal Unit": 0,
+            ft: 0
+            for ft in [
+                "Supply",
+                "Return/Relief",
+                "Exhaust",
+                "Zonal Exhaust",
+                "Terminal Unit",
+            ]
         }
 
         for fan_control in self.baseline_model_summary[
