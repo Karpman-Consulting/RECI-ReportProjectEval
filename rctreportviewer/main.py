@@ -237,6 +237,7 @@ class RCTDetailedReport:
             "energy_by_end_use_eui": {},
             "elec_by_end_use_eui": {},
             "gas_by_end_use_eui": {},
+            "cost_by_end_use_eui": {},
             "total_floor_area": 0,
             "total_exterior_wall_area": 0,
             "total_roof_area": 0,
@@ -1818,10 +1819,12 @@ class RCTDetailedReport:
         elec = summary.get("elec_by_end_use", {})
         gas = summary.get("gas_by_end_use", {})
         total = summary.get("energy_by_end_use", {})
+        cost = summary.get("cost_by_fuel_type", {})
 
         summary.setdefault("elec_by_end_use_eui", {})
         summary.setdefault("gas_by_end_use_eui", {})
         summary.setdefault("energy_by_end_use_eui", {})
+        summary.setdefault("cost_by_end_use_eui", {})
 
         for end_use, value in elec.items():
             summary["elec_by_end_use_eui"][end_use] = value * 3.412 / floor_area
@@ -1829,6 +1832,15 @@ class RCTDetailedReport:
             summary["gas_by_end_use_eui"][end_use] = value * 100 / floor_area
         for end_use, value in total.items():
             summary["energy_by_end_use_eui"][end_use] = value / floor_area
+
+            electricity = summary["elec_by_end_use_eui"].get(end_use, 0)
+            gas = summary["gas_by_end_use_eui"].get(end_use, 0)
+            tot = summary["energy_by_end_use_eui"].get(end_use, 0)
+            if not tot:
+                continue
+            summary["cost_by_end_use_eui"][end_use] = (electricity / tot) * cost.get(
+                "ELECTRICITY", 0
+            ) + (gas / tot) * cost.get("NATURAL_GAS", 0)
 
     def _convert_schedule_summaries_internal_gain(self, summary: dict):
         for schedule_data in summary.get("schedule_summaries", {}).values():
