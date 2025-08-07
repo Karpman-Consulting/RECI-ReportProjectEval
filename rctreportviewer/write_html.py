@@ -584,30 +584,30 @@ def write_html_file(rct_detailed_report):
                                         <th colspan="5" style="border: 2px solid black;">Proposed Design</th>
                                         <th></th>
                                     </tr>
-                                    <tr class="text-center">
+                                    <tr class="text-end align-middle">
                                         <th style="border: 2px solid black;">Interior Lighting ID</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Floor Area [ft<sup>2</sup>]</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Non-exempt General Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Decorative Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Retail Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Exempt Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Total</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Non-exempt General Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Decorative Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Retail Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Exempt Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Total</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Non-exempt General Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Decorative Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Retail Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Exempt Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Total</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Non-exempt General Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Decorative Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Additional Retail Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Exempt Lighting</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">Total</th>
-                                        <th style="border: 2px solid black; writing-mode: sideways-lr;">% Savings of Proposed vs Baseline</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Floor Area [ft<sup>2</sup>]</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Non-exempt General Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Decorative Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Retail Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Exempt Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Total</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Non-exempt General Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Decorative Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Retail Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Exempt Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Total</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Non-exempt General Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Decorative Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Retail Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Exempt Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Total</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Non-exempt General Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Decorative Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Additional Retail Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Exempt Lighting</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">Total</th>
+                                        <th style="border: 2px solid black; writing-mode: vertical-lr;">% Savings of Proposed vs Baseline</th>
                                     </tr>
                                 </thead>
                                 <tbody style="border: 2px solid black;">
