@@ -120,7 +120,7 @@ class RCTDetailedReport:
         Reads a JSON file and returns the python equivalent data structure.
         """
         # Verify the file path is to a JSON file extension
-        if not file_path.endswith(".json"):
+        if not file_path.endswith((".json", ".rpd")):
             raise ValueError("Invalid file type. Please provide a JSON file.")
 
         with open(file_path, "r") as file:
@@ -184,6 +184,7 @@ class RCTDetailedReport:
             "chiller_count": len(rmd_data.get("chillers", [])),
             "electric_chiller_count": 0,
             "fossil_fuel_chiller_count": 0,
+            "water_heater_count": len(rmd_data.get("service_water_heating_equipment")),
             "electric_chiller_plant_capacity": 0.0,
             "fossil_fuel_chiller_plant_capacity": 0.0,
             "cooling_tower_gpm": 0.0,
@@ -198,6 +199,9 @@ class RCTDetailedReport:
             "heating_capacity_by_fuel_type": {},
             "cooling_capacity_by_fuel_type": {},
             "external_fluid_sources": rmd_data.get("external_fluid_sources", []),
+            "service_water_heating_uses": rmd_data.get(
+                "service_water_heating_uses", []
+            ),
             "overall_wall_ua_by_building_segment": {},
             "overall_wall_u_factor_by_building_segment": {},
             "overall_roof_ua_by_building_segment": {},
@@ -255,6 +259,8 @@ class RCTDetailedReport:
             "floor_area_by_schedule": {},
             "occ_peak_internal_gain_by_schedule": {},
             "schedule_summaries": {},
+            "swh_use_id_to_area_types": {},
+            "water_heater_summary": {},
             "boiler_loops": [],
             "chw_loops": [],
         }
@@ -300,6 +306,9 @@ class RCTDetailedReport:
             if any(hourly_val < 0 for hourly_val in schedule.get("hourly_values", [])):
                 continue
             self.summarize_schedule_data(schedule, rmd_building_summary)
+
+        for water_heater in rmd_data.get("service_water_heating_equipment", []):
+            self.summarize_water_heater_data(water_heater, rmd_building_summary)
 
         return rmd_building_summary
 
@@ -466,6 +475,11 @@ class RCTDetailedReport:
                 building_segment["id"]
             ] = building_segment.get("lighting_building_area_type")
 
+            for swh_use_id in building_segment.get("service_water_heating_uses", []):
+                rmd_building_summary["swh_use_id_to_area_types"].setdefault(
+                    swh_use_id, set()
+                ).add(building_segment.get("service_water_heating_area_type"))
+
             self.summarize_rmd_zone_data(building_segment, rmd_building_summary)
 
             self.summarize_rmd_system_data(building_segment, rmd_building_summary)
@@ -473,6 +487,37 @@ class RCTDetailedReport:
             self.summarize_heating_cooling_capacity_data(
                 building_segment, rmd_building_summary
             )
+
+    @staticmethod
+    def summarize_water_heater_data(water_heater, rmd_building_summary):
+        fuel_type = water_heater.get("heater_fuel_type", "Unknown")
+        efficiencies = list(
+            zip(
+                water_heater.get("efficiency_metric_types", []),
+                water_heater.get("efficiency_metric_values", []),
+            )
+        )
+
+        # Get area types via use → distribution → heater
+        dist_sys_id = water_heater.get("distribution_system")
+        area_types = set()
+        if dist_sys_id:
+            use_ids = [
+                use.get("id")
+                for use in rmd_building_summary.get("service_water_heating_uses", [])
+                if use.get("served_by_distribution_system") == dist_sys_id
+            ]
+            for use_id in use_ids:
+                area_types.update(
+                    rmd_building_summary["swh_use_id_to_area_types"].get(use_id, [])
+                )
+
+        rmd_building_summary["water_heater_summary"][water_heater["id"]] = {
+            "id": water_heater["id"],
+            "fuel_type": fuel_type,
+            "efficiencies": efficiencies,
+            "area_types": sorted(area_types),
+        }
 
     def summarize_rmd_zone_data(self, building_segment, rmd_building_summary):
         for zone in building_segment.get("zones", []):
@@ -654,6 +699,11 @@ class RCTDetailedReport:
                     ]
                     schedule_areas_added.append(schedule)
                 add_internal_gain_from_occupancy(space, schedule)
+
+            for swh_use_id in space.get("service_water_heating_uses", []):
+                rmd_building_summary["swh_use_id_to_area_types"].setdefault(
+                    swh_use_id, set()
+                ).add(space.get("service_water_heating_area_type"))
 
     def summarize_heating_cooling_capacity_data(
         self, building_segment, rmd_building_summary
@@ -1283,16 +1333,20 @@ class RCTDetailedReport:
         def compute_area_weighted_bpf_for_metric(metric_bpf_data):
             total_weighted = 0
             total_area = 0
-            for building_segment_id in self.baseline_model_summary["lighting_area_type_by_building_segment"]:
-                lighting_building_area_type = self.baseline_model_summary["lighting_area_type_by_building_segment"][building_segment_id]
+            for building_segment_id in self.baseline_model_summary[
+                "lighting_area_type_by_building_segment"
+            ]:
+                lighting_building_area_type = self.baseline_model_summary[
+                    "lighting_area_type_by_building_segment"
+                ][building_segment_id]
                 bpf_area_type = self.bpf_area_type_map.get(lighting_building_area_type)
                 if not bpf_area_type:
                     continue
                 try:
                     bpf = metric_bpf_data[bpf_area_type]
-                    area = self.baseline_model_summary["total_floor_area_by_building_segment"].get(
-                        building_segment_id, 0
-                    )
+                    area = self.baseline_model_summary[
+                        "total_floor_area_by_building_segment"
+                    ].get(building_segment_id, 0)
                     total_weighted += bpf * area
                     total_area += area
                 except KeyError:
@@ -1314,15 +1368,25 @@ class RCTDetailedReport:
                     if area_value:  # Avoid division by zero or None
                         u_factor_data[segment_id] = ua_value / area_value
 
-        climate_zone = self.rpd_data.get("weather", {}).get("climate_zone").split("CZ")[-1]
-        ruleset_key = re.search(r'90\.1-\d{4}', self.ruleset)
+        climate_zone_vals = set(
+            model.get("weather", {}).get("climate_zone") for model in self.rpd_data["ruleset_model_descriptions"]
+        )
+        if len(climate_zone_vals) != 1:
+            print("Multiple climate zones found in the RPD data, using the first one.")
+
+        climate_zone = next(iter(climate_zone_vals), None)
+
+        ruleset_key = re.search(r"90\.1-\d{4}", self.ruleset)
         if ruleset_key:
             ruleset_key = ruleset_key.group()
         if climate_zone:
+            climate_zone = climate_zone.split("CZ")[1]  # Extract the climate zone without 'CZ'
             for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
                 metric_key = f"{ruleset_key} {metric}"
                 bpf_data = self.bpf_data[metric_key][climate_zone]
-                self.bpfs_by_metric[metric] = compute_area_weighted_bpf_for_metric(bpf_data)
+                self.bpfs_by_metric[metric] = compute_area_weighted_bpf_for_metric(
+                    bpf_data
+                )
 
         # Calculate the LPD allowance based on evaluation data + RPD data combined
         for space_id in self.space_areas:
