@@ -627,19 +627,33 @@ class RCTDetailedReport:
 
                     # Populate interior lighting summary data
                     if "purpose_type" in interior_lighting:
-                        interior_lighting_summary["purpose_type"] = interior_lighting["purpose_type"]
+                        interior_lighting_summary["purpose_type"] = interior_lighting[
+                            "purpose_type"
+                        ]
                         if interior_lighting["purpose_type"] in ["GENERAL", "TASK"]:
-                            interior_lighting_summary["int_ltg_power_general"] = int_ltg_power
+                            interior_lighting_summary[
+                                "int_ltg_power_general"
+                            ] = int_ltg_power
                         elif interior_lighting["purpose_type"] == "RETAIL_DISPLAY":
-                            interior_lighting_summary["int_ltg_power_retail"] = int_ltg_power
+                            interior_lighting_summary[
+                                "int_ltg_power_retail"
+                            ] = int_ltg_power
                         elif interior_lighting["purpose_type"] == "DECORATIVE":
-                            interior_lighting_summary["int_ltg_power_decorative"] = int_ltg_power
+                            interior_lighting_summary[
+                                "int_ltg_power_decorative"
+                            ] = int_ltg_power
                         elif interior_lighting["purpose_type"] == "UNREGULATED":
-                            interior_lighting_summary["int_ltg_power_exempt"] = int_ltg_power
+                            interior_lighting_summary[
+                                "int_ltg_power_exempt"
+                            ] = int_ltg_power
                     else:
-                        interior_lighting_summary["int_ltg_power_general"] = int_ltg_power
+                        interior_lighting_summary[
+                            "int_ltg_power_general"
+                        ] = int_ltg_power
                     interior_lighting_summary["int_ltg_power_total"] = int_ltg_power
-                    rmd_building_summary["int_ltg_summaries"][int_ltg_id] = interior_lighting_summary
+                    rmd_building_summary["int_ltg_summaries"][
+                        int_ltg_id
+                    ] = interior_lighting_summary
 
                     rmd_building_summary["total_lighting_power"] += int_ltg_power
                     if "lighting_space_type" in space:
@@ -1400,7 +1414,8 @@ class RCTDetailedReport:
                         u_factor_data[segment_id] = ua_value / area_value
 
         climate_zone_vals = set(
-            model.get("weather", {}).get("climate_zone") for model in self.rpd_data["ruleset_model_descriptions"]
+            model.get("weather", {}).get("climate_zone")
+            for model in self.rpd_data["ruleset_model_descriptions"]
         )
         if len(climate_zone_vals) != 1:
             print("Multiple climate zones found in the RPD data, using the first one.")
@@ -1411,7 +1426,9 @@ class RCTDetailedReport:
         if ruleset_key:
             ruleset_key = ruleset_key.group()
         if climate_zone:
-            climate_zone = climate_zone.split("CZ")[1]  # Extract the climate zone without 'CZ'
+            climate_zone = climate_zone.split("CZ")[
+                1
+            ]  # Extract the climate zone without 'CZ'
             for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
                 metric_key = f"{ruleset_key} {metric}"
                 bpf_data = self.bpf_data[metric_key][climate_zone]

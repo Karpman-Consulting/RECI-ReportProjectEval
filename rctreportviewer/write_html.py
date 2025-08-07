@@ -632,25 +632,60 @@ def write_html_file(rct_detailed_report):
                 "int_ltg_power_total": 0,
             },
         }
-        for interior_lighting in (set(
-            list(rct_detailed_report.baseline_model_summary["int_ltg_summaries"].keys()) +
-            list(rct_detailed_report.proposed_model_summary["int_ltg_summaries"].keys())
-        )):
-            if interior_lighting in rct_detailed_report.baseline_model_summary["int_ltg_summaries"] and interior_lighting in rct_detailed_report.proposed_model_summary["int_ltg_summaries"]:
-                baseline_lighting = rct_detailed_report.baseline_model_summary["int_ltg_summaries"][interior_lighting]
-                proposed_lighting = rct_detailed_report.proposed_model_summary["int_ltg_summaries"][interior_lighting]
-                int_ltg_totals["baseline"]["floor_area"] += baseline_lighting["floor_area"]
-                int_ltg_totals["baseline"]["int_ltg_power_general"] += baseline_lighting["int_ltg_power_general"]
-                int_ltg_totals["baseline"]["int_ltg_power_retail"] += baseline_lighting["int_ltg_power_retail"]
-                int_ltg_totals["baseline"]["int_ltg_power_decorative"] += baseline_lighting["int_ltg_power_decorative"]
-                int_ltg_totals["baseline"]["int_ltg_power_exempt"] += baseline_lighting["int_ltg_power_exempt"]
-                int_ltg_totals["baseline"]["int_ltg_power_total"] += baseline_lighting["int_ltg_power_total"]
-                int_ltg_totals["proposed"]["floor_area"] += proposed_lighting["floor_area"]
-                int_ltg_totals["proposed"]["int_ltg_power_general"] += proposed_lighting["int_ltg_power_general"]
-                int_ltg_totals["proposed"]["int_ltg_power_retail"] += proposed_lighting["int_ltg_power_retail"]
-                int_ltg_totals["proposed"]["int_ltg_power_decorative"] += proposed_lighting["int_ltg_power_decorative"]
-                int_ltg_totals["proposed"]["int_ltg_power_exempt"] += proposed_lighting["int_ltg_power_exempt"]
-                int_ltg_totals["proposed"]["int_ltg_power_total"] += proposed_lighting["int_ltg_power_total"]
+        for interior_lighting in set(
+            list(rct_detailed_report.baseline_model_summary["int_ltg_summaries"].keys())
+            + list(
+                rct_detailed_report.proposed_model_summary["int_ltg_summaries"].keys()
+            )
+        ):
+            if (
+                interior_lighting
+                in rct_detailed_report.baseline_model_summary["int_ltg_summaries"]
+                and interior_lighting
+                in rct_detailed_report.proposed_model_summary["int_ltg_summaries"]
+            ):
+                baseline_lighting = rct_detailed_report.baseline_model_summary[
+                    "int_ltg_summaries"
+                ][interior_lighting]
+                proposed_lighting = rct_detailed_report.proposed_model_summary[
+                    "int_ltg_summaries"
+                ][interior_lighting]
+                int_ltg_totals["baseline"]["floor_area"] += baseline_lighting[
+                    "floor_area"
+                ]
+                int_ltg_totals["baseline"][
+                    "int_ltg_power_general"
+                ] += baseline_lighting["int_ltg_power_general"]
+                int_ltg_totals["baseline"]["int_ltg_power_retail"] += baseline_lighting[
+                    "int_ltg_power_retail"
+                ]
+                int_ltg_totals["baseline"][
+                    "int_ltg_power_decorative"
+                ] += baseline_lighting["int_ltg_power_decorative"]
+                int_ltg_totals["baseline"]["int_ltg_power_exempt"] += baseline_lighting[
+                    "int_ltg_power_exempt"
+                ]
+                int_ltg_totals["baseline"]["int_ltg_power_total"] += baseline_lighting[
+                    "int_ltg_power_total"
+                ]
+                int_ltg_totals["proposed"]["floor_area"] += proposed_lighting[
+                    "floor_area"
+                ]
+                int_ltg_totals["proposed"][
+                    "int_ltg_power_general"
+                ] += proposed_lighting["int_ltg_power_general"]
+                int_ltg_totals["proposed"]["int_ltg_power_retail"] += proposed_lighting[
+                    "int_ltg_power_retail"
+                ]
+                int_ltg_totals["proposed"][
+                    "int_ltg_power_decorative"
+                ] += proposed_lighting["int_ltg_power_decorative"]
+                int_ltg_totals["proposed"]["int_ltg_power_exempt"] += proposed_lighting[
+                    "int_ltg_power_exempt"
+                ]
+                int_ltg_totals["proposed"]["int_ltg_power_total"] += proposed_lighting[
+                    "int_ltg_power_total"
+                ]
                 file.write(
                     f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -678,15 +713,33 @@ def write_html_file(rct_detailed_report):
                                         <td style="border-right: 2px solid black;">{round(proposed_lighting["int_ltg_power_total"] / proposed_lighting["floor_area"], 2):,}</td>
                                         <td>{round((baseline_lighting["int_ltg_power_total"] - proposed_lighting["int_ltg_power_total"]) / baseline_lighting["int_ltg_power_total"] * 100, 1) if baseline_lighting["int_ltg_power_total"] > 0 else 0}%</td>
                                     </tr>
-                    """)
-            elif interior_lighting in rct_detailed_report.baseline_model_summary["int_ltg_summaries"]:
-                baseline_lighting = rct_detailed_report.baseline_model_summary["int_ltg_summaries"][interior_lighting]
-                int_ltg_totals["baseline"]["floor_area"] += baseline_lighting["floor_area"]
-                int_ltg_totals["baseline"]["int_ltg_power_general"] += baseline_lighting["int_ltg_power_general"]
-                int_ltg_totals["baseline"]["int_ltg_power_retail"] += baseline_lighting["int_ltg_power_retail"]
-                int_ltg_totals["baseline"]["int_ltg_power_decorative"] += baseline_lighting["int_ltg_power_decorative"]
-                int_ltg_totals["baseline"]["int_ltg_power_exempt"] += baseline_lighting["int_ltg_power_exempt"]
-                int_ltg_totals["baseline"]["int_ltg_power_total"] += baseline_lighting["int_ltg_power_total"]
+                    """
+                )
+            elif (
+                interior_lighting
+                in rct_detailed_report.baseline_model_summary["int_ltg_summaries"]
+            ):
+                baseline_lighting = rct_detailed_report.baseline_model_summary[
+                    "int_ltg_summaries"
+                ][interior_lighting]
+                int_ltg_totals["baseline"]["floor_area"] += baseline_lighting[
+                    "floor_area"
+                ]
+                int_ltg_totals["baseline"][
+                    "int_ltg_power_general"
+                ] += baseline_lighting["int_ltg_power_general"]
+                int_ltg_totals["baseline"]["int_ltg_power_retail"] += baseline_lighting[
+                    "int_ltg_power_retail"
+                ]
+                int_ltg_totals["baseline"][
+                    "int_ltg_power_decorative"
+                ] += baseline_lighting["int_ltg_power_decorative"]
+                int_ltg_totals["baseline"]["int_ltg_power_exempt"] += baseline_lighting[
+                    "int_ltg_power_exempt"
+                ]
+                int_ltg_totals["baseline"]["int_ltg_power_total"] += baseline_lighting[
+                    "int_ltg_power_total"
+                ]
                 file.write(
                     f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -714,15 +767,33 @@ def write_html_file(rct_detailed_report):
                                         <td style="border-right: 2px solid black;">0</td>
                                         <td>-</td>
                                     </tr>
-                    """)
-            elif interior_lighting in rct_detailed_report.proposed_model_summary["int_ltg_summaries"]:
-                proposed_lighting = rct_detailed_report.proposed_model_summary["int_ltg_summaries"][interior_lighting]
-                int_ltg_totals["proposed"]["floor_area"] += proposed_lighting["floor_area"]
-                int_ltg_totals["proposed"]["int_ltg_power_general"] += proposed_lighting["int_ltg_power_general"]
-                int_ltg_totals["proposed"]["int_ltg_power_retail"] += proposed_lighting["int_ltg_power_retail"]
-                int_ltg_totals["proposed"]["int_ltg_power_decorative"] += proposed_lighting["int_ltg_power_decorative"]
-                int_ltg_totals["proposed"]["int_ltg_power_exempt"] += proposed_lighting["int_ltg_power_exempt"]
-                int_ltg_totals["proposed"]["int_ltg_power_total"] += proposed_lighting["int_ltg_power_total"]
+                    """
+                )
+            elif (
+                interior_lighting
+                in rct_detailed_report.proposed_model_summary["int_ltg_summaries"]
+            ):
+                proposed_lighting = rct_detailed_report.proposed_model_summary[
+                    "int_ltg_summaries"
+                ][interior_lighting]
+                int_ltg_totals["proposed"]["floor_area"] += proposed_lighting[
+                    "floor_area"
+                ]
+                int_ltg_totals["proposed"][
+                    "int_ltg_power_general"
+                ] += proposed_lighting["int_ltg_power_general"]
+                int_ltg_totals["proposed"]["int_ltg_power_retail"] += proposed_lighting[
+                    "int_ltg_power_retail"
+                ]
+                int_ltg_totals["proposed"][
+                    "int_ltg_power_decorative"
+                ] += proposed_lighting["int_ltg_power_decorative"]
+                int_ltg_totals["proposed"]["int_ltg_power_exempt"] += proposed_lighting[
+                    "int_ltg_power_exempt"
+                ]
+                int_ltg_totals["proposed"]["int_ltg_power_total"] += proposed_lighting[
+                    "int_ltg_power_total"
+                ]
                 file.write(
                     f"""
                                     <tr style="font-size: 12px;" class="lh-1 text-center">
@@ -750,7 +821,8 @@ def write_html_file(rct_detailed_report):
                                         <td style="border-right: 2px solid black;">{round(proposed_lighting["int_ltg_power_total"] / proposed_lighting["floor_area"], 2):,}</td>
                                         <td>-</td>
                                     </tr>
-                    """)
+                    """
+                )
 
         file.write(
             f"""          
