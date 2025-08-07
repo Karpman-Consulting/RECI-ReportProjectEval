@@ -1368,13 +1368,19 @@ class RCTDetailedReport:
                     if area_value:  # Avoid division by zero or None
                         u_factor_data[segment_id] = ua_value / area_value
 
-        climate_zone = (
-            self.rpd_data.get("weather", {}).get("climate_zone").split("CZ")[-1]
+        climate_zone_vals = set(
+            model.get("weather", {}).get("climate_zone") for model in self.rpd_data["ruleset_model_descriptions"]
         )
+        if len(climate_zone_vals) != 1:
+            print("Multiple climate zones found in the RPD data, using the first one.")
+
+        climate_zone = next(iter(climate_zone_vals), None)
+
         ruleset_key = re.search(r"90\.1-\d{4}", self.ruleset)
         if ruleset_key:
             ruleset_key = ruleset_key.group()
         if climate_zone:
+            climate_zone = climate_zone.split("CZ")[1]  # Extract the climate zone without 'CZ'
             for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
                 metric_key = f"{ruleset_key} {metric}"
                 bpf_data = self.bpf_data[metric_key][climate_zone]
