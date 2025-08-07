@@ -630,11 +630,11 @@ class RCTDetailedReport:
                         interior_lighting_summary["purpose_type"] = interior_lighting["purpose_type"]
                         if interior_lighting["purpose_type"] in ["GENERAL", "TASK"]:
                             interior_lighting_summary["int_ltg_power_general"] = int_ltg_power
-                        elif interior_lighting["purpose_type"] == "RETAIL":
+                        elif interior_lighting["purpose_type"] == "RETAIL_DISPLAY":
                             interior_lighting_summary["int_ltg_power_retail"] = int_ltg_power
                         elif interior_lighting["purpose_type"] == "DECORATIVE":
                             interior_lighting_summary["int_ltg_power_decorative"] = int_ltg_power
-                        elif interior_lighting["purpose_type"] == "EXEMPT":
+                        elif interior_lighting["purpose_type"] == "UNREGULATED":
                             interior_lighting_summary["int_ltg_power_exempt"] = int_ltg_power
                     else:
                         interior_lighting_summary["int_ltg_power_general"] = int_ltg_power
