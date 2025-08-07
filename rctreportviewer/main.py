@@ -120,7 +120,7 @@ class RCTDetailedReport:
         Reads a JSON file and returns the python equivalent data structure.
         """
         # Verify the file path is to a JSON file extension
-        if not file_path.endswith(".json"):
+        if not file_path.endswith((".json", ".rpd")):
             raise ValueError("Invalid file type. Please provide a JSON file.")
 
         with open(file_path, "r") as file:
@@ -1333,16 +1333,20 @@ class RCTDetailedReport:
         def compute_area_weighted_bpf_for_metric(metric_bpf_data):
             total_weighted = 0
             total_area = 0
-            for building_segment_id in self.baseline_model_summary["lighting_area_type_by_building_segment"]:
-                lighting_building_area_type = self.baseline_model_summary["lighting_area_type_by_building_segment"][building_segment_id]
+            for building_segment_id in self.baseline_model_summary[
+                "lighting_area_type_by_building_segment"
+            ]:
+                lighting_building_area_type = self.baseline_model_summary[
+                    "lighting_area_type_by_building_segment"
+                ][building_segment_id]
                 bpf_area_type = self.bpf_area_type_map.get(lighting_building_area_type)
                 if not bpf_area_type:
                     continue
                 try:
                     bpf = metric_bpf_data[bpf_area_type]
-                    area = self.baseline_model_summary["total_floor_area_by_building_segment"].get(
-                        building_segment_id, 0
-                    )
+                    area = self.baseline_model_summary[
+                        "total_floor_area_by_building_segment"
+                    ].get(building_segment_id, 0)
                     total_weighted += bpf * area
                     total_area += area
                 except KeyError:
@@ -1364,15 +1368,19 @@ class RCTDetailedReport:
                     if area_value:  # Avoid division by zero or None
                         u_factor_data[segment_id] = ua_value / area_value
 
-        climate_zone = self.rpd_data.get("weather", {}).get("climate_zone").split("CZ")[-1]
-        ruleset_key = re.search(r'90\.1-\d{4}', self.ruleset)
+        climate_zone = (
+            self.rpd_data.get("weather", {}).get("climate_zone").split("CZ")[-1]
+        )
+        ruleset_key = re.search(r"90\.1-\d{4}", self.ruleset)
         if ruleset_key:
             ruleset_key = ruleset_key.group()
         if climate_zone:
             for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
                 metric_key = f"{ruleset_key} {metric}"
                 bpf_data = self.bpf_data[metric_key][climate_zone]
-                self.bpfs_by_metric[metric] = compute_area_weighted_bpf_for_metric(bpf_data)
+                self.bpfs_by_metric[metric] = compute_area_weighted_bpf_for_metric(
+                    bpf_data
+                )
 
         # Calculate the LPD allowance based on evaluation data + RPD data combined
         for space_id in self.space_areas:

@@ -621,51 +621,41 @@ def write_html_file(rct_detailed_report):
                 None,
             )
 
+            def format_efficiencies(eff_list):
+                if not isinstance(eff_list, list) or not eff_list:
+                    return "-"
+                return "; ".join(
+                    f"{value:.2f} {efficiency_display_map.get(metric, metric.replace('_', ' ').title())}"
+                    for metric, value in eff_list
+                )
+
             if proposed_wh_id_match:
                 proposed_wh_data = proposed_water_heater_summary[proposed_wh_id_match]
                 proposed_area_type = ", ".join(proposed_wh_data.get("area_types", "-"))
                 proposed_fuel = proposed_wh_data.get("fuel_type", "-")
-                proposed_efficiencies = proposed_wh_data.get("efficiencies", [])
-                if isinstance(proposed_efficiencies, list):
-                    proposed_efficiency = (
-                        "; ".join(
-                            f"{metric.replace('_', ' ').title()}: {value:.2f}"
-                            for metric, value in proposed_efficiencies
-                        )
-                        if proposed_efficiencies
-                        else "-"
-                    )
-                else:
-                    proposed_efficiency = "-"
+                proposed_efficiency = format_efficiencies(
+                    proposed_wh_data.get("efficiencies", [])
+                )
 
             if baseline_wh_id_match:
                 baseline_wh_data = baseline_water_heater_summary[baseline_wh_id_match]
                 baseline_area_type = ", ".join(baseline_wh_data.get("area_types", "-"))
                 baseline_fuel = baseline_wh_data.get("fuel_type", "-")
-                baseline_efficiencies = baseline_wh_data.get("efficiencies", [])
-                if isinstance(baseline_efficiencies, list):
-                    baseline_efficiency = (
-                        "; ".join(
-                            f"{metric.replace('_', ' ').title()}: {value:.2f}"
-                            for metric, value in baseline_efficiencies
-                        )
-                        if baseline_efficiencies
-                        else "-"
-                    )
-                else:
-                    baseline_efficiency = "-"
+                baseline_efficiency = format_efficiencies(
+                    baseline_wh_data.get("efficiencies", [])
+                )
 
             file.write(
                 f"""
-                                        <tr style="font-size: 12px;" class="lh-1 text-center">
-                                            <td style="border-right: 2px solid black;">{water_heater_id}</td>
-                                            <td>{proposed_area_type.replace("_", " ").title()}</td>
-                                            <td>{proposed_fuel.replace("_", " ").title()}</td>
-                                            <td style="border-right: 2px solid black;">{proposed_efficiency}</td>
-                                            <td>{baseline_area_type.replace("_", " ").title()}</td>
-                                            <td>{baseline_fuel.replace("_", " ").title()}</td>
-                                            <td style="border-right: 2px solid black;">{baseline_efficiency}</td>
-                                        </tr>
+                    <tr style="font-size: 12px;" class="lh-1 text-center">
+                        <td style="border-right: 2px solid black;">{water_heater_id}</td>
+                        <td>{proposed_area_type.replace("_", " ").title()}</td>
+                        <td>{proposed_fuel.replace("_", " ").title()}</td>
+                        <td style="border-right: 2px solid black;">{proposed_efficiency}</td>
+                        <td>{baseline_area_type.replace("_", " ").title()}</td>
+                        <td>{baseline_fuel.replace("_", " ").title()}</td>
+                        <td style="border-right: 2px solid black;">{baseline_efficiency}</td>
+                    </tr>
                 """
             )
 
