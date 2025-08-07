@@ -1838,8 +1838,9 @@ class RCTDetailedReport:
             tot = summary["energy_by_end_use_eui"].get(end_use, 0)
             if not tot:
                 continue
-            summary["cost_by_end_use_eui"][end_use] = ((electricity / tot) * cost.get("ELECTRICITY", 0) +
-                                                       (gas / tot) * cost.get("NATURAL_GAS", 0))
+            summary["cost_by_end_use_eui"][end_use] = (electricity / tot) * cost.get(
+                "ELECTRICITY", 0
+            ) + (gas / tot) * cost.get("NATURAL_GAS", 0)
 
     def _convert_schedule_summaries_internal_gain(self, summary: dict):
         for schedule_data in summary.get("schedule_summaries", {}).values():
