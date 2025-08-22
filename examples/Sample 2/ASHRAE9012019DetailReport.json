@@ -4,23 +4,19 @@
     "tool_name": "PNNL Ruleset Checking Tool",
     "tool_version": "0.3.0",
     "ruleset": "ASHRAE 90.1-2019 Performance Rating Method (Appendix G)",
-    "date_run": "2025-08-06 19:43:10.004049",
+    "date_run": "2025-08-22 16:56:57.559478",
     "schema_version": "0.1.7",
     "rpd_files": [
-        {
-            "ruleset_model_type": "USER",
-            "file_name": "Briarwood Library"
-        },
-        {
-            "ruleset_model_type": "BASELINE_0",
-            "file_name": "Briarwood Library"
-        },
         {
             "ruleset_model_type": "BASELINE_90",
             "file_name": "Briarwood Library"
         },
         {
-            "ruleset_model_type": "BASELINE_180",
+            "ruleset_model_type": "USER",
+            "file_name": "Briarwood Library"
+        },
+        {
+            "ruleset_model_type": "PROPOSED",
             "file_name": "Briarwood Library"
         },
         {
@@ -28,7 +24,11 @@
             "file_name": "Briarwood Library"
         },
         {
-            "ruleset_model_type": "PROPOSED",
+            "ruleset_model_type": "BASELINE_0",
+            "file_name": "Briarwood Library"
+        },
+        {
+            "ruleset_model_type": "BASELINE_180",
             "file_name": "Briarwood Library"
         }
     ],
@@ -138,7 +138,7 @@
                 {
                     "data_group_id": "1-7",
                     "outcome": "FAILED",
-                    "messages": "path: $.ruleset_model_descriptions[0]: data object Briarwood Lib in index context does not match the one Briarwood Lib - 19 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[2].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[3].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6]: data object Floor 04 in index context does not match the one Floor 03 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].optical_properties: data object Floor 04 OpticalProps in index context does not match the one Floor 03 OpticalProps in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[6].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[7].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[9].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2]: data object Floor 03 in index context does not match the one Floor 04 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].optical_properties: data object Floor 03 OpticalProps in index context does not match the one Floor 04 OpticalProps in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11]: data object Crawl ZN in index context does not match the one CRAWL ZN in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].terminals[0]: data object Crawl ZN MainTerminal in index context does not match the one CRAWL ZN MainTerminal in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration: data object Crawl ZN Infil in index context does not match the one CRAWL ZN Infil in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration.algorithm_name: index context data: None does not equal to compare context data: Air Change Method; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0]: data object BL SYS 3 01 in index context does not match the one Ductless Split AC in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system: data object BL SYS 3 01 FanSys in index context does not match the one Ductless Split AC FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.supply_fans[0]: data object BL SYS 3 01 SupplyFan in index context does not match the one Ductless Split AC SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.air_economizer: data object BL SYS 3 01 AirEconomizer in index context does not match the one Ductless Split AC AirEconomizer in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].heating_system: data object BL SYS 3 01 HeatSys in index context does not match the one Ductless Split AC HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].cooling_system: data object BL SYS 3 01 CoolSys in index context does not match the one Ductless Split AC CoolSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1]: data object BL SYS 3 02 in index context does not match the one EUH in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system: data object BL SYS 3 02 FanSys in index context does not match the one EUH FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system.supply_fans[0]: data object BL SYS 3 02 SupplyFan in index context does not match the one EUH SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].heating_system: data object BL SYS 3 02 HeatSys in index context does not match the one EUH HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2]: data object BL SYS 3 03 in index context does not match the one EUH - CRAWL ZN in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system: data object BL SYS 3 03 FanSys in index context does not match the one EUH FanSys--2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system.supply_fans[0]: data object BL SYS 3 03 SupplyFan in index context does not match the one EUH SupplyFan--2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].heating_system: data object BL SYS 3 03 HeatSys in index context does not match the one EUH HeatSys--2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3]: data object BL SYS 3 04 in index context does not match the one EUH - G - Plumbing zn in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system: data object BL SYS 3 04 FanSys in index context does not match the one EUH FanSys--1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system.supply_fans[0]: data object BL SYS 3 04 SupplyFan in index context does not match the one EUH SupplyFan--1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].heating_system: data object BL SYS 3 04 HeatSys in index context does not match the one EUH HeatSys--1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4]: data object BL SYS 3 05 in index context does not match the one RTU - 1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system: data object BL SYS 3 05 FanSys in index context does not match the one RTU - 1 FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.supply_fans[0]: data object BL SYS 3 05 SupplyFan in index context does not match the one RTU - 1 SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.return_fans[0]: data object BL SYS 3 05 ReturnFan in index context does not match the one RTU - 1 ReturnFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.air_economizer: data object BL SYS 3 05 AirEconomizer in index context does not match the one RTU - 1 AirEconomizer in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].heating_system: data object BL SYS 3 05 HeatSys in index context does not match the one RTU - 1 HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].cooling_system: data object BL SYS 3 05 CoolSys in index context does not match the one RTU - 1 CoolSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5]: data object BL SYS 3 06 in index context does not match the one RTU - 2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system: data object BL SYS 3 06 FanSys in index context does not match the one RTU - 2 FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.supply_fans[0]: data object BL SYS 3 06 SupplyFan in index context does not match the one RTU - 2 SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.return_fans[0]: data object BL SYS 3 06 ReturnFan in index context does not match the one RTU - 2 ReturnFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.air_economizer: data object BL SYS 3 06 AirEconomizer in index context does not match the one RTU - 2 AirEconomizer in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].heating_system: data object BL SYS 3 06 HeatSys in index context does not match the one RTU - 2 HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].cooling_system: data object BL SYS 3 06 CoolSys in index context does not match the one RTU - 2 CoolSys in compare context; path: $.ruleset_model_descriptions[0].schedules[1]: data object 90.1 C3.5.5.3 Lib CLGSPT in index context does not match the one Back of House HTGSPT in compare context; path: $.ruleset_model_descriptions[0].schedules[2]: data object 90.1 C3.5.5.3 Lib EQP in index context does not match the one COMMUNITY CTR LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[3]: data object 90.1 C3.5.5.3 Lib HTGSPT in index context does not match the one COMNET App C1 EQP in compare context; path: $.ruleset_model_descriptions[0].schedules[4]: data object 90.1 C3.5.5.3 Lib INF in index context does not match the one COMNET App C1 LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[5]: data object 90.1 C3.5.5.3 Lib LTG in index context does not match the one Cust 1 Elec Season Sched in compare context; path: $.ruleset_model_descriptions[0].schedules[6]: data object 90.1 C3.5.5.3 Lib OCC in index context does not match the one Custom Gas Season Sched in compare context; path: $.ruleset_model_descriptions[0].schedules[7]: data object 90.1 C3.5.5.3 Lib ON-OFF in index context does not match the one DHW Eqp NRes Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[8]: data object Back of House HTGSPT in index context does not match the one Dirt Depre Windows in compare context; path: $.ruleset_model_descriptions[0].schedules[9]: data object COMMUNITY CTR LTG in index context does not match the one EXT LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[10]: data object COMNET App C1 EQP in index context does not match the one G - Bldg InsLt Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[11]: data object COMNET App C1 LTG in index context does not match the one Hourly Report Schedule in compare context; path: $.ruleset_model_descriptions[0].schedules[12]: data object Cust 1 Elec Season Sched in index context does not match the one OFFICE LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[13]: data object Custom Gas Season Sched in index context does not match the one PR Lib CLGSPT in compare context; path: $.ruleset_model_descriptions[0].schedules[14]: data object DHW Eqp NRes Sch in index context does not match the one PR Lib EQP in compare context; path: $.ruleset_model_descriptions[0].schedules[15]: data object Dirt Depre Windows in index context does not match the one PR Lib HTGSPT in compare context; path: $.ruleset_model_descriptions[0].schedules[16]: data object EXT LTG in index context does not match the one PR Lib INF in compare context; path: $.ruleset_model_descriptions[0].schedules[17]: data object G - Bldg InsLt Sch in index context does not match the one PR Lib LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[18]: data object Hourly Report Schedule in index context does not match the one PR Lib OCC in compare context; path: $.ruleset_model_descriptions[0].schedules[19]: data object MIN OA in index context does not match the one PR Lib ON-OFF in compare context; path: $.ruleset_model_descriptions[0].schedules[20]: data object OFFICE LTG in index context does not match the one PR Lib SHW in compare context; path: $.ruleset_model_descriptions[0].schedules[21]: data object PR CLGSPT in index context does not match the one PR MIN OA in compare context; path: $.ruleset_model_descriptions[0].schedules[22]: data object PR EQP in index context does not match the one S1 Sys1 (PSZ) Cool Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[23]: data object PR HTGSPT in index context does not match the one S1 Sys1 (PSZ) Fan Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[24]: data object PR Lib INF in index context does not match the one S1 Sys1 (PSZ) Heat Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[25]: data object PR Lib LTG in index context does not match the one STORAGE LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[26]: data object PR Lib OCC in index context does not match the one ZG0-S1 (PSZ) C-Inf Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[27]: data object PR Lib ON-OFF in index context does not match the one ZG0-S1 (PSZ) P-Inf Sch in compare context; path: $.ruleset_model_descriptions[0].constructions[6]: data object BL BGW in index context does not match the one Air Wall in compare context; path: $.ruleset_model_descriptions[0].constructions[7]: data object BL EXP FLOOR in index context does not match the one BL BGW in compare context; path: $.ruleset_model_descriptions[0].constructions[8]: data object BL NR E WALL in index context does not match the one BL EXP FLOOR in compare context; path: $.ruleset_model_descriptions[0].constructions[9]: data object BL ROOF in index context does not match the one BL NR E WALL in compare context; path: $.ruleset_model_descriptions[0].constructions[10]: data object Cell Wall in index context does not match the one BL ROOF in compare context; path: $.ruleset_model_descriptions[0].constructions[11]: data object Construction 21 in index context does not match the one CODE EXP FLR in compare context; path: $.ruleset_model_descriptions[0].constructions[12]: data object Dbl Lyr Unins Mtl Door in index context does not match the one Cell Wall in compare context; path: $.ruleset_model_descriptions[0].constructions[13]: data object EL2 UFCons (G.NNW1.U2) in index context does not match the one Construction 21 in compare context; path: $.ruleset_model_descriptions[0].constructions[14]: data object Ext Wall in index context does not match the one Dbl Lyr Unins Mtl Door in compare context; path: $.ruleset_model_descriptions[0].constructions[15]: data object G - IFlSP Construction in index context does not match the one EL2 UFCons (G.NNW1.U2) in compare context; path: $.ruleset_model_descriptions[0].constructions[16]: data object G - IFlr Construction in index context does not match the one Ext Wall in compare context; path: $.ruleset_model_descriptions[0].constructions[17]: data object G - UFCons (G.NW2.U3) in index context does not match the one G - IFlSP Construction in compare context; path: $.ruleset_model_descriptions[0].constructions[18]: data object G - UFCons (G.SE1.U2) in index context does not match the one G - IFlr Construction in compare context; path: $.ruleset_model_descriptions[0].constructions[19]: data object HP AEDG ROOF in index context does not match the one G - UFCons (G.NW2.U3) in compare context; path: $.ruleset_model_descriptions[0].constructions[20]: data object HP AEDG WALL in index context does not match the one G - UFCons (G.SE1.U2) in compare context; path: $.ruleset_model_descriptions[0].constructions[21]: data object PR Floor in index context does not match the one HP AEDG ROOF in compare context; path: $.ruleset_model_descriptions[0].constructions[22]: data object PR NR E WALL in index context does not match the one HP AEDG WALL in compare context; path: $.ruleset_model_descriptions[0].constructions[23]: data object PR ROOF in index context does not match the one PR Floor in compare context; path: $.ruleset_model_descriptions[0].constructions[24]: data object Roof1 in index context does not match the one PR NR E WALL in compare context; path: $.ruleset_model_descriptions[0].materials[32]: data object MinWool Batt R7 (IN01)_0.46 in index context does not match the one MinWool Batt R7 (IN01)_0.41 in compare context; path: $.ruleset_model_descriptions[0].materials[33]: data object Polyisocyanurate 2in in index context does not match the one MinWool Batt R7 (IN01)_0.46 in compare context; path: $.ruleset_model_descriptions[0].materials[34]: data object Polyisocyanurate 2in_0.15 in index context does not match the one Polyisocyanurate 2in in compare context; path: $.ruleset_model_descriptions[0].materials[37]: data object Polyisocyanurate 2in_0.3 in index context does not match the one Polyisocyanurate 2in_0.2 in compare context; path: $.ruleset_model_descriptions[0].materials[38]: data object Polyisocyanurate 2in_0.38 in index context does not match the one Polyisocyanurate 2in_0.3 in compare context; path: $.ruleset_model_descriptions[0].materials[39]: data object Polyisocyanurate 2in_0.52 in index context does not match the one Polyisocyanurate 2in_0.38 in compare context; path: $.ruleset_model_descriptions[0].materials[40]: data object Polyisocyanurate 3in in index context does not match the one Polyisocyanurate 2in_0.52 in compare context; path: $.ruleset_model_descriptions[0].materials[41]: data object Polyisocyanurate 3in_0.291 in index context does not match the one Polyisocyanurate 3in in compare context; path: $.ruleset_model_descriptions[0].materials[42]: data object Stucco 1in (SC01) in index context does not match the one Polyisocyanurate 3in_0.291 in compare context; path: $.ruleset_model_descriptions[0].materials[43]: data object Stucco 1in (SC01)_0.033 in index context does not match the one Stucco 1in (SC01) in compare context; path: $.ruleset_model_descriptions[0].materials[44]: data object Surf Air Film Horiz (AL03) in index context does not match the one Stucco 1in (SC01)_0.033 in compare context; path: $.ruleset_model_descriptions[0].materials[45]: data object Surf Air Film Vert (AL01) in index context does not match the one Surf Air Film Horiz (AL03) in compare context",
+                    "messages": "path: $.ruleset_model_descriptions[0]: data object Briarwood Lib in index context does not match the one Briarwood Lib - 19 - Proposed in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[2].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[3].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6]: data object Floor 04 in index context does not match the one Floor 03 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].optical_properties: data object Floor 04 OpticalProps in index context does not match the one Floor 03 OpticalProps in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[6].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[7].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[9].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2]: data object Floor 03 in index context does not match the one Floor 04 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].optical_properties: data object Floor 03 OpticalProps in index context does not match the one Floor 04 OpticalProps in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11]: data object Crawl ZN in index context does not match the one CRAWL ZN in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].terminals[0]: data object Crawl ZN MainTerminal in index context does not match the one CRAWL ZN MainTerminal in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration: data object Crawl ZN Infil in index context does not match the one CRAWL ZN Infil in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration.algorithm_name: index context data: None does not equal to compare context data: Air Change Method; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0]: data object BL SYS 3 01 in index context does not match the one Ductless Split AC in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system: data object BL SYS 3 01 FanSys in index context does not match the one Ductless Split AC FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.supply_fans[0]: data object BL SYS 3 01 SupplyFan in index context does not match the one Ductless Split AC SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.air_economizer: data object BL SYS 3 01 AirEconomizer in index context does not match the one Ductless Split AC AirEconomizer in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].heating_system: data object BL SYS 3 01 HeatSys in index context does not match the one Ductless Split AC HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].cooling_system: data object BL SYS 3 01 CoolSys in index context does not match the one Ductless Split AC CoolSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1]: data object BL SYS 3 02 in index context does not match the one EUH in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system: data object BL SYS 3 02 FanSys in index context does not match the one EUH FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system.supply_fans[0]: data object BL SYS 3 02 SupplyFan in index context does not match the one EUH SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].heating_system: data object BL SYS 3 02 HeatSys in index context does not match the one EUH HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2]: data object BL SYS 3 03 in index context does not match the one EUH - CRAWL ZN in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system: data object BL SYS 3 03 FanSys in index context does not match the one EUH FanSys--2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system.supply_fans[0]: data object BL SYS 3 03 SupplyFan in index context does not match the one EUH SupplyFan--2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].heating_system: data object BL SYS 3 03 HeatSys in index context does not match the one EUH HeatSys--2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3]: data object BL SYS 3 04 in index context does not match the one EUH - G - Plumbing zn in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system: data object BL SYS 3 04 FanSys in index context does not match the one EUH FanSys--1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system.supply_fans[0]: data object BL SYS 3 04 SupplyFan in index context does not match the one EUH SupplyFan--1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].heating_system: data object BL SYS 3 04 HeatSys in index context does not match the one EUH HeatSys--1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4]: data object BL SYS 3 05 in index context does not match the one RTU - 1 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system: data object BL SYS 3 05 FanSys in index context does not match the one RTU - 1 FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.supply_fans[0]: data object BL SYS 3 05 SupplyFan in index context does not match the one RTU - 1 SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.return_fans[0]: data object BL SYS 3 05 ReturnFan in index context does not match the one RTU - 1 ReturnFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.air_economizer: data object BL SYS 3 05 AirEconomizer in index context does not match the one RTU - 1 AirEconomizer in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].heating_system: data object BL SYS 3 05 HeatSys in index context does not match the one RTU - 1 HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].cooling_system: data object BL SYS 3 05 CoolSys in index context does not match the one RTU - 1 CoolSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5]: data object BL SYS 3 06 in index context does not match the one RTU - 2 in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system: data object BL SYS 3 06 FanSys in index context does not match the one RTU - 2 FanSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.supply_fans[0]: data object BL SYS 3 06 SupplyFan in index context does not match the one RTU - 2 SupplyFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.return_fans[0]: data object BL SYS 3 06 ReturnFan in index context does not match the one RTU - 2 ReturnFan in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.air_economizer: data object BL SYS 3 06 AirEconomizer in index context does not match the one RTU - 2 AirEconomizer in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].heating_system: data object BL SYS 3 06 HeatSys in index context does not match the one RTU - 2 HeatSys in compare context; path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].cooling_system: data object BL SYS 3 06 CoolSys in index context does not match the one RTU - 2 CoolSys in compare context; path: $.ruleset_model_descriptions[0].schedules[1]: data object 90.1 C3.5.5.3 Lib CLGSPT in index context does not match the one Back of House HTGSPT in compare context; path: $.ruleset_model_descriptions[0].schedules[2]: data object 90.1 C3.5.5.3 Lib EQP in index context does not match the one COMMUNITY CTR LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[3]: data object 90.1 C3.5.5.3 Lib HTGSPT in index context does not match the one COMNET App C1 EQP in compare context; path: $.ruleset_model_descriptions[0].schedules[4]: data object 90.1 C3.5.5.3 Lib INF in index context does not match the one COMNET App C1 LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[5]: data object 90.1 C3.5.5.3 Lib LTG in index context does not match the one Cust 1 Elec Season Sched in compare context; path: $.ruleset_model_descriptions[0].schedules[6]: data object 90.1 C3.5.5.3 Lib OCC in index context does not match the one Custom Gas Season Sched in compare context; path: $.ruleset_model_descriptions[0].schedules[7]: data object 90.1 C3.5.5.3 Lib ON-OFF in index context does not match the one DHW Eqp NRes Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[8]: data object Back of House HTGSPT in index context does not match the one Dirt Depre Windows in compare context; path: $.ruleset_model_descriptions[0].schedules[9]: data object COMMUNITY CTR LTG in index context does not match the one EXT LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[10]: data object COMNET App C1 EQP in index context does not match the one G - Bldg InsLt Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[11]: data object COMNET App C1 LTG in index context does not match the one Hourly Report Schedule in compare context; path: $.ruleset_model_descriptions[0].schedules[12]: data object Cust 1 Elec Season Sched in index context does not match the one OFFICE LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[13]: data object Custom Gas Season Sched in index context does not match the one PR Lib CLGSPT in compare context; path: $.ruleset_model_descriptions[0].schedules[14]: data object DHW Eqp NRes Sch in index context does not match the one PR Lib EQP in compare context; path: $.ruleset_model_descriptions[0].schedules[15]: data object Dirt Depre Windows in index context does not match the one PR Lib HTGSPT in compare context; path: $.ruleset_model_descriptions[0].schedules[16]: data object EXT LTG in index context does not match the one PR Lib INF in compare context; path: $.ruleset_model_descriptions[0].schedules[17]: data object G - Bldg InsLt Sch in index context does not match the one PR Lib LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[18]: data object Hourly Report Schedule in index context does not match the one PR Lib OCC in compare context; path: $.ruleset_model_descriptions[0].schedules[19]: data object MIN OA in index context does not match the one PR Lib ON-OFF in compare context; path: $.ruleset_model_descriptions[0].schedules[20]: data object OFFICE LTG in index context does not match the one PR Lib SHW in compare context; path: $.ruleset_model_descriptions[0].schedules[21]: data object PR CLGSPT in index context does not match the one PR MIN OA in compare context; path: $.ruleset_model_descriptions[0].schedules[22]: data object PR EQP in index context does not match the one S1 Sys1 (PSZ) Cool Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[23]: data object PR HTGSPT in index context does not match the one S1 Sys1 (PSZ) Fan Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[24]: data object PR Lib INF in index context does not match the one S1 Sys1 (PSZ) Heat Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[25]: data object PR Lib LTG in index context does not match the one STORAGE LTG in compare context; path: $.ruleset_model_descriptions[0].schedules[26]: data object PR Lib OCC in index context does not match the one ZG0-S1 (PSZ) C-Inf Sch in compare context; path: $.ruleset_model_descriptions[0].schedules[27]: data object PR Lib ON-OFF in index context does not match the one ZG0-S1 (PSZ) P-Inf Sch in compare context; path: $.ruleset_model_descriptions[0].constructions[6]: data object BL BGW in index context does not match the one Air Wall in compare context; path: $.ruleset_model_descriptions[0].constructions[7]: data object BL EXP FLOOR in index context does not match the one BL BGW in compare context; path: $.ruleset_model_descriptions[0].constructions[8]: data object BL NR E WALL in index context does not match the one BL EXP FLOOR in compare context; path: $.ruleset_model_descriptions[0].constructions[9]: data object BL ROOF in index context does not match the one BL NR E WALL in compare context; path: $.ruleset_model_descriptions[0].constructions[10]: data object Cell Wall in index context does not match the one BL ROOF in compare context; path: $.ruleset_model_descriptions[0].constructions[11]: data object Construction 21 in index context does not match the one CODE EXP FLR in compare context; path: $.ruleset_model_descriptions[0].constructions[12]: data object Dbl Lyr Unins Mtl Door in index context does not match the one Cell Wall in compare context; path: $.ruleset_model_descriptions[0].constructions[13]: data object EL2 UFCons (G.NNW1.U2) in index context does not match the one Construction 21 in compare context; path: $.ruleset_model_descriptions[0].constructions[14]: data object Ext Wall in index context does not match the one Dbl Lyr Unins Mtl Door in compare context; path: $.ruleset_model_descriptions[0].constructions[15]: data object G - IFlSP Construction in index context does not match the one EL2 UFCons (G.NNW1.U2) in compare context; path: $.ruleset_model_descriptions[0].constructions[16]: data object G - IFlr Construction in index context does not match the one Ext Wall in compare context; path: $.ruleset_model_descriptions[0].constructions[17]: data object G - UFCons (G.NW2.U3) in index context does not match the one G - IFlSP Construction in compare context; path: $.ruleset_model_descriptions[0].constructions[18]: data object G - UFCons (G.SE1.U2) in index context does not match the one G - IFlr Construction in compare context; path: $.ruleset_model_descriptions[0].constructions[19]: data object HP AEDG ROOF in index context does not match the one G - UFCons (G.NW2.U3) in compare context; path: $.ruleset_model_descriptions[0].constructions[20]: data object HP AEDG WALL in index context does not match the one G - UFCons (G.SE1.U2) in compare context; path: $.ruleset_model_descriptions[0].constructions[21]: data object PR Floor in index context does not match the one HP AEDG ROOF in compare context; path: $.ruleset_model_descriptions[0].constructions[22]: data object PR NR E WALL in index context does not match the one HP AEDG WALL in compare context; path: $.ruleset_model_descriptions[0].constructions[23]: data object PR ROOF in index context does not match the one PR Floor in compare context; path: $.ruleset_model_descriptions[0].constructions[24]: data object Roof1 in index context does not match the one PR NR E WALL in compare context; path: $.ruleset_model_descriptions[0].materials[32]: data object MinWool Batt R7 (IN01)_0.46 in index context does not match the one MinWool Batt R7 (IN01)_0.41 in compare context; path: $.ruleset_model_descriptions[0].materials[33]: data object Polyisocyanurate 2in in index context does not match the one MinWool Batt R7 (IN01)_0.46 in compare context; path: $.ruleset_model_descriptions[0].materials[34]: data object Polyisocyanurate 2in_0.15 in index context does not match the one Polyisocyanurate 2in in compare context; path: $.ruleset_model_descriptions[0].materials[37]: data object Polyisocyanurate 2in_0.3 in index context does not match the one Polyisocyanurate 2in_0.2 in compare context; path: $.ruleset_model_descriptions[0].materials[38]: data object Polyisocyanurate 2in_0.38 in index context does not match the one Polyisocyanurate 2in_0.3 in compare context; path: $.ruleset_model_descriptions[0].materials[39]: data object Polyisocyanurate 2in_0.52 in index context does not match the one Polyisocyanurate 2in_0.38 in compare context; path: $.ruleset_model_descriptions[0].materials[40]: data object Polyisocyanurate 3in in index context does not match the one Polyisocyanurate 2in_0.52 in compare context; path: $.ruleset_model_descriptions[0].materials[41]: data object Polyisocyanurate 3in_0.291 in index context does not match the one Polyisocyanurate 3in in compare context; path: $.ruleset_model_descriptions[0].materials[42]: data object Stucco 1in (SC01) in index context does not match the one Polyisocyanurate 3in_0.291 in compare context; path: $.ruleset_model_descriptions[0].materials[43]: data object Stucco 1in (SC01)_0.033 in index context does not match the one Stucco 1in (SC01) in compare context; path: $.ruleset_model_descriptions[0].materials[44]: data object Surf Air Film Horiz (AL03) in index context does not match the one Stucco 1in (SC01)_0.033 in compare context; path: $.ruleset_model_descriptions[0].materials[45]: data object Surf Air Film Vert (AL01) in index context does not match the one Surf Air Film Horiz (AL03) in compare context",
                     "calculated_values": [
                         {
                             "variable": "comparison_result",
@@ -146,7 +146,33 @@
                         },
                         {
                             "variable": "error_msg_list",
-                            "value": "['path: $.ruleset_model_descriptions[0]: data object Briarwood Lib in index context does not match the one Briarwood Lib - 19 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[2].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[3].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6]: data object Floor 04 in index context does not match the one Floor 03 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].optical_properties: data object Floor 04 OpticalProps in index context does not match the one Floor 03 OpticalProps in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[6].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[7].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[9].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2]: data object Floor 03 in index context does not match the one Floor 04 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].optical_properties: data object Floor 03 OpticalProps in index context does not match the one Floor 04 OpticalProps in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11]: data object Crawl ZN in index context does not match the one CRAWL ZN in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].terminals[0]: data object Crawl ZN MainTerminal in index context does not match the one CRAWL ZN MainTerminal in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration: data object Crawl ZN Infil in index context does not match the one CRAWL ZN Infil in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration.algorithm_name: index context data: None does not equal to compare context data: Air Change Method', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0]: data object BL SYS 3 01 in index context does not match the one Ductless Split AC in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system: data object BL SYS 3 01 FanSys in index context does not match the one Ductless Split AC FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.supply_fans[0]: data object BL SYS 3 01 SupplyFan in index context does not match the one Ductless Split AC SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.air_economizer: data object BL SYS 3 01 AirEconomizer in index context does not match the one Ductless Split AC AirEconomizer in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].heating_system: data object BL SYS 3 01 HeatSys in index context does not match the one Ductless Split AC HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].cooling_system: data object BL SYS 3 01 CoolSys in index context does not match the one Ductless Split AC CoolSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1]: data object BL SYS 3 02 in index context does not match the one EUH in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system: data object BL SYS 3 02 FanSys in index context does not match the one EUH FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system.supply_fans[0]: data object BL SYS 3 02 SupplyFan in index context does not match the one EUH SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].heating_system: data object BL SYS 3 02 HeatSys in index context does not match the one EUH HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2]: data object BL SYS 3 03 in index context does not match the one EUH - CRAWL ZN in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system: data object BL SYS 3 03 FanSys in index context does not match the one EUH FanSys--2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system.supply_fans[0]: data object BL SYS 3 03 SupplyFan in index context does not match the one EUH SupplyFan--2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].heating_system: data object BL SYS 3 03 HeatSys in index context does not match the one EUH HeatSys--2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3]: data object BL SYS 3 04 in index context does not match the one EUH - G - Plumbing zn in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system: data object BL SYS 3 04 FanSys in index context does not match the one EUH FanSys--1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system.supply_fans[0]: data object BL SYS 3 04 SupplyFan in index context does not match the one EUH SupplyFan--1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].heating_system: data object BL SYS 3 04 HeatSys in index context does not match the one EUH HeatSys--1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4]: data object BL SYS 3 05 in index context does not match the one RTU - 1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system: data object BL SYS 3 05 FanSys in index context does not match the one RTU - 1 FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.supply_fans[0]: data object BL SYS 3 05 SupplyFan in index context does not match the one RTU - 1 SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.return_fans[0]: data object BL SYS 3 05 ReturnFan in index context does not match the one RTU - 1 ReturnFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.air_economizer: data object BL SYS 3 05 AirEconomizer in index context does not match the one RTU - 1 AirEconomizer in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].heating_system: data object BL SYS 3 05 HeatSys in index context does not match the one RTU - 1 HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].cooling_system: data object BL SYS 3 05 CoolSys in index context does not match the one RTU - 1 CoolSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5]: data object BL SYS 3 06 in index context does not match the one RTU - 2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system: data object BL SYS 3 06 FanSys in index context does not match the one RTU - 2 FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.supply_fans[0]: data object BL SYS 3 06 SupplyFan in index context does not match the one RTU - 2 SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.return_fans[0]: data object BL SYS 3 06 ReturnFan in index context does not match the one RTU - 2 ReturnFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.air_economizer: data object BL SYS 3 06 AirEconomizer in index context does not match the one RTU - 2 AirEconomizer in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].heating_system: data object BL SYS 3 06 HeatSys in index context does not match the one RTU - 2 HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].cooling_system: data object BL SYS 3 06 CoolSys in index context does not match the one RTU - 2 CoolSys in compare context', 'path: $.ruleset_model_descriptions[0].schedules[1]: data object 90.1 C3.5.5.3 Lib CLGSPT in index context does not match the one Back of House HTGSPT in compare context', 'path: $.ruleset_model_descriptions[0].schedules[2]: data object 90.1 C3.5.5.3 Lib EQP in index context does not match the one COMMUNITY CTR LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[3]: data object 90.1 C3.5.5.3 Lib HTGSPT in index context does not match the one COMNET App C1 EQP in compare context', 'path: $.ruleset_model_descriptions[0].schedules[4]: data object 90.1 C3.5.5.3 Lib INF in index context does not match the one COMNET App C1 LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[5]: data object 90.1 C3.5.5.3 Lib LTG in index context does not match the one Cust 1 Elec Season Sched in compare context', 'path: $.ruleset_model_descriptions[0].schedules[6]: data object 90.1 C3.5.5.3 Lib OCC in index context does not match the one Custom Gas Season Sched in compare context', 'path: $.ruleset_model_descriptions[0].schedules[7]: data object 90.1 C3.5.5.3 Lib ON-OFF in index context does not match the one DHW Eqp NRes Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[8]: data object Back of House HTGSPT in index context does not match the one Dirt Depre Windows in compare context', 'path: $.ruleset_model_descriptions[0].schedules[9]: data object COMMUNITY CTR LTG in index context does not match the one EXT LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[10]: data object COMNET App C1 EQP in index context does not match the one G - Bldg InsLt Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[11]: data object COMNET App C1 LTG in index context does not match the one Hourly Report Schedule in compare context', 'path: $.ruleset_model_descriptions[0].schedules[12]: data object Cust 1 Elec Season Sched in index context does not match the one OFFICE LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[13]: data object Custom Gas Season Sched in index context does not match the one PR Lib CLGSPT in compare context', 'path: $.ruleset_model_descriptions[0].schedules[14]: data object DHW Eqp NRes Sch in index context does not match the one PR Lib EQP in compare context', 'path: $.ruleset_model_descriptions[0].schedules[15]: data object Dirt Depre Windows in index context does not match the one PR Lib HTGSPT in compare context', 'path: $.ruleset_model_descriptions[0].schedules[16]: data object EXT LTG in index context does not match the one PR Lib INF in compare context', 'path: $.ruleset_model_descriptions[0].schedules[17]: data object G - Bldg InsLt Sch in index context does not match the one PR Lib LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[18]: data object Hourly Report Schedule in index context does not match the one PR Lib OCC in compare context', 'path: $.ruleset_model_descriptions[0].schedules[19]: data object MIN OA in index context does not match the one PR Lib ON-OFF in compare context', 'path: $.ruleset_model_descriptions[0].schedules[20]: data object OFFICE LTG in index context does not match the one PR Lib SHW in compare context', 'path: $.ruleset_model_descriptions[0].schedules[21]: data object PR CLGSPT in index context does not match the one PR MIN OA in compare context', 'path: $.ruleset_model_descriptions[0].schedules[22]: data object PR EQP in index context does not match the one S1 Sys1 (PSZ) Cool Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[23]: data object PR HTGSPT in index context does not match the one S1 Sys1 (PSZ) Fan Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[24]: data object PR Lib INF in index context does not match the one S1 Sys1 (PSZ) Heat Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[25]: data object PR Lib LTG in index context does not match the one STORAGE LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[26]: data object PR Lib OCC in index context does not match the one ZG0-S1 (PSZ) C-Inf Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[27]: data object PR Lib ON-OFF in index context does not match the one ZG0-S1 (PSZ) P-Inf Sch in compare context', 'path: $.ruleset_model_descriptions[0].constructions[6]: data object BL BGW in index context does not match the one Air Wall in compare context', 'path: $.ruleset_model_descriptions[0].constructions[7]: data object BL EXP FLOOR in index context does not match the one BL BGW in compare context', 'path: $.ruleset_model_descriptions[0].constructions[8]: data object BL NR E WALL in index context does not match the one BL EXP FLOOR in compare context', 'path: $.ruleset_model_descriptions[0].constructions[9]: data object BL ROOF in index context does not match the one BL NR E WALL in compare context', 'path: $.ruleset_model_descriptions[0].constructions[10]: data object Cell Wall in index context does not match the one BL ROOF in compare context', 'path: $.ruleset_model_descriptions[0].constructions[11]: data object Construction 21 in index context does not match the one CODE EXP FLR in compare context', 'path: $.ruleset_model_descriptions[0].constructions[12]: data object Dbl Lyr Unins Mtl Door in index context does not match the one Cell Wall in compare context', 'path: $.ruleset_model_descriptions[0].constructions[13]: data object EL2 UFCons (G.NNW1.U2) in index context does not match the one Construction 21 in compare context', 'path: $.ruleset_model_descriptions[0].constructions[14]: data object Ext Wall in index context does not match the one Dbl Lyr Unins Mtl Door in compare context', 'path: $.ruleset_model_descriptions[0].constructions[15]: data object G - IFlSP Construction in index context does not match the one EL2 UFCons (G.NNW1.U2) in compare context', 'path: $.ruleset_model_descriptions[0].constructions[16]: data object G - IFlr Construction in index context does not match the one Ext Wall in compare context', 'path: $.ruleset_model_descriptions[0].constructions[17]: data object G - UFCons (G.NW2.U3) in index context does not match the one G - IFlSP Construction in compare context', 'path: $.ruleset_model_descriptions[0].constructions[18]: data object G - UFCons (G.SE1.U2) in index context does not match the one G - IFlr Construction in compare context', 'path: $.ruleset_model_descriptions[0].constructions[19]: data object HP AEDG ROOF in index context does not match the one G - UFCons (G.NW2.U3) in compare context', 'path: $.ruleset_model_descriptions[0].constructions[20]: data object HP AEDG WALL in index context does not match the one G - UFCons (G.SE1.U2) in compare context', 'path: $.ruleset_model_descriptions[0].constructions[21]: data object PR Floor in index context does not match the one HP AEDG ROOF in compare context', 'path: $.ruleset_model_descriptions[0].constructions[22]: data object PR NR E WALL in index context does not match the one HP AEDG WALL in compare context', 'path: $.ruleset_model_descriptions[0].constructions[23]: data object PR ROOF in index context does not match the one PR Floor in compare context', 'path: $.ruleset_model_descriptions[0].constructions[24]: data object Roof1 in index context does not match the one PR NR E WALL in compare context', 'path: $.ruleset_model_descriptions[0].materials[32]: data object MinWool Batt R7 (IN01)_0.46 in index context does not match the one MinWool Batt R7 (IN01)_0.41 in compare context', 'path: $.ruleset_model_descriptions[0].materials[33]: data object Polyisocyanurate 2in in index context does not match the one MinWool Batt R7 (IN01)_0.46 in compare context', 'path: $.ruleset_model_descriptions[0].materials[34]: data object Polyisocyanurate 2in_0.15 in index context does not match the one Polyisocyanurate 2in in compare context', 'path: $.ruleset_model_descriptions[0].materials[37]: data object Polyisocyanurate 2in_0.3 in index context does not match the one Polyisocyanurate 2in_0.2 in compare context', 'path: $.ruleset_model_descriptions[0].materials[38]: data object Polyisocyanurate 2in_0.38 in index context does not match the one Polyisocyanurate 2in_0.3 in compare context', 'path: $.ruleset_model_descriptions[0].materials[39]: data object Polyisocyanurate 2in_0.52 in index context does not match the one Polyisocyanurate 2in_0.38 in compare context', 'path: $.ruleset_model_descriptions[0].materials[40]: data object Polyisocyanurate 3in in index context does not match the one Polyisocyanurate 2in_0.52 in compare context', 'path: $.ruleset_model_descriptions[0].materials[41]: data object Polyisocyanurate 3in_0.291 in index context does not match the one Polyisocyanurate 3in in compare context', 'path: $.ruleset_model_descriptions[0].materials[42]: data object Stucco 1in (SC01) in index context does not match the one Polyisocyanurate 3in_0.291 in compare context', 'path: $.ruleset_model_descriptions[0].materials[43]: data object Stucco 1in (SC01)_0.033 in index context does not match the one Stucco 1in (SC01) in compare context', 'path: $.ruleset_model_descriptions[0].materials[44]: data object Surf Air Film Horiz (AL03) in index context does not match the one Stucco 1in (SC01)_0.033 in compare context', 'path: $.ruleset_model_descriptions[0].materials[45]: data object Surf Air Film Vert (AL01) in index context does not match the one Surf Air Film Horiz (AL03) in compare context']"
+                            "value": "['path: $.ruleset_model_descriptions[0]: data object Briarwood Lib in index context does not match the one Briarwood Lib - 19 - Proposed in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[0].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[2].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[3].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6]: data object Floor 04 in index context does not match the one Floor 03 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].optical_properties: data object Floor 04 OpticalProps in index context does not match the one Floor 03 OpticalProps in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].surfaces[6].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[4].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[5].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[6].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[7].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].surfaces[8].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[8].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[9].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2]: data object Floor 03 in index context does not match the one Floor 04 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].optical_properties: data object Floor 03 OpticalProps in index context does not match the one Floor 04 OpticalProps in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].surfaces[2].adjacent_zone: index context data: Crawl ZN does not equal to compare context data: CRAWL ZN', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[10].thermostat_heating_setpoint_schedule: index context data: PR HTGSPT does not equal to compare context data: PR Lib HTGSPT', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11]: data object Crawl ZN in index context does not match the one CRAWL ZN in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].terminals[0]: data object Crawl ZN MainTerminal in index context does not match the one CRAWL ZN MainTerminal in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration: data object Crawl ZN Infil in index context does not match the one CRAWL ZN Infil in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].zones[11].infiltration.algorithm_name: index context data: None does not equal to compare context data: Air Change Method', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0]: data object BL SYS 3 01 in index context does not match the one Ductless Split AC in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system: data object BL SYS 3 01 FanSys in index context does not match the one Ductless Split AC FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.supply_fans[0]: data object BL SYS 3 01 SupplyFan in index context does not match the one Ductless Split AC SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].fan_system.air_economizer: data object BL SYS 3 01 AirEconomizer in index context does not match the one Ductless Split AC AirEconomizer in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].heating_system: data object BL SYS 3 01 HeatSys in index context does not match the one Ductless Split AC HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[0].cooling_system: data object BL SYS 3 01 CoolSys in index context does not match the one Ductless Split AC CoolSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1]: data object BL SYS 3 02 in index context does not match the one EUH in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system: data object BL SYS 3 02 FanSys in index context does not match the one EUH FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].fan_system.supply_fans[0]: data object BL SYS 3 02 SupplyFan in index context does not match the one EUH SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[1].heating_system: data object BL SYS 3 02 HeatSys in index context does not match the one EUH HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2]: data object BL SYS 3 03 in index context does not match the one EUH - CRAWL ZN in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system: data object BL SYS 3 03 FanSys in index context does not match the one EUH FanSys--2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].fan_system.supply_fans[0]: data object BL SYS 3 03 SupplyFan in index context does not match the one EUH SupplyFan--2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[2].heating_system: data object BL SYS 3 03 HeatSys in index context does not match the one EUH HeatSys--2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3]: data object BL SYS 3 04 in index context does not match the one EUH - G - Plumbing zn in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system: data object BL SYS 3 04 FanSys in index context does not match the one EUH FanSys--1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].fan_system.supply_fans[0]: data object BL SYS 3 04 SupplyFan in index context does not match the one EUH SupplyFan--1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[3].heating_system: data object BL SYS 3 04 HeatSys in index context does not match the one EUH HeatSys--1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4]: data object BL SYS 3 05 in index context does not match the one RTU - 1 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system: data object BL SYS 3 05 FanSys in index context does not match the one RTU - 1 FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.supply_fans[0]: data object BL SYS 3 05 SupplyFan in index context does not match the one RTU - 1 SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.return_fans[0]: data object BL SYS 3 05 ReturnFan in index context does not match the one RTU - 1 ReturnFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].fan_system.air_economizer: data object BL SYS 3 05 AirEconomizer in index context does not match the one RTU - 1 AirEconomizer in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].heating_system: data object BL SYS 3 05 HeatSys in index context does not match the one RTU - 1 HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[4].cooling_system: data object BL SYS 3 05 CoolSys in index context does not match the one RTU - 1 CoolSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5]: data object BL SYS 3 06 in index context does not match the one RTU - 2 in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system: data object BL SYS 3 06 FanSys in index context does not match the one RTU - 2 FanSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.supply_fans[0]: data object BL SYS 3 06 SupplyFan in index context does not match the one RTU - 2 SupplyFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.return_fans[0]: data object BL SYS 3 06 ReturnFan in index context does not match the one RTU - 2 ReturnFan in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].fan_system.air_economizer: data object BL SYS 3 06 AirEconomizer in index context does not match the one RTU - 2 AirEconomizer in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].heating_system: data object BL SYS 3 06 HeatSys in index context does not match the one RTU - 2 HeatSys in compare context', 'path: $.ruleset_model_descriptions[0].buildings[0].building_segments[0].heating_ventilating_air_conditioning_systems[5].cooling_system: data object BL SYS 3 06 CoolSys in index context does not match the one RTU - 2 CoolSys in compare context', 'path: $.ruleset_model_descriptions[0].schedules[1]: data object 90.1 C3.5.5.3 Lib CLGSPT in index context does not match the one Back of House HTGSPT in compare context', 'path: $.ruleset_model_descriptions[0].schedules[2]: data object 90.1 C3.5.5.3 Lib EQP in index context does not match the one COMMUNITY CTR LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[3]: data object 90.1 C3.5.5.3 Lib HTGSPT in index context does not match the one COMNET App C1 EQP in compare context', 'path: $.ruleset_model_descriptions[0].schedules[4]: data object 90.1 C3.5.5.3 Lib INF in index context does not match the one COMNET App C1 LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[5]: data object 90.1 C3.5.5.3 Lib LTG in index context does not match the one Cust 1 Elec Season Sched in compare context', 'path: $.ruleset_model_descriptions[0].schedules[6]: data object 90.1 C3.5.5.3 Lib OCC in index context does not match the one Custom Gas Season Sched in compare context', 'path: $.ruleset_model_descriptions[0].schedules[7]: data object 90.1 C3.5.5.3 Lib ON-OFF in index context does not match the one DHW Eqp NRes Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[8]: data object Back of House HTGSPT in index context does not match the one Dirt Depre Windows in compare context', 'path: $.ruleset_model_descriptions[0].schedules[9]: data object COMMUNITY CTR LTG in index context does not match the one EXT LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[10]: data object COMNET App C1 EQP in index context does not match the one G - Bldg InsLt Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[11]: data object COMNET App C1 LTG in index context does not match the one Hourly Report Schedule in compare context', 'path: $.ruleset_model_descriptions[0].schedules[12]: data object Cust 1 Elec Season Sched in index context does not match the one OFFICE LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[13]: data object Custom Gas Season Sched in index context does not match the one PR Lib CLGSPT in compare context', 'path: $.ruleset_model_descriptions[0].schedules[14]: data object DHW Eqp NRes Sch in index context does not match the one PR Lib EQP in compare context', 'path: $.ruleset_model_descriptions[0].schedules[15]: data object Dirt Depre Windows in index context does not match the one PR Lib HTGSPT in compare context', 'path: $.ruleset_model_descriptions[0].schedules[16]: data object EXT LTG in index context does not match the one PR Lib INF in compare context', 'path: $.ruleset_model_descriptions[0].schedules[17]: data object G - Bldg InsLt Sch in index context does not match the one PR Lib LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[18]: data object Hourly Report Schedule in index context does not match the one PR Lib OCC in compare context', 'path: $.ruleset_model_descriptions[0].schedules[19]: data object MIN OA in index context does not match the one PR Lib ON-OFF in compare context', 'path: $.ruleset_model_descriptions[0].schedules[20]: data object OFFICE LTG in index context does not match the one PR Lib SHW in compare context', 'path: $.ruleset_model_descriptions[0].schedules[21]: data object PR CLGSPT in index context does not match the one PR MIN OA in compare context', 'path: $.ruleset_model_descriptions[0].schedules[22]: data object PR EQP in index context does not match the one S1 Sys1 (PSZ) Cool Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[23]: data object PR HTGSPT in index context does not match the one S1 Sys1 (PSZ) Fan Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[24]: data object PR Lib INF in index context does not match the one S1 Sys1 (PSZ) Heat Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[25]: data object PR Lib LTG in index context does not match the one STORAGE LTG in compare context', 'path: $.ruleset_model_descriptions[0].schedules[26]: data object PR Lib OCC in index context does not match the one ZG0-S1 (PSZ) C-Inf Sch in compare context', 'path: $.ruleset_model_descriptions[0].schedules[27]: data object PR Lib ON-OFF in index context does not match the one ZG0-S1 (PSZ) P-Inf Sch in compare context', 'path: $.ruleset_model_descriptions[0].constructions[6]: data object BL BGW in index context does not match the one Air Wall in compare context', 'path: $.ruleset_model_descriptions[0].constructions[7]: data object BL EXP FLOOR in index context does not match the one BL BGW in compare context', 'path: $.ruleset_model_descriptions[0].constructions[8]: data object BL NR E WALL in index context does not match the one BL EXP FLOOR in compare context', 'path: $.ruleset_model_descriptions[0].constructions[9]: data object BL ROOF in index context does not match the one BL NR E WALL in compare context', 'path: $.ruleset_model_descriptions[0].constructions[10]: data object Cell Wall in index context does not match the one BL ROOF in compare context', 'path: $.ruleset_model_descriptions[0].constructions[11]: data object Construction 21 in index context does not match the one CODE EXP FLR in compare context', 'path: $.ruleset_model_descriptions[0].constructions[12]: data object Dbl Lyr Unins Mtl Door in index context does not match the one Cell Wall in compare context', 'path: $.ruleset_model_descriptions[0].constructions[13]: data object EL2 UFCons (G.NNW1.U2) in index context does not match the one Construction 21 in compare context', 'path: $.ruleset_model_descriptions[0].constructions[14]: data object Ext Wall in index context does not match the one Dbl Lyr Unins Mtl Door in compare context', 'path: $.ruleset_model_descriptions[0].constructions[15]: data object G - IFlSP Construction in index context does not match the one EL2 UFCons (G.NNW1.U2) in compare context', 'path: $.ruleset_model_descriptions[0].constructions[16]: data object G - IFlr Construction in index context does not match the one Ext Wall in compare context', 'path: $.ruleset_model_descriptions[0].constructions[17]: data object G - UFCons (G.NW2.U3) in index context does not match the one G - IFlSP Construction in compare context', 'path: $.ruleset_model_descriptions[0].constructions[18]: data object G - UFCons (G.SE1.U2) in index context does not match the one G - IFlr Construction in compare context', 'path: $.ruleset_model_descriptions[0].constructions[19]: data object HP AEDG ROOF in index context does not match the one G - UFCons (G.NW2.U3) in compare context', 'path: $.ruleset_model_descriptions[0].constructions[20]: data object HP AEDG WALL in index context does not match the one G - UFCons (G.SE1.U2) in compare context', 'path: $.ruleset_model_descriptions[0].constructions[21]: data object PR Floor in index context does not match the one HP AEDG ROOF in compare context', 'path: $.ruleset_model_descriptions[0].constructions[22]: data object PR NR E WALL in index context does not match the one HP AEDG WALL in compare context', 'path: $.ruleset_model_descriptions[0].constructions[23]: data object PR ROOF in index context does not match the one PR Floor in compare context', 'path: $.ruleset_model_descriptions[0].constructions[24]: data object Roof1 in index context does not match the one PR NR E WALL in compare context', 'path: $.ruleset_model_descriptions[0].materials[32]: data object MinWool Batt R7 (IN01)_0.46 in index context does not match the one MinWool Batt R7 (IN01)_0.41 in compare context', 'path: $.ruleset_model_descriptions[0].materials[33]: data object Polyisocyanurate 2in in index context does not match the one MinWool Batt R7 (IN01)_0.46 in compare context', 'path: $.ruleset_model_descriptions[0].materials[34]: data object Polyisocyanurate 2in_0.15 in index context does not match the one Polyisocyanurate 2in in compare context', 'path: $.ruleset_model_descriptions[0].materials[37]: data object Polyisocyanurate 2in_0.3 in index context does not match the one Polyisocyanurate 2in_0.2 in compare context', 'path: $.ruleset_model_descriptions[0].materials[38]: data object Polyisocyanurate 2in_0.38 in index context does not match the one Polyisocyanurate 2in_0.3 in compare context', 'path: $.ruleset_model_descriptions[0].materials[39]: data object Polyisocyanurate 2in_0.52 in index context does not match the one Polyisocyanurate 2in_0.38 in compare context', 'path: $.ruleset_model_descriptions[0].materials[40]: data object Polyisocyanurate 3in in index context does not match the one Polyisocyanurate 2in_0.52 in compare context', 'path: $.ruleset_model_descriptions[0].materials[41]: data object Polyisocyanurate 3in_0.291 in index context does not match the one Polyisocyanurate 3in in compare context', 'path: $.ruleset_model_descriptions[0].materials[42]: data object Stucco 1in (SC01) in index context does not match the one Polyisocyanurate 3in_0.291 in compare context', 'path: $.ruleset_model_descriptions[0].materials[43]: data object Stucco 1in (SC01)_0.033 in index context does not match the one Stucco 1in (SC01) in compare context', 'path: $.ruleset_model_descriptions[0].materials[44]: data object Surf Air Film Horiz (AL03) in index context does not match the one Stucco 1in (SC01)_0.033 in compare context', 'path: $.ruleset_model_descriptions[0].materials[45]: data object Surf Air Film Vert (AL01) in index context does not match the one Surf Air Film Horiz (AL03) in compare context']"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "rule_id": "1-8",
+            "description": "The proposed design shall be the same as the user design for all data elements identified in the schema hosted at data.standards.ashrae {{https://github.com/open229/ruleset-model-description-schema/blob/main/docs229/ASHRAE229_extra.schema.json}}",
+            "evaluation_type": "FULL",
+            "standard_section": "Table G3.1(1) Proposed Building Performance (a)",
+            "data_group_names": [],
+            "evaluations": [
+                {
+                    "data_group_id": "1-8",
+                    "outcome": "FAILED",
+                    "messages": [
+                        "path: $.ruleset_model_descriptions[0]: data object Briarwood Lib - 19 - Proposed in index context does not match the one Briarwood Lib - 19 in compare context"
+                    ],
+                    "calculated_values": [
+                        {
+                            "variable": "comparison_result",
+                            "value": "False"
+                        },
+                        {
+                            "variable": "error_msg_list",
+                            "value": "['path: $.ruleset_model_descriptions[0]: data object Briarwood Lib - 19 - Proposed in index context does not match the one Briarwood Lib - 19 in compare context']"
                         }
                     ]
                 }
@@ -909,7 +935,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "Error: HVAC RTU - 1 does not match any baseline system type.",
                     "calculated_values": ""
@@ -4428,7 +4454,7 @@
                     "data_group_id": "Default Building",
                     "outcome": "UNDETERMINED",
                     "messages": {
-                        "BASELINE_0_MISSING_DATA": "id:Default Building Segment missing:is_all_new,area_type_vertical_fenestration"
+                        "BASELINE_0_MISSING_DATA": "id:LIBRARY missing:is_all_new"
                     },
                     "calculated_values": ""
                 }
@@ -4443,8 +4469,11 @@
             "evaluations": [
                 {
                     "data_group_id": "Default Building",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
+                    "outcome": "UNDETERMINED",
+                    "messages": {
+                        "BASELINE_0_MISSING_DATA": "id:LIBRARY missing:is_all_new",
+                        "PROPOSED_MISSING_DATA": "id:LIBRARY missing:is_all_new"
+                    },
                     "calculated_values": ""
                 }
             ]
@@ -6244,7 +6273,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Default Building Segment",
+                    "data_group_id": "LIBRARY",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -7169,13 +7198,14 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Default Building Segment",
-                    "outcome": "FAILED",
-                    "messages": "LIGHTING_BUILDING_AREA_TYPE is not known and LIGHTING_SPACE_TYPE is not known in all spaces to determine allowance.",
+                    "data_group_id": "LIBRARY",
+                    "outcome": "PASS",
+                    "messages": "Project passes based on building area method. Verify if project uses building area method.",
                     "calculated_values": [
                         {
                             "variable": "allowable_LPD_BAM",
-                            "value": "None"
+                            "value": "1.3000000000000003",
+                            "unit": "W/ft2"
                         },
                         {
                             "variable": "building_segment_design_lighting_wattage",
@@ -7188,12 +7218,12 @@
                         },
                         {
                             "variable": "total_building_segment_area_p",
-                            "value": "0.0",
+                            "value": "10557.228000000001",
                             "unit": "ft2"
                         },
                         {
                             "variable": "allowable_lighting_wattage_SBS",
-                            "value": "0.0",
+                            "value": "9145.074819999998",
                             "unit": "W"
                         }
                     ]
@@ -7207,84 +7237,6 @@
             "standard_section": "Table G3.1 Part 6 Lighting under Proposed Building Performance paragraph (e)",
             "data_group_names": [],
             "evaluations": [
-                {
-                    "data_group_id": "1 - Vestibule",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Manager's Office",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Staff Office",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Custodial Office",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Staff Lounge",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Restroom",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Children Reading",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Teen Reading",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Adult Reading",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - Multipurpose",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "G - Elec/IT",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "1 - BOH Storage",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
-                {
-                    "data_group_id": "G - Plumbing",
-                    "outcome": "NOT_APPLICABLE",
-                    "messages": "",
-                    "calculated_values": ""
-                },
                 {
                     "data_group_id": "CRAWL SP",
                     "outcome": "NOT_APPLICABLE",
@@ -7605,8 +7557,8 @@
             "evaluations": [
                 {
                     "data_group_id": "1 - Vestibule",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7619,15 +7571,15 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "0.5000000000000001",
                             "unit": "W/ft2"
                         }
                     ]
                 },
                 {
                     "data_group_id": "1 - Multipurpose",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7640,15 +7592,15 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.3000000000000003",
                             "unit": "W/ft2"
                         }
                     ]
                 },
                 {
                     "data_group_id": "G - Elec/IT",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7661,15 +7613,15 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.5000000000000004",
                             "unit": "W/ft2"
                         }
                     ]
                 },
                 {
                     "data_group_id": "1 - BOH Storage",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7682,7 +7634,7 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "0.8000000000000003",
                             "unit": "W/ft2"
                         }
                     ]
@@ -7690,7 +7642,7 @@
                 {
                     "data_group_id": "G - Plumbing",
                     "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7703,7 +7655,7 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.5000000000000004",
                             "unit": "W/ft2"
                         }
                     ]
@@ -7717,7 +7669,7 @@
                 {
                     "data_group_id": "1 - Manager's Office",
                     "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7737,8 +7689,8 @@
                 },
                 {
                     "data_group_id": "1 - Staff Office",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7758,8 +7710,8 @@
                 },
                 {
                     "data_group_id": "1 - Custodial Office",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7779,8 +7731,8 @@
                 },
                 {
                     "data_group_id": "1 - Staff Lounge",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7793,7 +7745,7 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.2000000000000002",
                             "unit": "W/ft2"
                         }
                     ]
@@ -7801,7 +7753,7 @@
                 {
                     "data_group_id": "1 - Restroom",
                     "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7814,15 +7766,15 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "0.9000000000000002",
                             "unit": "W/ft2"
                         }
                     ]
                 },
                 {
                     "data_group_id": "1 - Children Reading",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7835,15 +7787,15 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.2000000000000002",
                             "unit": "W/ft2"
                         }
                     ]
                 },
                 {
                     "data_group_id": "1 - Teen Reading",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7856,15 +7808,15 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.2000000000000002",
                             "unit": "W/ft2"
                         }
                     ]
                 },
                 {
                     "data_group_id": "1 - Adult Reading",
-                    "outcome": "FAILED",
-                    "messages": "P_RMD lighting status type is as-designed or as-existing. But lighting space type in B_RMD is not specified.",
+                    "outcome": "PASS",
+                    "messages": "",
                     "calculated_values": [
                         {
                             "variable": "total_space_lpd_b",
@@ -7877,7 +7829,7 @@
                         },
                         {
                             "variable": "lpd_allowance_b",
-                            "value": "1.1000000000000003",
+                            "value": "1.2000000000000002",
                             "unit": "W/ft2"
                         }
                     ]
@@ -8568,7 +8520,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "FAILED",
                     "messages": "path: $.service_water_heating_equipment[DHW Plant 1 Wtr Htr (1)].input_power: index context data: 9708.860717019727 watt does not equal to compare context data: 23445.691178506946 watt",
                     "calculated_values": [
@@ -8612,7 +8564,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "tank:DHW Plant 1 Wtr Htr (1) Tank is missing type",
                     "calculated_values": ""
@@ -8627,7 +8579,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "tank:DHW Plant 1 Wtr Htr (1) Tank is missing type",
                     "calculated_values": ""
@@ -8674,7 +8626,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Default Building Segment",
+                    "data_group_id": "LIBRARY",
                     "outcome": "PASS",
                     "messages": "",
                     "calculated_values": [
@@ -8733,7 +8685,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -8748,7 +8700,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -8778,7 +8730,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Default Building Segment",
+                    "data_group_id": "LIBRARY",
                     "outcome": "UNDETERMINED",
                     "messages": "There are no SWH loads simulated in this building segment. The SWH area type is UNDETERMINED, so this rule cannot assess whether building type is likely to have SWH loads. Recommend manual check to determine if SWH loads should have been simulated based on whether the building will have SWH loads.",
                     "calculated_values": [
@@ -8802,7 +8754,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "The proposed building miscellaneous equipment load is less than the baseline, which is only permitted when the model is being used to quantify performance that exceeds the requirements of Standard 90.1.",
                     "calculated_values": [
@@ -8836,7 +8788,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "CORRIDOR_ALL_OTHERS"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -8871,7 +8823,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "CONFERENCE_MEETING_MULTIPURPOSE_ROOM"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -8906,7 +8858,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "ELECTRICAL_MECHANICAL_ROOM"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -8941,7 +8893,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "STORAGE_ROOM_LARGE"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -8976,7 +8928,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "ELECTRICAL_MECHANICAL_ROOM"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9046,7 +8998,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "OFFICE_ENCLOSED"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9081,7 +9033,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "OFFICE_ENCLOSED"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9116,7 +9068,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "OFFICE_ENCLOSED"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9151,7 +9103,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "LOUNGE_BREAKROOM_ALL_OTHERS"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9186,7 +9138,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "RESTROOM_ALL_OTHERS"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9221,7 +9173,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "LIBRARY_READING_AREA"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9256,7 +9208,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "LIBRARY_READING_AREA"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9291,7 +9243,7 @@
                     "calculated_values": [
                         {
                             "variable": "space_type_b",
-                            "value": "None"
+                            "value": "LIBRARY_READING_AREA"
                         },
                         {
                             "variable": "auto_receptacle_control_b",
@@ -9329,9 +9281,9 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
-                    "messages": "spaces:1 - Vestibule is missing lighting_space_type",
+                    "messages": "spaces:CRAWL SP is missing lighting_space_type",
                     "calculated_values": ""
                 }
             ]
@@ -9374,7 +9326,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -9389,7 +9341,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -9404,7 +9356,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -9419,7 +9371,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Not Applicable",
                     "calculated_values": ""
@@ -9464,9 +9416,9 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
-                    "messages": "Failed to determine hvac area type for building segment: Default Building Segment. Verify the model inputs and make sure it contains either of area_type_heating_ventilating_air_conditioning_system, lighting_building_area_type or space.lighting_space_type.",
+                    "messages": "Error: HVAC RTU - 1 does not match any baseline system type.",
                     "calculated_values": ""
                 }
             ]
@@ -9479,7 +9431,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "Error: HVAC RTU - 1 does not match any baseline system type.",
                     "calculated_values": ""
@@ -9494,10 +9446,15 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
-                    "outcome": "UNDETERMINED",
-                    "messages": "Failed to determine hvac area type for building segment: Default Building Segment. Verify the model inputs and make sure it contains either of area_type_heating_ventilating_air_conditioning_system, lighting_building_area_type or space.lighting_space_type.",
-                    "calculated_values": ""
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
+                    "outcome": "NOT_APPLICABLE",
+                    "messages": "",
+                    "calculated_values": [
+                        {
+                            "variable": "target_baseline_systems_b",
+                            "value": "{'1 - Vestibule zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Multipurpose zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, 'G - Elec/IT zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - BOH Storage zn': {'system_origin': 'G3_1_1e', 'expected_system_type': 'Sys-9'}, 'G - Plumbing zn': {'system_origin': 'G3_1_1e', 'expected_system_type': 'Sys-9'}, 'Crawl ZN': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, \"1 - Manager's Office zn\": {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Staff Office zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Custodial Office zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Staff Lounge zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Restroom zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Children Reading zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Teen Reading zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}, '1 - Adult Reading zn': {'expected_system_type': 'Sys-3', 'system_origin': 'OTHER_NON_RESIDENTIAL CZ_3b_3c_or_4_to_8 < 25,000 ft2 3 floors or fewer'}}"
+                        }
+                    ]
                 }
             ]
         },
@@ -10429,7 +10386,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "Error: HVAC RTU - 1 does not match any baseline system type.",
                     "calculated_values": ""
@@ -10815,7 +10772,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "Error: HVAC RTU - 1 does not match any baseline system type.",
                     "calculated_values": ""
@@ -11960,6 +11917,99 @@
             ]
         },
         {
+            "rule_id": "19-35",
+            "description": "For baseline systems serving only laboratory spaces that are prohibited from recirculating return air by code or accreditation standards, the baseline system shall be modeled as 100% outdoor air. Rule only applies when baseline outdoor air CFM is modeled as greater than proposed design outdoor air CFM.",
+            "evaluation_type": "APPLICABILITY",
+            "standard_section": "Section G3.1-10 HVAC Systems proposed column c and d",
+            "data_group_names": [],
+            "evaluations": [
+                {
+                    "data_group_id": "RTU - 1",
+                    "outcome": "NOT_APPLICABLE",
+                    "messages": "",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "RTU - 2",
+                    "outcome": "NOT_APPLICABLE",
+                    "messages": "",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "Ductless Split AC",
+                    "outcome": "NOT_APPLICABLE",
+                    "messages": "",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "EUH",
+                    "outcome": "NOT_APPLICABLE",
+                    "messages": "",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 01",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 02",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 03",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 04",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 05",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 06",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 07",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "BL SYS 3 08",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "EUH - G - Plumbing zn",
+                    "outcome": "NOT_APPLICABLE",
+                    "messages": "",
+                    "calculated_values": ""
+                },
+                {
+                    "data_group_id": "EUH - Crawl ZN",
+                    "outcome": "UNDETERMINED",
+                    "messages": "MISSING_PROPOSED",
+                    "calculated_values": ""
+                }
+            ]
+        },
+        {
             "rule_id": "19-36",
             "description": "Baseline systems required to model energy recovery per G3.1.2.10 shall be modeled with a 50% enthalpy recovery ratio.",
             "evaluation_type": "APPLICABILITY",
@@ -12100,7 +12150,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Rule 21-1 Not Applicable - the proposed is not modeled with Purchased Hot Water or Steam",
                     "calculated_values": ""
@@ -12115,7 +12165,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "NOT_APPLICABLE",
                     "messages": "Rule 21-2 Not Applicable - the proposed is not modeled with Purchased Hot Water or Steam",
                     "calculated_values": ""
@@ -13030,7 +13080,7 @@
             "data_group_names": [],
             "evaluations": [
                 {
-                    "data_group_id": "Briarwood Lib - 19",
+                    "data_group_id": "Briarwood Lib - 19 - Proposed",
                     "outcome": "UNDETERMINED",
                     "messages": "Error: HVAC RTU - 1 does not match any baseline system type.",
                     "calculated_values": ""
