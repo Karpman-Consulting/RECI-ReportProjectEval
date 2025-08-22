@@ -1,5 +1,7 @@
 from rctreportviewer.summarizers.output import summarize_output_data
-from rctreportviewer.summarizers.building_segments import summarize_building_segment_data
+from rctreportviewer.summarizers.building_segments import (
+    summarize_building_segment_data,
+)
 from rctreportviewer.summarizers.schedules import summarize_schedule_data
 from rctreportviewer.summarizers.swh import summarize_water_heater_data
 from rctreportviewer.summarizers.plants import (
@@ -42,9 +44,7 @@ def summarize_rmd_data(rct_report_viewer, rmd_data, model_type):
         "heating_capacity_by_fuel_type": {},
         "cooling_capacity_by_fuel_type": {},
         "external_fluid_sources": rmd_data.get("external_fluid_sources", []),
-        "service_water_heating_uses": rmd_data.get(
-            "service_water_heating_uses", []
-        ),
+        "service_water_heating_uses": rmd_data.get("service_water_heating_uses", []),
         "overall_wall_ua_by_building_segment": {},
         "overall_wall_u_factor_by_building_segment": {},
         "overall_roof_ua_by_building_segment": {},
@@ -113,7 +113,6 @@ def summarize_rmd_data(rct_report_viewer, rmd_data, model_type):
 
     output = rmd_data.get("model_output")
     if output is not None:
-
         summarize_output_data(output, rmd_building_summary)
 
     for chiller in rmd_data.get("chillers", []):
@@ -124,12 +123,9 @@ def summarize_rmd_data(rct_report_viewer, rmd_data, model_type):
                 if heat_rejection.get("loop") == condensing_loop:
                     cooling_towers.append(heat_rejection)
 
-        summarize_cooling_plant_data(
-            chiller, cooling_towers, rmd_building_summary
-        )
+        summarize_cooling_plant_data(chiller, cooling_towers, rmd_building_summary)
 
     for boiler in rmd_data.get("boilers", []):
-
         summarize_heating_plant_data(boiler, rmd_building_summary)
 
     for building in rmd_data.get("buildings", []):
@@ -137,15 +133,15 @@ def summarize_rmd_data(rct_report_viewer, rmd_data, model_type):
             building.get("building_segments", [])
         )
 
-        summarize_building_segment_data(rct_report_viewer, building, rmd_building_summary)
+        summarize_building_segment_data(
+            rct_report_viewer, building, rmd_building_summary
+        )
 
     for pump in rmd_data.get("pumps", []):
         pump_power = determine_pump_power(pump)
         if pump_power:
             rmd_building_summary["total_pump_power"] += pump_power
-            rmd_building_summary[
-                pump.get("loop_or_piping", "Undefined")
-            ] = pump_power
+            rmd_building_summary[pump.get("loop_or_piping", "Undefined")] = pump_power
 
     for schedule in rmd_data.get("schedules", []):
         # Skip temperature schedules
@@ -158,7 +154,6 @@ def summarize_rmd_data(rct_report_viewer, rmd_data, model_type):
         summarize_schedule_data(schedule, rmd_building_summary)
 
     for water_heater in rmd_data.get("service_water_heating_equipment", []):
-
         summarize_water_heater_data(water_heater, rmd_building_summary)
 
     return rmd_building_summary

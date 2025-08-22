@@ -51,7 +51,7 @@ def calculate_eui(summary: dict):
     floor_area = summary.get("total_floor_area", 1)  # avoid division by zero
 
     elec_by_end_use = summary.get("elec_by_end_use", {})  # kWh by end use
-    gas_by_end_use = summary.get("gas_by_end_use", {})    # therms by end use
+    gas_by_end_use = summary.get("gas_by_end_use", {})  # therms by end use
     total_energy_by_end_use = summary.get("energy_by_end_use", {})  # kBtu by end use
     cost_by_fuel_type = summary.get("cost_by_fuel_type", {})  # $ by fuel
 
@@ -77,8 +77,12 @@ def calculate_eui(summary: dict):
     elec_total_or_rate = cost_by_fuel_type.get("ELECTRICITY", 0.0)
     gas_total_or_rate = cost_by_fuel_type.get("NATURAL_GAS", 0.0)
 
-    elec_rate_per_kwh = (elec_total_or_rate / total_kwh) if total_kwh > 0 else elec_total_or_rate
-    gas_rate_per_therm = (gas_total_or_rate / total_therms) if total_therms > 0 else gas_total_or_rate
+    elec_rate_per_kwh = (
+        (elec_total_or_rate / total_kwh) if total_kwh > 0 else elec_total_or_rate
+    )
+    gas_rate_per_therm = (
+        (gas_total_or_rate / total_therms) if total_therms > 0 else gas_total_or_rate
+    )
 
     # Compute cost per end use: ($) = kWh*$/(kWh) + therms*$/(therm)
     for end_use in set(list(elec_by_end_use.keys()) + list(gas_by_end_use.keys())):

@@ -15,7 +15,11 @@ def summarize_rmd_surface_data(building_segment, zone, rmd_building_summary):
                     )
                     + surface["area"]
                 )
-            construction = next(cons for cons in constructions if cons["id"] == surface.get("construction"))
+            construction = next(
+                cons
+                for cons in constructions
+                if cons["id"] == surface.get("construction")
+            )
             if construction and "u_factor" in construction:
                 rmd_building_summary["overall_wall_ua_by_building_segment"][
                     building_segment["id"]
@@ -39,7 +43,11 @@ def summarize_rmd_surface_data(building_segment, zone, rmd_building_summary):
                     )
                     + surface["area"]
                 )
-            construction = next(cons for cons in constructions if cons["id"] == surface.get("construction"))
+            construction = next(
+                cons
+                for cons in constructions
+                if cons["id"] == surface.get("construction")
+            )
             if construction and "u_factor" in construction:
                 rmd_building_summary["overall_roof_ua_by_building_segment"][
                     building_segment["id"]

@@ -69,15 +69,15 @@ def perform_analytic_calculations(rct_report_viewer):
         for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
             metric_key = f"{ruleset_key} {metric}"
             bpf_data = rct_report_viewer.bpf_data[metric_key][climate_zone]
-            rct_report_viewer.bpfs_by_metric[metric] = compute_area_weighted_bpf_for_metric(
-                bpf_data
-            )
+            rct_report_viewer.bpfs_by_metric[
+                metric
+            ] = compute_area_weighted_bpf_for_metric(bpf_data)
 
     # Calculate the LPD allowance based on evaluation data + RPD data combined
     for space_id in rct_report_viewer.space_areas:
         rct_report_viewer.baseline_total_lighting_power_allowance += (
-                rct_report_viewer.space_lpd_allowances.get(space_id, 0)
-                * convert_unit(rct_report_viewer.space_areas[space_id], "m2", "ft2")
+            rct_report_viewer.space_lpd_allowances.get(space_id, 0)
+            * convert_unit(rct_report_viewer.space_areas[space_id], "m2", "ft2")
         )
         space_type = rct_report_viewer.baseline_space_types.get(space_id)
         if space_type:
@@ -97,28 +97,28 @@ def perform_analytic_calculations(rct_report_viewer):
     for lighting_space_type in rct_report_viewer.baseline_model_summary[
         "total_lighting_power_by_space_type"
     ]:
-        rct_report_viewer.baseline_model_summary["average_lighting_power_by_space_type"][
-            lighting_space_type
-        ] = (
-                rct_report_viewer.baseline_model_summary["total_lighting_power_by_space_type"][
-                    lighting_space_type
-                ]
-                / rct_report_viewer.baseline_model_summary["total_floor_area_by_space_type"][
-                    lighting_space_type
-                ]
+        rct_report_viewer.baseline_model_summary[
+            "average_lighting_power_by_space_type"
+        ][lighting_space_type] = (
+            rct_report_viewer.baseline_model_summary[
+                "total_lighting_power_by_space_type"
+            ][lighting_space_type]
+            / rct_report_viewer.baseline_model_summary[
+                "total_floor_area_by_space_type"
+            ][lighting_space_type]
         )
     for lighting_space_type in rct_report_viewer.proposed_model_summary[
         "total_lighting_power_by_space_type"
     ]:
-        rct_report_viewer.proposed_model_summary["average_lighting_power_by_space_type"][
-            lighting_space_type
-        ] = (
-                rct_report_viewer.proposed_model_summary["total_lighting_power_by_space_type"][
-                    lighting_space_type
-                ]
-                / rct_report_viewer.proposed_model_summary["total_floor_area_by_space_type"][
-                    lighting_space_type
-                ]
+        rct_report_viewer.proposed_model_summary[
+            "average_lighting_power_by_space_type"
+        ][lighting_space_type] = (
+            rct_report_viewer.proposed_model_summary[
+                "total_lighting_power_by_space_type"
+            ][lighting_space_type]
+            / rct_report_viewer.proposed_model_summary[
+                "total_floor_area_by_space_type"
+            ][lighting_space_type]
         )
 
     rct_report_viewer.baseline_model_summary["total_fan_power_by_fan_type"] = {

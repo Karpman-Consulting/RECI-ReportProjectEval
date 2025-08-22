@@ -1,8 +1,7 @@
-
-
 def write_compliance_calculations(file, rct_detailed_report):
     # ----------------------- Compliance Calculations -----------------------
-    file.write(f"""
+    file.write(
+        f"""
         <div class="mb-3 me-4">
             <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-compliance-calcs" aria-expanded="false">
                 Compliance Calculations
@@ -24,16 +23,37 @@ def write_compliance_calculations(file, rct_detailed_report):
                             </tr>
                         </thead>
                         <tbody style="border: 2px solid black;">
-    """)
+    """
+    )
 
     row_number = 0
-    for (energy_source, proposed_energy_use) in rct_detailed_report.proposed_model_summary.get("energy_by_fuel_type", {}).items():
-        baseline_energy_use = rct_detailed_report.baseline_model_summary.get("energy_by_fuel_type", {}).get(energy_source, 0)
-        baseline_unregulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbuec", {}).get(energy_source, 0)
-        baseline_regulated_energy = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {}).get("bbrec", {}).get(energy_source, 0)
+    for (
+        energy_source,
+        proposed_energy_use,
+    ) in rct_detailed_report.proposed_model_summary.get(
+        "energy_by_fuel_type", {}
+    ).items():
+        baseline_energy_use = rct_detailed_report.baseline_model_summary.get(
+            "energy_by_fuel_type", {}
+        ).get(energy_source, 0)
+        baseline_unregulated_energy = (
+            rct_detailed_report.baseline_model_summary.get(
+                "compliance_calcs_by_parameter", {}
+            )
+            .get("bbuec", {})
+            .get(energy_source, 0)
+        )
+        baseline_regulated_energy = (
+            rct_detailed_report.baseline_model_summary.get(
+                "compliance_calcs_by_parameter", {}
+            )
+            .get("bbrec", {})
+            .get(energy_source, 0)
+        )
 
         if energy_source == "ELECTRICITY":
-            file.write(f"""
+            file.write(
+                f"""
                             <tr style="font-size: 12px;" class="lh-1 text-center">
                                 <td class="align-middle">Electricity</td>
                                 <td class="align-middle baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
@@ -43,10 +63,12 @@ def write_compliance_calculations(file, rct_detailed_report):
                                 <td><input type="number" class="siteSourceRatio" value="2.80" step="0.01" style="width: 60px;"></td>
                                 <td><input type="number" class="ghgEmissionFactor" value="0.037" step="0.001" style="width: 60px;"></td>
                             </tr>
-            """)
+            """
+            )
 
         elif energy_source == "NATURAL_GAS":
-            file.write(f"""
+            file.write(
+                f"""
                             <tr style="font-size: 12px;" class="lh-1 text-center">
                                 <td class="align-middle">Natural Gas</td>
                                 <td class="align-middle baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
@@ -56,10 +78,12 @@ def write_compliance_calculations(file, rct_detailed_report):
                                 <td><input type="number" class="siteSourceRatio" value="1.05" step="0.01" style="width: 60px;"></td>
                                 <td><input type="number" class="ghgEmissionFactor" value="0.053" step="0.001" style="width: 60px;"></td>
                             </tr>
-            """)
+            """
+            )
 
         else:
-            file.write(f"""
+            file.write(
+                f"""
                             <tr style="font-size: 12px;" class="lh-1 text-center">
                                     <td class="align-middle">{energy_source}</td>
                                     <td class="align-middle baselineUnregulatedEnergy">{round(baseline_unregulated_energy, 1):,}</td>
@@ -69,15 +93,21 @@ def write_compliance_calculations(file, rct_detailed_report):
                                     <td><input type="number" class="siteSourceRatio" value="0.0" step="0.01" style="width: 60px;"></td>
                                     <td><input type="number" class="ghgEmissionFactor" value="0.0" step="0.001" style="width: 60px;"></td>
                             </tr>
-            """)
+            """
+            )
 
         row_number += 1
 
     output = rct_detailed_report.rpd_data.get("output", {})
-    baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get("compliance_calcs_by_parameter", {})
-    proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get("compliance_calcs_by_parameter", {})
+    baseline_compliance_calcs = rct_detailed_report.baseline_model_summary.get(
+        "compliance_calcs_by_parameter", {}
+    )
+    proposed_compliance_calcs = rct_detailed_report.proposed_model_summary.get(
+        "compliance_calcs_by_parameter", {}
+    )
 
-    file.write(f"""
+    file.write(
+        f"""
                         </tbody>
                     </table>
                     
@@ -113,10 +143,12 @@ def write_compliance_calculations(file, rct_detailed_report):
                                 <td id="proposed_source_energy_savings">0</td>
                                 <td id="proposed_ghg_savings">0</td>
                             </tr>
-    """)
+    """
+    )
 
     if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
-        file.write("""
+        file.write(
+            """
                             <tr style="font-size: 12px;" class="lh-1 text-center">
                                 <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
                                 <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
@@ -125,9 +157,11 @@ def write_compliance_calculations(file, rct_detailed_report):
                                 <td>0</td>
                                 <td>0</td>
                             </tr>
-        """)
+        """
+        )
 
-    file.write(f"""
+    file.write(
+        f"""
                             <tr style="font-size: 12px;" class="lh-1 text-center">
                                 <td style="border-right: 2px solid black;">Proposed building performance including on-site renewable energy</td>
                                 <td style="border-right: 2px solid black; font-weight: bold;">PBP</td>
@@ -213,4 +247,5 @@ def write_compliance_calculations(file, rct_detailed_report):
                 </div>
             </div>
         </div>
-""")
+"""
+    )

@@ -1,5 +1,3 @@
-
-
 def summarize_water_heater_data(water_heater, rmd_building_summary):
     fuel_type = water_heater.get("heater_fuel_type", "Unknown")
     efficiencies = list(

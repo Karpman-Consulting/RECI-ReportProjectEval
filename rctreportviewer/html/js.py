@@ -1,7 +1,6 @@
-
-
 def write_javascript(file, rct_detailed_report):
-    file.write(f"""
+    file.write(
+        f"""
 <script>
     const inputs = document.querySelectorAll('#energySourceTable input');
     const rows = document.querySelectorAll('#energySourceTable tbody tr');
@@ -626,4 +625,5 @@ def write_javascript(file, rct_detailed_report):
 
     }});
 </script>
-    """)
+    """
+    )

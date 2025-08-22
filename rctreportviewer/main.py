@@ -5,7 +5,7 @@ from rctreportviewer.html.write_html import write_html_file
 from rctreportviewer.constants import (
     path_to_bpf_data,
     model_type_disp_map,
-    outcome_disp_map
+    outcome_disp_map,
 )
 from rctreportviewer.analytics import perform_analytic_calculations
 from rctreportviewer.converters import convert_model_data_units

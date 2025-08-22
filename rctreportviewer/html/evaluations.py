@@ -1,37 +1,36 @@
-
 section_titles_with_colors = {
-        1: ("Design Model and Compliance Calculations", "#D8BFD8"),
-        2: ("Additions and Alterations", "#66b3ff"),
-        3: ("Space Use Classification", "#99ff99"),
-        4: ("Schedules", "#ffcc99"),
-        5: ("Envelope", "#f4a460"),
-        6: ("Lighting", "#ffd700"),
-        7: ("Thermal Blocks - HVAC Zones Designed", "#c2f0c2"),
-        8: ("Thermal Blocks - HVAC Zones Not Designed", "#f0c2c2"),
-        9: ("Thermal Blocks - Multifamily Residential Buildings", "#f0e68c"),
-        10: ("HVAC Systems", "#4682b4"),
-        11: ("Service Water Heating Systems", "#E97451"),
-        12: ("Receptacles and Other Loads", "#d3d3d3"),
-        13: ("Modeling Limitations to the Simulation Program", "#f4cccc"),
-        14: ("Exterior Conditions", "#87ceeb"),
-        15: ("Distribution Transformers", "#d9ead3"),
-        16: ("Elevators", "#c0c0c0"),
-        17: ("Refrigeration", "#5f9ea0"),
-        18: ("Baseline HVAC Selection", "#ead1dc"),
-        19: ("General Baseline HVAC System Requirements", "#778899"),
-        20: ("System-Specific Baseline HVAC System Requirements", "#ffdab9"),
-        21: ("Baseline HVAC - Water Side Requirements: Hot Water", "#ff6347"),
-        22: ("Baseline HVAC - Water Side Requirements: Chilled Water", "#6495ED"),
-        23: ("Baseline HVAC - Air Side Requirements", "#F0FFFF"),
-    }
+    1: ("Design Model and Compliance Calculations", "#D8BFD8"),
+    2: ("Additions and Alterations", "#66b3ff"),
+    3: ("Space Use Classification", "#99ff99"),
+    4: ("Schedules", "#ffcc99"),
+    5: ("Envelope", "#f4a460"),
+    6: ("Lighting", "#ffd700"),
+    7: ("Thermal Blocks - HVAC Zones Designed", "#c2f0c2"),
+    8: ("Thermal Blocks - HVAC Zones Not Designed", "#f0c2c2"),
+    9: ("Thermal Blocks - Multifamily Residential Buildings", "#f0e68c"),
+    10: ("HVAC Systems", "#4682b4"),
+    11: ("Service Water Heating Systems", "#E97451"),
+    12: ("Receptacles and Other Loads", "#d3d3d3"),
+    13: ("Modeling Limitations to the Simulation Program", "#f4cccc"),
+    14: ("Exterior Conditions", "#87ceeb"),
+    15: ("Distribution Transformers", "#d9ead3"),
+    16: ("Elevators", "#c0c0c0"),
+    17: ("Refrigeration", "#5f9ea0"),
+    18: ("Baseline HVAC Selection", "#ead1dc"),
+    19: ("General Baseline HVAC System Requirements", "#778899"),
+    20: ("System-Specific Baseline HVAC System Requirements", "#ffdab9"),
+    21: ("Baseline HVAC - Water Side Requirements: Hot Water", "#ff6347"),
+    22: ("Baseline HVAC - Water Side Requirements: Chilled Water", "#6495ED"),
+    23: ("Baseline HVAC - Air Side Requirements", "#F0FFFF"),
+}
 
 
 def write_evaluations_section(file, rct_detailed_report):
-
     rule_categories = {
         "Failing": rct_detailed_report.rules_failed,
         "Passing": rct_detailed_report.rules_passed,
-        "Undetermined": rct_detailed_report.full_eval_rules_undetermined + rct_detailed_report.appl_eval_rules_undetermined,
+        "Undetermined": rct_detailed_report.full_eval_rules_undetermined
+        + rct_detailed_report.appl_eval_rules_undetermined,
         "N/A": rct_detailed_report.rules_not_applicable,
     }
 
@@ -107,7 +106,9 @@ def write_evaluations_section(file, rct_detailed_report):
                 outcome_summary = " | ".join(
                     [
                         f"{k}: {v}"
-                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()
+                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                            rule_id
+                        ].items()
                     ]
                 )
 
@@ -182,7 +183,7 @@ def write_evaluations_section(file, rct_detailed_report):
                             """
                         )
                         if any(
-                                cv.get("unit") for cv in evaluation["calculated_values"]
+                            cv.get("unit") for cv in evaluation["calculated_values"]
                         ):
                             has_any_units = True
                             file.write("<th>Unit</th>")
@@ -253,7 +254,9 @@ def write_evaluations_section(file, rct_detailed_report):
                 outcome_summary = " | ".join(
                     [
                         f"{k}: {v}"
-                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()
+                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                            rule_id
+                        ].items()
                     ]
                 )
 
@@ -328,7 +331,7 @@ def write_evaluations_section(file, rct_detailed_report):
                             """
                         )
                         if any(
-                                cv.get("unit") for cv in evaluation["calculated_values"]
+                            cv.get("unit") for cv in evaluation["calculated_values"]
                         ):
                             has_any_units = True
                             file.write("<th>Unit</th>")
@@ -382,7 +385,9 @@ def write_evaluations_section(file, rct_detailed_report):
                 outcome_summary = " | ".join(
                     [
                         f"{k}: {v}"
-                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[rule_id].items()
+                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                            rule_id
+                        ].items()
                     ]
                 )
 
@@ -457,7 +462,7 @@ def write_evaluations_section(file, rct_detailed_report):
                             """
                         )
                         if any(
-                                cv.get("unit") for cv in evaluation["calculated_values"]
+                            cv.get("unit") for cv in evaluation["calculated_values"]
                         ):
                             has_any_units = True
                             file.write("<th>Unit</th>")

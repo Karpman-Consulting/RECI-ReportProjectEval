@@ -1,5 +1,3 @@
-
-
 def write_component_summary(file, rct_detailed_report):
     # ----------------------- HVAC System Type Summary Tooltip -----------------------
     tooltip_lines = []
@@ -14,7 +12,8 @@ def write_component_summary(file, rct_detailed_report):
 
     tooltip_html = "".join(tooltip_lines)
 
-    file.write(f"""
+    file.write(
+        f"""
         <div class="mb-3 me-4">
             <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-component-summary" aria-expanded="false">
                 Model Component Summary
@@ -52,4 +51,5 @@ def write_component_summary(file, rct_detailed_report):
                 </div>
             </div>
         </div>
-    """)
+    """
+    )

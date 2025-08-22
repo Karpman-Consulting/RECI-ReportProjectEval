@@ -1,13 +1,10 @@
-
-
-def write_interior_lighting_summary(
-    file, rct_detailed_report
-):
+def write_interior_lighting_summary(file, rct_detailed_report):
     """
     Write the interior lighting summary section to the HTML file.
     """
 
-    file.write("""
+    file.write(
+        """
         <div class="mb-3 me-4">
             <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-interior-lighting-summary" aria-expanded="false">
                 Interior Lighting Summary
@@ -58,7 +55,8 @@ def write_interior_lighting_summary(
                             </tr>
                         </thead>
                         <tbody style="border: 2px solid black;">
-    """)
+    """
+    )
 
     int_ltg_totals = {
         "baseline": {
@@ -81,9 +79,7 @@ def write_interior_lighting_summary(
 
     for interior_lighting in set(
         list(rct_detailed_report.baseline_model_summary["int_ltg_summaries"].keys())
-        + list(
-            rct_detailed_report.proposed_model_summary["int_ltg_summaries"].keys()
-        )
+        + list(rct_detailed_report.proposed_model_summary["int_ltg_summaries"].keys())
     ):
         if (
             interior_lighting
@@ -97,36 +93,32 @@ def write_interior_lighting_summary(
             proposed_lighting = rct_detailed_report.proposed_model_summary[
                 "int_ltg_summaries"
             ][interior_lighting]
-            int_ltg_totals["baseline"]["floor_area"] += baseline_lighting[
-                "floor_area"
-            ]
-            int_ltg_totals["baseline"][
+            int_ltg_totals["baseline"]["floor_area"] += baseline_lighting["floor_area"]
+            int_ltg_totals["baseline"]["int_ltg_power_general"] += baseline_lighting[
                 "int_ltg_power_general"
-            ] += baseline_lighting["int_ltg_power_general"]
+            ]
             int_ltg_totals["baseline"]["int_ltg_power_retail"] += baseline_lighting[
                 "int_ltg_power_retail"
             ]
-            int_ltg_totals["baseline"][
+            int_ltg_totals["baseline"]["int_ltg_power_decorative"] += baseline_lighting[
                 "int_ltg_power_decorative"
-            ] += baseline_lighting["int_ltg_power_decorative"]
+            ]
             int_ltg_totals["baseline"]["int_ltg_power_exempt"] += baseline_lighting[
                 "int_ltg_power_exempt"
             ]
             int_ltg_totals["baseline"]["int_ltg_power_total"] += baseline_lighting[
                 "int_ltg_power_total"
             ]
-            int_ltg_totals["proposed"]["floor_area"] += proposed_lighting[
-                "floor_area"
-            ]
-            int_ltg_totals["proposed"][
+            int_ltg_totals["proposed"]["floor_area"] += proposed_lighting["floor_area"]
+            int_ltg_totals["proposed"]["int_ltg_power_general"] += proposed_lighting[
                 "int_ltg_power_general"
-            ] += proposed_lighting["int_ltg_power_general"]
+            ]
             int_ltg_totals["proposed"]["int_ltg_power_retail"] += proposed_lighting[
                 "int_ltg_power_retail"
             ]
-            int_ltg_totals["proposed"][
+            int_ltg_totals["proposed"]["int_ltg_power_decorative"] += proposed_lighting[
                 "int_ltg_power_decorative"
-            ] += proposed_lighting["int_ltg_power_decorative"]
+            ]
             int_ltg_totals["proposed"]["int_ltg_power_exempt"] += proposed_lighting[
                 "int_ltg_power_exempt"
             ]
@@ -169,18 +161,16 @@ def write_interior_lighting_summary(
             baseline_lighting = rct_detailed_report.baseline_model_summary[
                 "int_ltg_summaries"
             ][interior_lighting]
-            int_ltg_totals["baseline"]["floor_area"] += baseline_lighting[
-                "floor_area"
-            ]
-            int_ltg_totals["baseline"][
+            int_ltg_totals["baseline"]["floor_area"] += baseline_lighting["floor_area"]
+            int_ltg_totals["baseline"]["int_ltg_power_general"] += baseline_lighting[
                 "int_ltg_power_general"
-            ] += baseline_lighting["int_ltg_power_general"]
+            ]
             int_ltg_totals["baseline"]["int_ltg_power_retail"] += baseline_lighting[
                 "int_ltg_power_retail"
             ]
-            int_ltg_totals["baseline"][
+            int_ltg_totals["baseline"]["int_ltg_power_decorative"] += baseline_lighting[
                 "int_ltg_power_decorative"
-            ] += baseline_lighting["int_ltg_power_decorative"]
+            ]
             int_ltg_totals["baseline"]["int_ltg_power_exempt"] += baseline_lighting[
                 "int_ltg_power_exempt"
             ]
@@ -224,18 +214,16 @@ def write_interior_lighting_summary(
             proposed_lighting = rct_detailed_report.proposed_model_summary[
                 "int_ltg_summaries"
             ][interior_lighting]
-            int_ltg_totals["proposed"]["floor_area"] += proposed_lighting[
-                "floor_area"
-            ]
-            int_ltg_totals["proposed"][
+            int_ltg_totals["proposed"]["floor_area"] += proposed_lighting["floor_area"]
+            int_ltg_totals["proposed"]["int_ltg_power_general"] += proposed_lighting[
                 "int_ltg_power_general"
-            ] += proposed_lighting["int_ltg_power_general"]
+            ]
             int_ltg_totals["proposed"]["int_ltg_power_retail"] += proposed_lighting[
                 "int_ltg_power_retail"
             ]
-            int_ltg_totals["proposed"][
+            int_ltg_totals["proposed"]["int_ltg_power_decorative"] += proposed_lighting[
                 "int_ltg_power_decorative"
-            ] += proposed_lighting["int_ltg_power_decorative"]
+            ]
             int_ltg_totals["proposed"]["int_ltg_power_exempt"] += proposed_lighting[
                 "int_ltg_power_exempt"
             ]
@@ -272,7 +260,8 @@ def write_interior_lighting_summary(
                 """
             )
 
-    file.write(f"""          
+    file.write(
+        f"""          
                         <tr style="font-size: 12px; border-top: 1px solid black;" class="lh-1 fw-bold text-center">
                             <td>Total</td>
                             <td style="border-right: 2px solid black;">{round(int_ltg_totals['baseline']['floor_area']):,}</td>
@@ -303,4 +292,5 @@ def write_interior_lighting_summary(
             </div>
         </div>
     </div>
-""")
+"""
+    )

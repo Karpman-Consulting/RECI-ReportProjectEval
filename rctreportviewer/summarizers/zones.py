@@ -37,7 +37,9 @@ def summarize_rmd_zone_data(rct_report_viewer, building_segment, rmd_building_su
                 ]["Zonal Exhaust"] += fan_power
                 rmd_building_summary["total_fan_power"] += fan_power
 
-        summarize_rmd_space_data(rct_report_viewer, building_segment, zone, rmd_building_summary)
+        summarize_rmd_space_data(
+            rct_report_viewer, building_segment, zone, rmd_building_summary
+        )
 
         summarize_rmd_surface_data(building_segment, zone, rmd_building_summary)
 

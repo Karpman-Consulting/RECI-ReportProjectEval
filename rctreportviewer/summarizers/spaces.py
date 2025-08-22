@@ -1,6 +1,6 @@
-
-
-def summarize_rmd_space_data(rct_report_viewer, building_segment, zone, rmd_building_summary):
+def summarize_rmd_space_data(
+    rct_report_viewer, building_segment, zone, rmd_building_summary
+):
     baseline_space_types = {}
 
     def add_internal_gain_from_occupancy(spc, sch):

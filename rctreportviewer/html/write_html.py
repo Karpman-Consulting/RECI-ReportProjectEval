@@ -35,9 +35,11 @@ def write_html_file(rct_detailed_report):
                 }
             </style>
         </head>
-        """)
+        """
+        )
 
-        file.write(f"""
+        file.write(
+            f"""
         <body class="mt-2 ms-2">
             <div class="d-flex flex-nowrap">
 
@@ -46,7 +48,8 @@ def write_html_file(rct_detailed_report):
                     <div class="mb-3">
                         <p><strong>Generated on:</strong> {rct_detailed_report.evaluation_data["date_run"]}</p>
                     </div>
-        """)
+        """
+        )
 
         write_component_summary(file, rct_detailed_report)
 
@@ -66,14 +69,16 @@ def write_html_file(rct_detailed_report):
 
         write_evaluations_section(file, rct_detailed_report)
 
-        file.write("""
+        file.write(
+            """
                 </div>
             </div>
             <div class="position-fixed bottom-0 end-0 mb-2 me-2" style="z-index: 1050;">
                 <button id="back-to-top" class="btn btn-primary" onclick="scrollToTop()" style="opacity: 0; visibility: hidden;"> ↑ </button>
             </div>
         </body>
-        """)
+        """
+        )
 
         write_javascript(file, rct_detailed_report)
 

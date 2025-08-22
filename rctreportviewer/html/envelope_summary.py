@@ -1,8 +1,4 @@
-
-
-def write_envelope_summary(
-    file, rct_detailed_report
-):
+def write_envelope_summary(file, rct_detailed_report):
     """
     Write the envelope summary section of the RCT detailed report.
 
@@ -11,7 +7,8 @@ def write_envelope_summary(
     """
 
     # Write the envelope summary section
-    file.write("""
+    file.write(
+        """
         <div class="mb-3 me-4">
             <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-envelope-summary" aria-expanded="false">
                 Envelope Summary
@@ -50,7 +47,8 @@ def write_envelope_summary(
                             </tr>
                         </thead>
                         <tbody style="border: 2px solid black;">
-        """)
+        """
+    )
 
     for building_segment_id in rct_detailed_report.baseline_model_summary[
         "total_floor_area_by_building_segment"
@@ -116,4 +114,5 @@ def write_envelope_summary(
                     </div>
                 </div>
             </div>
-        """)
+        """
+    )

@@ -2,7 +2,9 @@ from rctreportviewer.power import determine_fan_power
 from rctreportviewer.constants import fuel_type_map
 
 
-def summarize_rmd_system_data(rct_report_viewer, building_segment, rmd_building_summary):
+def summarize_rmd_system_data(
+    rct_report_viewer, building_segment, rmd_building_summary
+):
     def get_system_type(system_id):
         for system_type, system_names in rct_report_viewer.hvac_system_types_b.items():
             if system_id in system_names:

@@ -1,8 +1,7 @@
-
-
 def write_results_summary(file, rct_detailed_report):
     # ----------------------- Model Results Summary -----------------------
-    file.write(f"""
+    file.write(
+        f"""
             <div class="mb-3 me-4">
                 <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-results-summary" aria-expanded="false">
                     Results Summary
@@ -10,9 +9,11 @@ def write_results_summary(file, rct_detailed_report):
 
                 <div id="collapse-model-results-summary" class="accordion-collapse collapse">
                     <div class="accordion-body">
-    """)
+    """
+    )
 
-    file.write(f"""
+    file.write(
+        f"""
                         <div style="position: relative; left: 360px;" class="mb-3">
                             <div class="btn-group" role="group" aria-label="Chart toggle">
                                 <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
@@ -101,7 +102,8 @@ def write_results_summary(file, rct_detailed_report):
                                 </tr>
                             </thead>
                             <tbody style="border: 2px solid black;">
-    """)
+    """
+    )
     proposed_energy_by_end_use = rct_detailed_report.proposed_model_summary[
         "energy_by_end_use_eui"
     ]
@@ -133,9 +135,7 @@ def write_results_summary(file, rct_detailed_report):
         if not baseline_site_energy and not proposed_site_energy:
             continue
         site_improvement = (
-            (baseline_site_energy - proposed_site_energy)
-            / baseline_site_energy
-            * 100
+            (baseline_site_energy - proposed_site_energy) / baseline_site_energy * 100
             if baseline_site_energy
             else (0 - proposed_site_energy) * 100  # Avoid division by zero
         )
@@ -144,7 +144,8 @@ def write_results_summary(file, rct_detailed_report):
             if baseline_cost
             else (0 - proposed_cost) * 100  # Avoid division by zero
         )
-        file.write(f"""
+        file.write(
+            f"""
                                 <tr style="font-size: 12px;" class="lh-1 text-center">
                                     <td style="border-right: 2px solid black;">{end_use.replace('_', ' ').title()}</td>
                                     <td class="electricityProposed" style="display:none;">{round(proposed_electricity, 1):,}</td>
@@ -164,9 +165,11 @@ def write_results_summary(file, rct_detailed_report):
                                     <td class="ghgEmissionsBaseline">-</td>
                                     <td class="ghgEmissionsSavings" style="border-right: 2px solid black;">-</td>
                                 </tr>
-    """)
+    """
+        )
 
-    file.write(f"""
+    file.write(
+        f"""
                                 <tr style="font-size: 12px;" class="energyPerformanceTotals lh-1 text-center">
                                     <td style="border-right: 2px solid black;">Total</td>
                                     <td class="totSiteEnergyProposed">-</td>
@@ -187,4 +190,5 @@ def write_results_summary(file, rct_detailed_report):
                     </div>
                 </div>
             </div>
-    """)
+    """
+    )

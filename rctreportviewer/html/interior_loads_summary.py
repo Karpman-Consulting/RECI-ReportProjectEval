@@ -2,7 +2,8 @@ import math
 
 
 def write_interior_loads_summary(file, rct_detailed_report):
-    file.write(f"""
+    file.write(
+        f"""
         <div class="mb-3 me-4">
             <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-internal-loads-summary" aria-expanded="false">
                 Internal Loads Summary
@@ -31,7 +32,8 @@ def write_interior_loads_summary(file, rct_detailed_report):
                             </tr>
                         </thead>
                         <tbody style="border: 2px solid black;">
-    """)
+    """
+    )
 
     for space_type in rct_detailed_report.baseline_model_summary[
         "total_floor_area_by_space_type"
@@ -71,7 +73,8 @@ def write_interior_loads_summary(file, rct_detailed_report):
     )
 
     # ----------------------- Schedule Summary Table -----------------------
-    file.write(f"""
+    file.write(
+        f"""
                     <h3>Schedule Summary</h3>
                     <table class="table table-sm table-borderless" style="width: 1250px;">
                         <thead>
@@ -95,7 +98,8 @@ def write_interior_loads_summary(file, rct_detailed_report):
                             </tr>
                         </thead>
                         <tbody style="border: 2px solid black;">
-    """)
+    """
+    )
 
     baseline_schedule_summaries = rct_detailed_report.baseline_model_summary[
         "schedule_summaries"
@@ -133,4 +137,5 @@ def write_interior_loads_summary(file, rct_detailed_report):
                     </div>
                 </div>
             </div>
-        """)
+        """
+    )

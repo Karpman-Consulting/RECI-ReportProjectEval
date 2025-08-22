@@ -1,5 +1,3 @@
-
-
 def determine_fan_power(fan):
     if "design_electric_power" in fan:
         return fan["design_electric_power"]

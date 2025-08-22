@@ -2,7 +2,8 @@ from rctreportviewer.constants import efficiency_display_map
 
 
 def write_swh_summary(file, rct_detailed_report):
-    file.write("""      
+    file.write(
+        """      
         <div class="mb-3 me-4">
             <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-swh-summary" aria-expanded="false">
                 Service Water Heating Summary
@@ -29,7 +30,7 @@ def write_swh_summary(file, rct_detailed_report):
                         </thead>
                         <tbody style="border: 2px solid black;">
             """
-               )
+    )
 
     proposed_water_heater_summary = rct_detailed_report.proposed_model_summary.get(
         "water_heater_summary", {}
@@ -40,8 +41,8 @@ def write_swh_summary(file, rct_detailed_report):
     combined_water_heater_ids = set(
         wh_id
         for wh_id in (
-                list(proposed_water_heater_summary.keys())
-                + list(baseline_water_heater_summary.keys())
+            list(proposed_water_heater_summary.keys())
+            + list(baseline_water_heater_summary.keys())
         )
     )
     for water_heater_id in combined_water_heater_ids:
@@ -82,9 +83,7 @@ def write_swh_summary(file, rct_detailed_report):
         # Populate if matching proposed WH found
         if proposed_wh_id_match:
             proposed_wh_data = proposed_water_heater_summary[proposed_wh_id_match]
-            proposed_area_type = ", ".join(
-                proposed_wh_data.get("area_types", ["-"])
-            )
+            proposed_area_type = ", ".join(proposed_wh_data.get("area_types", ["-"]))
             proposed_fuel = proposed_wh_data.get("fuel_type", "-")
             proposed_efficiency = format_efficiencies(
                 proposed_wh_data.get("efficiencies", [])
@@ -93,15 +92,14 @@ def write_swh_summary(file, rct_detailed_report):
         # Populate if matching baseline WH found
         if baseline_wh_id_match:
             baseline_wh_data = baseline_water_heater_summary[baseline_wh_id_match]
-            baseline_area_type = ", ".join(
-                baseline_wh_data.get("area_types", ["-"])
-            )
+            baseline_area_type = ", ".join(baseline_wh_data.get("area_types", ["-"]))
             baseline_fuel = baseline_wh_data.get("fuel_type", "-")
             baseline_efficiency = format_efficiencies(
                 baseline_wh_data.get("efficiencies", [])
             )
 
-        file.write(f"""
+        file.write(
+            f"""
                             <tr style="font-size: 12px;" class="lh-1 text-center">
                                 <td style="border-right: 2px solid black;">{water_heater_id}</td>
                                 <td>{proposed_area_type.replace("_", " ").title()}</td>
@@ -111,7 +109,8 @@ def write_swh_summary(file, rct_detailed_report):
                                 <td>{baseline_fuel.replace("_", " ").title()}</td>
                                 <td style="border-right: 2px solid black;">{baseline_efficiency}</td>
                             </tr>
-        """)
+        """
+        )
 
     file.write(
         f"""
@@ -120,4 +119,5 @@ def write_swh_summary(file, rct_detailed_report):
                 </div>
             </div>
         </div>
-    """)
+    """
+    )

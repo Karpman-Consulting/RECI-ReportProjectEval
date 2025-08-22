@@ -17,16 +17,14 @@ def summarize_building_segment_data(rct_report_viewer, building, rmd_building_su
         for swh_use_id in building_segment.get("service_water_heating_uses", []):
             rmd_building_summary["swh_use_id_to_area_types"].setdefault(
                 swh_use_id, set()
-            ).add(
-                building_segment.get(
-                    "service_water_heating_area_type", "ALL_OTHERS"
-                )
-            )
+            ).add(building_segment.get("service_water_heating_area_type", "ALL_OTHERS"))
 
-        summarize_rmd_zone_data(rct_report_viewer, building_segment, rmd_building_summary)
-
-        summarize_rmd_system_data(rct_report_viewer, building_segment, rmd_building_summary)
-
-        summarize_heating_cooling_capacity_data(
-            building_segment, rmd_building_summary
+        summarize_rmd_zone_data(
+            rct_report_viewer, building_segment, rmd_building_summary
         )
+
+        summarize_rmd_system_data(
+            rct_report_viewer, building_segment, rmd_building_summary
+        )
+
+        summarize_heating_cooling_capacity_data(building_segment, rmd_building_summary)
