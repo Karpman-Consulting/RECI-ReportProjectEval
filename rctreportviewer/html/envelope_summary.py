@@ -1,3 +1,6 @@
+import math
+
+
 def write_envelope_summary(file, rct_detailed_report):
     """
     Write the envelope summary section of the RCT detailed report.
@@ -65,16 +68,16 @@ def write_envelope_summary(file, rct_detailed_report):
                                     <td>{building_segment_id}</td>
                                     <td style="border-right: 2px solid black;">Roof</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round((rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) * 100, 1)}</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round(rct_detailed_report.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) * 100, 1)}</td>
                                     <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / rct_detailed_report.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round((rct_detailed_report.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / rct_detailed_report.proposed_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.proposed_model_summary['total_roof_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round(rct_detailed_report.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.proposed_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                 </tr>
                 """
@@ -92,16 +95,16 @@ def write_envelope_summary(file, rct_detailed_report):
                                     <td>{building_segment_id}</td>
                                     <td style="border-right: 2px solid black;">Ext. Wall</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round((rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                     <td>{round(rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round(rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) * 100, 1)}</td>
                                     <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / rct_detailed_report.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round((rct_detailed_report.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / rct_detailed_report.proposed_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.proposed_model_summary['total_wall_area_by_building_segment'][building_segment_id] * 100, 1)}</td>
+                                    <td>{round(rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.proposed_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
                                     <td>{round(rct_detailed_report.proposed_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
                                 </tr>
                 """
