@@ -20,9 +20,9 @@ def write_javascript(file, rct_detailed_report):
     function recalculateEnergyMetrics() {{
         let proposedSourceEnergy = 0;
         let proposedGHGEmissions = 0;
-        let baselineUnregulatedEnergy = 0;
+        let baselineUnregulatedSourceEnergy = 0;
         let baselineUnregulatedGHGEmissions = 0;
-        let baselineRegulatedEnergy = 0;
+        let baselineRegulatedSourceEnergy = 0;
         let baselineRegulatedGHGEmissions = 0;
 
         rows.forEach(row => {{
@@ -37,86 +37,80 @@ def write_javascript(file, rct_detailed_report):
 
             proposedSourceEnergy += proposed * ssr;
             proposedGHGEmissions += proposed * ghg;
-            baselineUnregulatedEnergy += unreg * ssr;
+            baselineUnregulatedSourceEnergy += unreg * ssr;
             baselineUnregulatedGHGEmissions += unreg * ghg;
-            baselineRegulatedEnergy += reg * ssr;
+            baselineRegulatedSourceEnergy += reg * ssr;
             baselineRegulatedGHGEmissions += reg * ghg;
         }});
 
-        const baselineSourceEnergy = baselineUnregulatedEnergy + baselineRegulatedEnergy;
+        const baselineSourceEnergy = baselineUnregulatedSourceEnergy + baselineRegulatedSourceEnergy;
         const baselineGHGEmissions = baselineUnregulatedGHGEmissions + baselineRegulatedGHGEmissions;
 
         const proposedSiteEnergy = getText('pbp_nre_site_energy') - getText('proposed_site_energy_savings');
         const proposedSrcEnergy = proposedSourceEnergy - getText('proposed_source_energy_savings');
         const proposedGHG = proposedGHGEmissions - getText('proposed_ghg_savings');
 
-        const bbSite = getText('bbp_site_energy');
-        const bbSrc = baselineSourceEnergy;
-        const bbGHG = baselineGHGEmissions;
-        const bbuecSite = getText('bbuec_site_energy');
-        const bbrecSite = getText('bbrec_site_energy');
-        const bbuecSource = baselineUnregulatedEnergy;
-        const bbrecSource = baselineRegulatedEnergy;
-        const bbuecGHG = baselineUnregulatedGHGEmissions;
-        const bbrecGHG = baselineRegulatedGHGEmissions;
+        const baselineSiteEnergy = getText('bbp_site_energy');
+        const baselineUnregulatedSiteEnergy = getText('bbuec_site_energy');
+        const baselineRegulatedSiteEnergy = getText('bbrec_site_energy');
 
         const bpfSite = getText('bpf_site_energy');
         const bpfSource = getText('bpf_source_energy');
         const bpfGHG = getText('bpf_ghg_emissions');
 
-        setText('pbp_nre_source_energy', proposedSourceEnergy.toFixed(0));
-        setText('pbp_nre_ghg', proposedGHGEmissions.toFixed(0));
-        setText('pbp_site_energy', proposedSiteEnergy.toFixed(0));
-        setText('pbp_source_energy', proposedSrcEnergy.toFixed(0));
-        setText('pbp_ghg', proposedGHG.toFixed(0));
-
-        setText('bbuec_source_energy', baselineUnregulatedEnergy.toFixed(0));
-        setText('bbuec_ghg', baselineUnregulatedGHGEmissions.toFixed(0));
-        setText('bbrec_source_energy', baselineRegulatedEnergy.toFixed(0));
-        setText('bbrec_ghg', baselineRegulatedGHGEmissions.toFixed(0));
-        setText('bbp_source_energy', bbSrc.toFixed(0));
-        setText('bbp_ghg', bbGHG.toFixed(0));
+        setText('pbp_nre_source_energy', proposedSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('pbp_nre_ghg', proposedGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('pbp_site_energy', proposedSiteEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('pbp_source_energy', proposedSrcEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('pbp_ghg', proposedGHG.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        
+        setText('bbuec_source_energy', baselineUnregulatedSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('bbuec_ghg', baselineUnregulatedGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('bbrec_source_energy', baselineRegulatedSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('bbrec_ghg', baselineRegulatedGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('bbp_source_energy', baselineSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
+        setText('bbp_ghg', baselineGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
 
         // PCIt ratios
-        setRatio('pcit_site_energy', bbuecSite + bpfSite * bbrecSite, bbSite);
-        setRatio('pcit_source_energy', bbuecSource + bpfSource * bbrecSource, bbSrc);
-        setRatio('pcit_ghg_emissions', bbuecGHG + bpfGHG * bbrecGHG, bbGHG);
+        setRatio('pcit_site_energy', baselineUnregulatedSiteEnergy + bpfSite * baselineRegulatedSiteEnergy, baselineSiteEnergy);
+        setRatio('pcit_source_energy', baselineUnregulatedSourceEnergy + bpfSource * baselineRegulatedSourceEnergy, baselineSourceEnergy);
+        setRatio('pcit_ghg_emissions', baselineUnregulatedGHGEmissions + bpfGHG * baselineRegulatedGHGEmissions, baselineGHGEmissions);
 
-        setRatio('pci_nre_site_energy', getText('pbp_nre_site_energy'), bbSite);
-        setRatio('pci_nre_source_energy', proposedSourceEnergy, bbSrc);
-        setRatio('pci_nre_ghg', proposedGHGEmissions, bbGHG);
+        setRatio('pci_nre_site_energy', getText('pbp_nre_site_energy'), baselineSiteEnergy);
+        setRatio('pci_nre_source_energy', proposedSourceEnergy, baselineSourceEnergy);
+        setRatio('pci_nre_ghg', proposedGHGEmissions, baselineGHGEmissions);
 
         // PCIadjusted calculations
         const capFraction = 0.05;
-        const adjustedSiteSavings = Math.min(getText('proposed_site_energy_savings'), capFraction * bbSite);
-        const adjustedSourceSavings = Math.min(getText('proposed_source_energy_savings'), capFraction * bbSrc);
-        const adjustedGHGSavings = Math.min(getText('proposed_ghg_savings'), capFraction * bbGHG);
+        const adjustedSiteSavings = Math.min(getText('proposed_site_energy_savings'), capFraction * baselineSiteEnergy);
+        const adjustedSourceSavings = Math.min(getText('proposed_source_energy_savings'), capFraction * baselineSourceEnergy);
+        const adjustedGHGSavings = Math.min(getText('proposed_ghg_savings'), capFraction * baselineGHGEmissions);
 
         const adjustedPBPSite = getText('pbp_nre_site_energy') - adjustedSiteSavings;
         const adjustedPBPSource = proposedSourceEnergy - adjustedSourceSavings;
         const adjustedPBPGHG = proposedGHGEmissions - adjustedGHGSavings;
 
-        const pciAdjustedSite = adjustedPBPSite / bbSite;
-        const pciAdjustedSource = adjustedPBPSource / bbSrc;
-        const pciAdjustedGHG = adjustedPBPGHG / bbGHG;
+        const pciAdjustedSite = adjustedPBPSite / baselineSiteEnergy;
+        const pciAdjustedSource = adjustedPBPSource / baselineSourceEnergy;
+        const pciAdjustedGHG = adjustedPBPGHG / baselineGHGEmissions;
 
         // Update the table
-        setText('pci_adjusted_site_energy', pciAdjustedSite.toFixed(2));
-        setText('pci_adjusted_source_energy', pciAdjustedSource.toFixed(2));
-        setText('pci_adjusted_ghg', pciAdjustedGHG.toFixed(2));
+        setText('pci_adjusted_site_energy', pciAdjustedSite.toLocaleString(undefined, {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}));
+        setText('pci_adjusted_source_energy', pciAdjustedSource.toLocaleString(undefined, {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}));
+        setText('pci_adjusted_ghg', pciAdjustedGHG.toLocaleString(undefined, {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}));
 
         const getCost = (id) => parseNumber(document.getElementById(id).textContent.replace(/[$,]/g, ''));
 
         // Get cost values
-        const bbCost = getCost('bbp_cost');
-        const pbpCost = getCost('pbp_cost');
-        const pbpNRECost = getCost('pbp_nre_cost');
+        const baselineCost = getCost('bbp_cost');
+        const proposedCost = getCost('pbp_cost');
+        const proposedNRECost = getCost('pbp_nre_cost');
 
         // % Improvement excluding renewables
-        const cost_savings_nre = ((bbCost - pbpNRECost) / bbCost) * 100;
-        const site_savings_nre = ((bbSite - getText('pbp_nre_site_energy')) / bbSite) * 100;
-        const source_savings_nre = ((bbSrc - proposedSourceEnergy) / bbSrc) * 100;
-        const ghg_savings_nre = ((bbGHG - proposedGHGEmissions) / bbGHG) * 100;
+        const cost_savings_nre = ((baselineCost - proposedNRECost) / baselineCost) * 100;
+        const site_savings_nre = ((baselineSiteEnergy - getText('pbp_nre_site_energy')) / baselineSiteEnergy) * 100;
+        const source_savings_nre = ((baselineSourceEnergy - proposedSourceEnergy) / baselineSourceEnergy) * 100;
+        const ghg_savings_nre = ((baselineGHGEmissions - proposedGHGEmissions) / baselineGHGEmissions) * 100;
 
         setText('cost_savings_nre', cost_savings_nre.toFixed(1) + '%');
         setText('site_savings_nre', site_savings_nre.toFixed(1) + '%');
@@ -124,10 +118,10 @@ def write_javascript(file, rct_detailed_report):
         setText('ghg_savings_nre', ghg_savings_nre.toFixed(1) + '%');
 
         // % Improvement including renewables
-        const cost_savings = ((bbCost - pbpCost) / bbCost) * 100;
-        const site_savings = ((bbSite - getText('pbp_site_energy')) / bbSite) * 100;
-        const source_savings = ((bbSrc - proposedSrcEnergy) / bbSrc) * 100;
-        const ghg_savings = ((bbGHG - proposedGHG) / bbGHG) * 100;
+        const cost_savings = ((baselineCost - proposedCost) / baselineCost) * 100;
+        const site_savings = ((baselineSiteEnergy - getText('pbp_site_energy')) / baselineSiteEnergy) * 100;
+        const source_savings = ((baselineSourceEnergy - proposedSrcEnergy) / baselineSourceEnergy) * 100;
+        const ghg_savings = ((baselineGHGEmissions - proposedGHG) / baselineGHGEmissions) * 100;
 
         setText('cost_savings', cost_savings.toFixed(1) + '%');
         setText('site_savings', site_savings.toFixed(1) + '%');

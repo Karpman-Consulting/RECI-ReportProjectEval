@@ -46,12 +46,12 @@ def summarize_output_data(output, rmd_building_summary):
             bbrec_summary["site_energy"] = (
                 bbrec_summary.get("site_energy", 0) + energy_use
             )
-            bbrec_summary[source] = bbrec_summary.get(source, 0) + (energy_use / 1e6)
+            bbrec_summary[source] = bbrec_summary.get(source, 0) + energy_use
         else:
             bbuec_summary["site_energy"] = (
                 bbuec_summary.get("site_energy", 0) + energy_use
             )
-            bbuec_summary[source] = bbuec_summary.get(source, 0) + (energy_use / 1e6)
+            bbuec_summary[source] = bbuec_summary.get(source, 0) + energy_use
 
         # always update BBP/PBP_NRE
         bbp_summary["site_energy"] = bbp_summary.get("site_energy", 0) + energy_use

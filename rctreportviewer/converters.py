@@ -12,8 +12,7 @@ def convert_schedule_summaries_internal_gain(summary: dict):
 def convert_compliance_summary_energies(summary: dict):
     for parameter_data in summary.get("compliance_calcs_by_parameter", {}).values():
         for data_name, data in parameter_data.items():
-            if data_name in ["source_energy", "site_energy"]:
-                parameter_data[data_name] = convert_unit(data, "Btu", "MMBtu")
+            parameter_data[data_name] = convert_unit(data, "J", "MMBtu")
 
 
 def convert_int_ltg_summary_units(summary: dict):
@@ -135,16 +134,12 @@ def convert_model_data_units(
         "total_infiltration": ("L / s", "cfm"),
         "total_air_flow_by_fan_control_by_fan_type": ("L / s", "cfm"),
         "total_air_flow_by_fan_type": ("L / s", "cfm"),
-        "total_energy": ("J", "kBtu"),
-        "total_site_energy": ("J", "MMBtu"),
-        "total_source_energy": ("J", "MMBtu"),
-        "total_site_energy_regulated": ("Btu", "MMBtu"),
-        "total_site_energy_unregulated": ("Btu", "MMBtu"),
-        "energy_by_fuel_type": ("J", "kBtu"),
-        "energy_by_end_use": ("J", "kBtu"),
+        "total_energy": ("J", "MMBtu"),
+        "energy_by_fuel_type": ("J", "MMBtu"),
+        "energy_by_end_use": ("J", "MMBtu"),
         "elec_by_end_use": ("J", "kWh"),
         "gas_by_end_use": ("J", "therm"),
-        "other_by_end_use": ("J", "kBtu"),
+        "other_by_end_use": ("J", "MMBtu"),
         "heating_capacity_by_fuel_type": ("W", "kBtu / h"),
         "cooling_capacity_by_fuel_type": ("W", "kBtu / h"),
         "electric_chiller_plant_capacity": ("W", "ton"),
