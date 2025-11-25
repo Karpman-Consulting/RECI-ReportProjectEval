@@ -16,6 +16,14 @@ def write_javascript(file, rct_detailed_report):
         const ratio = denominator !== 0 ? (numerator / denominator).toFixed(2) : "0.00";
         document.getElementById(id).textContent = ratio;
     }};
+    
+    document.addEventListener("DOMContentLoaded", () => {{
+        document.querySelectorAll("[data-bs-toggle='tooltip']").forEach(el => {{
+            if (el.getAttribute("title") == null) {{
+                el.setAttribute("title", "");
+            }}
+        }});
+    }});
 
     function recalculateEnergyMetrics() {{
         let proposedSourceEnergy = 0;
@@ -519,7 +527,7 @@ def write_javascript(file, rct_detailed_report):
           // Update Total Energy
           energyChart.data.datasets[0].data = energyDataRaw[unitType].baseline;
           energyChart.data.datasets[1].data = energyDataRaw[unitType].proposed;
-          energyChart.options.scales.y.title.text = unitType === 'consumption' ? 'kBtu' : 'kBtu/ft²';
+          energyChart.options.scales.y.title.text = unitType === 'consumption' ? 'MMBtu' : 'kBtu/ft²';
           energyChart.update();
         }}
 
@@ -531,7 +539,7 @@ def write_javascript(file, rct_detailed_report):
           if (unitType === 'eui') {{
             return 'kBtu/ft²';
           }} else {{
-            return source === 'elec' ? 'kWh' : source === 'gas' ? 'Therms' : 'kBtu';
+            return source === 'elec' ? 'kWh' : source === 'gas' ? 'Therms' : 'MMBtu';
           }}
         }}
 

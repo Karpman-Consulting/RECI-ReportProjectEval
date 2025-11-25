@@ -15,7 +15,9 @@ def summarize_rmd_space_data(
         ] += occupancy_gain
 
     for space in zone.get("spaces", []):
+        # Make sure the space area only gets added once per schedule
         schedule_areas_added = []
+
         if "floor_area" in space:
             rmd_building_summary["total_floor_area"] += space["floor_area"]
             rmd_building_summary["total_floor_area_by_building_segment"][
@@ -27,11 +29,13 @@ def summarize_rmd_space_data(
                 + space["floor_area"]
             )
             rct_report_viewer.space_areas[space["id"]] = space["floor_area"]
+
         if (
             "lighting_space_type" in space
             and rmd_building_summary["rmd_type"] == "Baseline"
         ):
             baseline_space_types[space["id"]] = space["lighting_space_type"]
+
         if "number_of_occupants" in space:
             rmd_building_summary["total_occupants"] += space["number_of_occupants"]
             if "lighting_space_type" in space:
@@ -87,12 +91,14 @@ def summarize_rmd_space_data(
                         ] = int_ltg_power
                 else:
                     interior_lighting_summary["int_ltg_power_general"] = int_ltg_power
+
                 interior_lighting_summary["int_ltg_power_total"] = int_ltg_power
                 rmd_building_summary["int_ltg_summaries"][
                     int_ltg_id
                 ] = interior_lighting_summary
 
                 rmd_building_summary["total_lighting_power"] += int_ltg_power
+
                 if "lighting_space_type" in space:
                     rmd_building_summary["total_floor_area_by_space_type"][
                         space["lighting_space_type"]
@@ -112,23 +118,26 @@ def summarize_rmd_space_data(
                     )
 
                 # Save lighting schedule data
-                schedule = interior_lighting.get("lighting_multiplier_schedule")
-                for dictionary in [
+                schedule_id = interior_lighting.get("lighting_multiplier_schedule")
+
+                for schedule_dictionary in [
                     rmd_building_summary["int_ltg_power_by_schedule"],
                     rmd_building_summary["floor_area_by_schedule"],
                     rmd_building_summary["occ_peak_internal_gain_by_schedule"],
                 ]:
-                    if schedule and schedule not in dictionary:
-                        dictionary[schedule] = 0.0
+                    if schedule_id and schedule_id not in schedule_dictionary:
+                        schedule_dictionary[schedule_id] = 0.0
+
                 rmd_building_summary["int_ltg_power_by_schedule"][
-                    schedule
+                    schedule_id
                 ] += int_ltg_power
-                if schedule not in schedule_areas_added:
-                    rmd_building_summary["floor_area_by_schedule"][schedule] += space[
+
+                if schedule_id not in schedule_areas_added:
+                    rmd_building_summary["floor_area_by_schedule"][schedule_id] += space[
                         "floor_area"
                     ]
-                    schedule_areas_added.append(schedule)
-                add_internal_gain_from_occupancy(space, schedule)
+                    schedule_areas_added.append(schedule_id)
+                add_internal_gain_from_occupancy(space, schedule_id)
 
         for miscellaneous_equipment in space.get(
             "miscellaneous_equipment", [{"power": 0}]
@@ -137,6 +146,7 @@ def summarize_rmd_space_data(
                 rmd_building_summary[
                     "total_equipment_power"
                 ] += miscellaneous_equipment["power"]
+
                 if "lighting_space_type" in space:
                     rmd_building_summary[
                         "total_miscellaneous_equipment_power_by_space_type"
@@ -148,39 +158,44 @@ def summarize_rmd_space_data(
                     )
 
                 # Save equipment schedule data
-                schedule = miscellaneous_equipment.get("multiplier_schedule")
-                for dictionary in [
+                schedule_id = miscellaneous_equipment.get("multiplier_schedule")
+
+                for schedule_dictionary in [
                     rmd_building_summary["equip_power_by_schedule"],
                     rmd_building_summary["floor_area_by_schedule"],
                     rmd_building_summary["occ_peak_internal_gain_by_schedule"],
                 ]:
-                    if schedule and schedule not in dictionary:
-                        dictionary[schedule] = 0.0
+                    if schedule_id and schedule_id not in schedule_dictionary:
+                        schedule_dictionary[schedule_id] = 0.0
+
                 rmd_building_summary["equip_power_by_schedule"][
-                    schedule
+                    schedule_id
                 ] += miscellaneous_equipment["power"]
-                if schedule not in schedule_areas_added:
-                    rmd_building_summary["floor_area_by_schedule"][schedule] += space[
+
+                if schedule_id not in schedule_areas_added:
+                    rmd_building_summary["floor_area_by_schedule"][schedule_id] += space[
                         "floor_area"
                     ]
-                    schedule_areas_added.append(schedule)
-                add_internal_gain_from_occupancy(space, schedule)
+                    schedule_areas_added.append(schedule_id)
+                add_internal_gain_from_occupancy(space, schedule_id)
 
         # Save occupancy schedule data
         if "occupant_multiplier_schedule" in space and "floor_area" in space:
-            schedule = space["occupant_multiplier_schedule"]
-            for dictionary in [
+            schedule_id = space["occupant_multiplier_schedule"]
+
+            for schedule_dictionary in [
                 rmd_building_summary["floor_area_by_schedule"],
                 rmd_building_summary["occ_peak_internal_gain_by_schedule"],
             ]:
-                if schedule and schedule not in dictionary:
-                    dictionary[schedule] = 0.0
-            if schedule not in schedule_areas_added:
-                rmd_building_summary["floor_area_by_schedule"][schedule] += space[
+                if schedule_id and schedule_id not in schedule_dictionary:
+                    schedule_dictionary[schedule_id] = 0.0
+
+            if schedule_id not in schedule_areas_added:
+                rmd_building_summary["floor_area_by_schedule"][schedule_id] += space[
                     "floor_area"
                 ]
-                schedule_areas_added.append(schedule)
-            add_internal_gain_from_occupancy(space, schedule)
+                schedule_areas_added.append(schedule_id)
+            add_internal_gain_from_occupancy(space, schedule_id)
 
         for swh_use_id in space.get("service_water_heating_uses", []):
             rmd_building_summary["swh_use_id_to_area_types"].setdefault(

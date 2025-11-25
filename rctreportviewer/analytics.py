@@ -59,15 +59,13 @@ def perform_analytic_calculations(rct_report_viewer):
 
     climate_zone = next(iter(climate_zone_vals), None)
 
-    ruleset_key = re.search(r"90\.1-\d{4}", rct_report_viewer.ruleset)
-    if ruleset_key:
-        ruleset_key = ruleset_key.group()
     if climate_zone:
         climate_zone = climate_zone.split("CZ")[
             1
         ]  # Extract the climate zone without 'CZ'
         for metric in ["Cost", "Site Energy", "Source Energy", "GHG Emissions"]:
-            metric_key = f"{ruleset_key} {metric}"
+            # TODO: Replace hardcoded 90.1-2019 with dynamic ruleset version
+            metric_key = f"90.1-2019 {metric}"
             bpf_data = rct_report_viewer.bpf_data[metric_key][climate_zone]
             rct_report_viewer.bpfs_by_metric[
                 metric

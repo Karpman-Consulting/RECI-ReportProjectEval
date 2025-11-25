@@ -146,19 +146,19 @@ def write_compliance_calculations(file, rct_detailed_report):
     """
     )
 
-    if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
-        file.write(
-            """
-                            <tr style="font-size: 12px;" class="lh-1 text-center">
-                                <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
-                                <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
-                                <td>$0</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>0</td>
-                            </tr>
-        """
-        )
+    # if "ASHRAE 90.1-2022" in rct_detailed_report.ruleset:
+    #     file.write(
+    #         """
+    #                         <tr style="font-size: 12px;" class="lh-1 text-center">
+    #                             <td style="border-right: 2px solid black;">Prescriptive renewable savings</td>
+    #                             <td style="border-right: 2px solid black; font-weight: bold;">PRE</td>
+    #                             <td>$0</td>
+    #                             <td>0</td>
+    #                             <td>0</td>
+    #                             <td>0</td>
+    #                         </tr>
+    #     """
+    #     )
 
     file.write(
         f"""

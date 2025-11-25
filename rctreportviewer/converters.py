@@ -51,7 +51,7 @@ def calculate_eui(summary: dict):
 
     elec_by_end_use = summary.get("elec_by_end_use", {})  # kWh by end use
     gas_by_end_use = summary.get("gas_by_end_use", {})  # therms by end use
-    total_energy_by_end_use = summary.get("energy_by_end_use", {})  # kBtu by end use
+    total_energy_by_end_use = summary.get("energy_by_end_use", {})  # MMBtu by end use
     cost_by_fuel_type = summary.get("cost_by_fuel_type", {})  # $ by fuel
 
     # Ensure output dicts exist
@@ -67,8 +67,8 @@ def calculate_eui(summary: dict):
     for end_use, therms in gas_by_end_use.items():
         summary["gas_by_end_use_eui"][end_use] = (therms * 100.0) / floor_area
 
-    for end_use, kbtu in total_energy_by_end_use.items():
-        summary["energy_by_end_use_eui"][end_use] = kbtu / floor_area
+    for end_use, mmbtu in total_energy_by_end_use.items():
+        summary["energy_by_end_use_eui"][end_use] = mmbtu * 1000 / floor_area
 
     total_kwh = sum(elec_by_end_use.values()) or 0.0
     total_therms = sum(gas_by_end_use.values()) or 0.0

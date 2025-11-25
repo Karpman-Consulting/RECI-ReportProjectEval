@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "rctreportviewer"
+version = "0.1.0"
+description = "SIMcheck Report Viewer"
+authors = ["Jackson Jarboe <jackson@karpmanconsulting.net>"]
+packages = [
+    { include = "rctreportviewer" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pint = "*"
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

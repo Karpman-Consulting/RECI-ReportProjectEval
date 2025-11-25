@@ -3,12 +3,12 @@ def write_component_summary(file, rct_detailed_report):
     tooltip_lines = []
     total_qty = 0
 
-    for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
-        qty = len(systems)
-        total_qty += qty
-        tooltip_lines.append(
-            f"<div class='text-start'><b>{system_type}</b>: {qty}</div>"
-        )
+    # for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
+    #     qty = len(systems)
+    #     total_qty += qty
+    #     tooltip_lines.append(
+    #         f"<div class='text-start'><b>{system_type}</b>: {qty}</div>"
+    #     )
 
     tooltip_html = "".join(tooltip_lines)
 
@@ -32,7 +32,7 @@ def write_component_summary(file, rct_detailed_report):
                             <tr style="font-size: 12px;" class="lh-1">
                                 <td class="col-3 text-end">System Qty</td>
                                 <td class="col-4 text-center">
-                                    <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" data-bs-title="{tooltip_html}" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">
+                                    <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="{tooltip_html}" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">
                                         {rct_detailed_report.baseline_model_summary["system_count"]}
                                     </span>
                                 </td>

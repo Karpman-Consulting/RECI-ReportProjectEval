@@ -1,6 +1,7 @@
-import ast
 import json
 
+from rctreportviewer.html.write_evaluation_html import write_html_file as write_evaluation_summary_html_file
+from rctreportviewer.html.write_model_html import write_html_file as write_model_summary_html_file
 from rctreportviewer.html.write_html import write_html_file
 from rctreportviewer.constants import (
     path_to_bpf_data,
@@ -12,7 +13,7 @@ from rctreportviewer.converters import convert_model_data_units
 from rctreportviewer.summarizers.rmd import summarize_rmd_data
 
 
-class RCTDetailedReport:
+class SummaryReportGenerator:
     def __init__(
         self,
         detailed_evaluation_report_file_path: str,
@@ -74,6 +75,19 @@ class RCTDetailedReport:
         self.rpd_data = [self.load_file(file_path) for file_path in self.rpd_file_paths]
         self.bpf_data = self.load_file(path_to_bpf_data)
 
+    def load_evaluation_file(self):
+        """
+        Loads only the evaluation JSON file into memory.
+        """
+        self.evaluation_data = self.load_file(self.detailed_evaluation_report_file_path)
+
+    def load_model_files(self):
+        """
+        Loads only the RPD JSON file(s) into memory.
+        """
+        self.rpd_data = [self.load_file(file_path) for file_path in self.rpd_file_paths]
+        self.bpf_data = self.load_file(path_to_bpf_data)
+
     def extract_evaluation_data(self):
         """
         Extracts select evaluation data from the overall data structure for reformatting and easy presentation.
@@ -123,37 +137,37 @@ class RCTDetailedReport:
                     else:
                         self.rule_evaluation_message_counts[rule_id][message] = 1
 
-                if rule_id == "6-4" and "calculated_values" in evaluation:
-                    lpd_allowance_calc_value = next(
-                        (
-                            calc_value
-                            for calc_value in evaluation["calculated_values"]
-                            if calc_value["variable"] == "lpd_allowance_b"
-                        ),
-                        None,
-                    )
-                    if lpd_allowance_calc_value:
-                        self.space_lpd_allowances[evaluation["data_group_id"]] = float(
-                            lpd_allowance_calc_value["value"]
-                        )
-
-                if (
-                    rule_id == "18-1"
-                    and "calculated_values" in evaluation
-                    and not self.hvac_system_types_b
-                ):
-                    hvac_system_types_b_value = next(
-                        (
-                            calc_value
-                            for calc_value in evaluation["calculated_values"]
-                            if calc_value["variable"] == "hvac_system_types_b"
-                        ),
-                        None,
-                    )
-                    if hvac_system_types_b_value:
-                        self.hvac_system_types_b = ast.literal_eval(
-                            hvac_system_types_b_value["value"]
-                        )
+                # if rule_id == "6-4" and "calculated_values" in evaluation:
+                #     lpd_allowance_calc_value = next(
+                #         (
+                #             calc_value
+                #             for calc_value in evaluation["calculated_values"]
+                #             if calc_value["variable"] == "lpd_allowance_b"
+                #         ),
+                #         None,
+                #     )
+                #     if lpd_allowance_calc_value:
+                #         self.space_lpd_allowances[evaluation["data_group_id"]] = float(
+                #             lpd_allowance_calc_value["value"]
+                #         )
+                #
+                # if (
+                #     rule_id == "18-1"
+                #     and "calculated_values" in evaluation
+                #     and not self.hvac_system_types_b
+                # ):
+                #     hvac_system_types_b_value = next(
+                #         (
+                #             calc_value
+                #             for calc_value in evaluation["calculated_values"]
+                #             if calc_value["variable"] == "hvac_system_types_b"
+                #         ),
+                #         None,
+                #     )
+                #     if hvac_system_types_b_value:
+                #         self.hvac_system_types_b = ast.literal_eval(
+                #             hvac_system_types_b_value["value"]
+                #         )
 
             # Determine rule status
             if outcomes == {"Failing"} and messages == {" ::TOLERANCE::"}:
@@ -258,3 +272,17 @@ class RCTDetailedReport:
             self.baseline_model_summary, self.proposed_model_summary
         )
         write_html_file(self)
+
+    def summarize_models(self):
+        self.load_model_files()
+        self.extract_model_data()
+        perform_analytic_calculations(self)
+        convert_model_data_units(
+            self.baseline_model_summary, self.proposed_model_summary
+        )
+        write_model_summary_html_file(self)
+
+    def summarize_evaluations(self):
+        self.load_evaluation_file()
+        self.extract_evaluation_data()
+        write_evaluation_summary_html_file(self)
