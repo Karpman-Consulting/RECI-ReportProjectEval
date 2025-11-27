@@ -19,6 +19,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.include]
 "rctreportviewer/BPFs.json" = { format = "sdist" }
+"rctreportviewer/unit_registry.txt" = { format = "sdist" }
 
 [tool.poetry.package.include]
 "rctreportviewer/BPFs.json" = true
+"rctreportviewer/unit_registry.txt" = true
