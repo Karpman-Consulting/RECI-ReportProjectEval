@@ -16,3 +16,9 @@ pint = "*"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.include]
+"rctreportviewer/BPFs.json" = { format = "sdist" }
+
+[tool.poetry.package.include]
+"rctreportviewer/BPFs.json" = true
