@@ -6,10 +6,6 @@ authors = ["Jackson Jarboe <jackson@karpmanconsulting.net>"]
 packages = [
     { include = "rctreportviewer" }
 ]
-include = [
-    "rctreportviewer/BPFs.json",
-    "rctreportviewer/unit_registry.txt"
-]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -20,3 +16,11 @@ pint = "*"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.include]
+"rctreportviewer/BPFs.json" = { format = "sdist" }
+"rctreportviewer/unit_registry.txt" = { format = "sdist" }
+
+[tool.poetry.package.include]
+"rctreportviewer/BPFs.json" = true
+"rctreportviewer/unit_registry.txt" = true
