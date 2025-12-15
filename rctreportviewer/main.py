@@ -208,8 +208,8 @@ class SummaryReportGenerator:
             # If a rule has passing and undetermined, but all undetermined are due to missing data
             elif (
                 outcomes == {"Passing", "Undetermined"}
-                and has_undetermined_missing_data
-            ):
+                or outcomes == {"Passing", "N/A", "Undetermined"}
+            ) and has_undetermined_missing_data:
                 self.rules_passed.append(rule_id)
 
             # Any missing-data undetermined
