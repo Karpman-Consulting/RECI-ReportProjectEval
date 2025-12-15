@@ -190,10 +190,7 @@ class SummaryReportGenerator:
                 #         self.hvac_system_types_b = ast.literal_eval(
                 #             hvac_system_types_b_value["value"]
                 #         )
-            if rule_id == "19-15":
-                print("Outcomes for rule 19-15:", outcomes)
-                print("Messages for rule 19-15:", messages)
-                print("Has undetermined missing data:", has_undetermined_missing_data)
+
             # Determine rule status
             if outcomes == {"Failing"} and messages == {" ::TOLERANCE::"}:
                 self.rules_passed.append(rule_id)
