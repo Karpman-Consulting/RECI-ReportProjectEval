@@ -1,7 +1,12 @@
 import json
+import re
 
-from rctreportviewer.html.write_evaluation_html import write_html_file as write_evaluation_summary_html_file
-from rctreportviewer.html.write_model_html import write_html_file as write_model_summary_html_file
+from rctreportviewer.html.write_evaluation_html import (
+    write_html_file as write_evaluation_summary_html_file,
+)
+from rctreportviewer.html.write_model_html import (
+    write_html_file as write_model_summary_html_file,
+)
 from rctreportviewer.html.write_html import write_html_file
 from rctreportviewer.constants import (
     path_to_bpf_data,
@@ -49,6 +54,9 @@ class SummaryReportGenerator:
         self.rules_failed = []  # ANY outcome is FAIL
         self.full_eval_rules_undetermined = []  # ANY outcome is UNDETERMINED
         self.appl_eval_rules_undetermined = []  # ANY outcome is UNDETERMINED
+        self.rules_undetermined_missing_data = (
+            []
+        )  # Undetermined specifically due to missing data
         self.rules_not_applicable = []  # ALL outcomes are N/A
         self.rule_evaluation_outcome_counts = {}
         self.rule_evaluation_message_counts = {}
@@ -104,6 +112,7 @@ class SummaryReportGenerator:
             eval_type = rule["evaluation_type"]
             outcomes = set()
             messages = set()
+            has_undetermined_missing_data = False
 
             # Initialize the nested dictionaries if the rule_id is new
             if rule_id not in self.rule_evaluation_outcome_counts:
@@ -115,14 +124,27 @@ class SummaryReportGenerator:
                 outcome = outcome_disp_map.get(evaluation["outcome"])
                 outcomes.add(outcome)
 
+                # Normalize messages into a list of strings
+                eval_messages = []
                 if isinstance(evaluation["messages"], str):
-                    messages.add(evaluation["messages"])
-                if isinstance(evaluation["messages"], dict):
-                    for key, message in evaluation["messages"].items():
-                        messages.add(f"{key}: {message}")
-                if isinstance(evaluation["messages"], list):
-                    for message in evaluation["messages"]:
-                        messages.add(message)
+                    eval_messages = [evaluation["messages"]]
+                elif isinstance(evaluation["messages"], dict):
+                    eval_messages = [
+                        f"{k}: {v}" for k, v in evaluation["messages"].items()
+                    ]
+                elif isinstance(evaluation["messages"], list):
+                    eval_messages = evaluation["messages"]
+
+                for msg in eval_messages:
+                    messages.add(msg)
+
+                    if outcome == "Undetermined" and (
+                        "missing:" in msg.lower()
+                        or re.search(
+                            r"at least one .* value must exist", msg, re.IGNORECASE
+                        )
+                    ):
+                        has_undetermined_missing_data = True
 
                 # Update outcome counts
                 if outcome in self.rule_evaluation_outcome_counts[rule_id]:
@@ -174,6 +196,8 @@ class SummaryReportGenerator:
                 self.rules_passed.append(rule_id)
             elif "Failing" in outcomes:
                 self.rules_failed.append(rule_id)
+            elif has_undetermined_missing_data:
+                self.rules_undetermined_missing_data.append(rule_id)
             elif "Undetermined" in outcomes and eval_type == "FULL":
                 self.full_eval_rules_undetermined.append(rule_id)
             elif "Undetermined" in outcomes and eval_type == "APPLICABILITY":

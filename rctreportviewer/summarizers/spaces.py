@@ -133,9 +133,9 @@ def summarize_rmd_space_data(
                 ] += int_ltg_power
 
                 if schedule_id not in schedule_areas_added:
-                    rmd_building_summary["floor_area_by_schedule"][schedule_id] += space[
-                        "floor_area"
-                    ]
+                    rmd_building_summary["floor_area_by_schedule"][
+                        schedule_id
+                    ] += space["floor_area"]
                     schedule_areas_added.append(schedule_id)
                 add_internal_gain_from_occupancy(space, schedule_id)
 
@@ -173,9 +173,9 @@ def summarize_rmd_space_data(
                 ] += miscellaneous_equipment["power"]
 
                 if schedule_id not in schedule_areas_added:
-                    rmd_building_summary["floor_area_by_schedule"][schedule_id] += space[
-                        "floor_area"
-                    ]
+                    rmd_building_summary["floor_area_by_schedule"][
+                        schedule_id
+                    ] += space["floor_area"]
                     schedule_areas_added.append(schedule_id)
                 add_internal_gain_from_occupancy(space, schedule_id)
 

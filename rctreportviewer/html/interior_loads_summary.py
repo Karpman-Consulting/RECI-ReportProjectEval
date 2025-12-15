@@ -38,16 +38,35 @@ def write_interior_loads_summary(file, rct_detailed_report):
     for space_type in rct_detailed_report.baseline_model_summary[
         "total_floor_area_by_space_type"
     ]:
-        area = rct_detailed_report.baseline_model_summary['total_floor_area_by_space_type'].get(space_type, 0)
-        occupants_b = rct_detailed_report.baseline_model_summary['total_occupants_by_space_type'].get(space_type, 0)
+        area = rct_detailed_report.baseline_model_summary[
+            "total_floor_area_by_space_type"
+        ].get(space_type, 0)
+        occupants_b = rct_detailed_report.baseline_model_summary[
+            "total_occupants_by_space_type"
+        ].get(space_type, 0)
         occ_density_b = area / (occupants_b or math.inf)
-        eqp_density_b = rct_detailed_report.baseline_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) / (area or math.inf)
-        ltg_density_allowed_b = rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / (area or math.inf)
-        ltg_density_b = rct_detailed_report.baseline_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / (area or math.inf)
-        occupants_p = rct_detailed_report.proposed_model_summary['total_occupants_by_space_type'].get(space_type, 0)
+        eqp_density_b = rct_detailed_report.baseline_model_summary[
+            "total_miscellaneous_equipment_power_by_space_type"
+        ].get(space_type, 0) / (area or math.inf)
+        ltg_density_allowed_b = (
+            rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(
+                space_type, 0
+            )
+            / (area or math.inf)
+        )
+        ltg_density_b = rct_detailed_report.baseline_model_summary[
+            "total_lighting_power_by_space_type"
+        ].get(space_type, 0) / (area or math.inf)
+        occupants_p = rct_detailed_report.proposed_model_summary[
+            "total_occupants_by_space_type"
+        ].get(space_type, 0)
         occ_density_p = area / (occupants_p or math.inf)
-        eqp_density_p = rct_detailed_report.proposed_model_summary['total_miscellaneous_equipment_power_by_space_type'].get(space_type, 0) /(area or math.inf)
-        ltg_density_p = rct_detailed_report.proposed_model_summary['total_lighting_power_by_space_type'].get(space_type, 0) / (area or math.inf)
+        eqp_density_p = rct_detailed_report.proposed_model_summary[
+            "total_miscellaneous_equipment_power_by_space_type"
+        ].get(space_type, 0) / (area or math.inf)
+        ltg_density_p = rct_detailed_report.proposed_model_summary[
+            "total_lighting_power_by_space_type"
+        ].get(space_type, 0) / (area or math.inf)
         file.write(
             f"""
                             <tr style="font-size: 12px;" class="lh-1 text-center">

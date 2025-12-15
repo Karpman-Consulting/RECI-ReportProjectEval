@@ -1,5 +1,4 @@
 from rctreportviewer.html.evaluations import write_evaluations_section
-from rctreportviewer.html.js import write_javascript
 
 
 def write_html_file(rct_detailed_report):

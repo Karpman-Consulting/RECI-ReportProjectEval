@@ -63,7 +63,8 @@ def write_html_file(rct_detailed_report):
 
         write_hvac_summary(file, rct_detailed_report)
 
-        file.write("""
+        file.write(
+            """
             </div>   <!-- /flex-grow-1 -->
         </div>       <!-- /d-flex -->
 
@@ -72,7 +73,8 @@ def write_html_file(rct_detailed_report):
                     style="opacity:0; visibility:hidden;"> ↑ </button>
         </div>
         </body>
-        """)
+        """
+        )
 
         write_javascript(file, rct_detailed_report)
 
