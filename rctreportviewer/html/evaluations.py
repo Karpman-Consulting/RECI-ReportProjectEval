@@ -72,7 +72,7 @@ def write_evaluations_section(file, rct_detailed_report):
         "Undetermined": rct_detailed_report.full_eval_rules_undetermined
         + rct_detailed_report.appl_eval_rules_undetermined,
         "N/A": rct_detailed_report.rules_not_applicable,
-        "Undetermined - Missing Data": (
+        "Missing Data": (
             rct_detailed_report.full_eval_rules_undetermined
             + rct_detailed_report.appl_eval_rules_undetermined
             + rct_detailed_report.rules_failed
@@ -84,13 +84,13 @@ def write_evaluations_section(file, rct_detailed_report):
             "btn-danger"
             if category == "Failing"
             else "btn-warning"
-            if category in ("Undetermined", "Undetermined - Missing Data")
+            if category in ("Undetermined", "Missing Data")
             else "btn-success"
             if category == "Passing"
             else "btn-secondary"
         )
 
-        if category == "Undetermined - Missing Data":
+        if category == "Missing Data":
             missing_rule_count = sum(
                 1
                 for rule_id in rules
@@ -137,7 +137,7 @@ def write_evaluations_section(file, rct_detailed_report):
                 """
         )
 
-        if category == "Undetermined - Missing Data":
+        if category == "Missing Data":
             sections_seen = set()
 
             for rule_id in rules:
@@ -185,7 +185,7 @@ def write_evaluations_section(file, rct_detailed_report):
                             <td class="rule-id" rowspan="2">{rule_id}</td>
                             <td>{description}</td>
                             <td>{standard_section}</td>
-                            <td class="outcome-summary">Missing required input data</td>
+                            <td class="outcome-summary">{len(missing_evals)}</td>
                         </tr>
                         <tr>
                             <td colspan="3">
