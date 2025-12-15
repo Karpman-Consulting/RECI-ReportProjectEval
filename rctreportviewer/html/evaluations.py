@@ -72,11 +72,7 @@ def write_evaluations_section(file, rct_detailed_report):
         "Undetermined": rct_detailed_report.full_eval_rules_undetermined
         + rct_detailed_report.appl_eval_rules_undetermined,
         "N/A": rct_detailed_report.rules_not_applicable,
-        "Missing Data": (
-            rct_detailed_report.full_eval_rules_undetermined
-            + rct_detailed_report.appl_eval_rules_undetermined
-            + rct_detailed_report.rules_failed
-        ),
+        "Missing Data": rct_detailed_report.rules_undetermined_missing_data,
     }
 
     for category, rules in rule_categories.items():
@@ -90,27 +86,12 @@ def write_evaluations_section(file, rct_detailed_report):
             else "btn-secondary"
         )
 
-        if category == "Missing Data":
-            missing_rule_count = sum(
-                1
-                for rule_id in rules
-                if split_evaluations(
-                    next(
-                        r
-                        for r in rct_detailed_report.evaluation_data["rules"]
-                        if r["rule_id"] == rule_id
-                    )
-                )[1]
-            )
-        else:
-            missing_rule_count = None
-
         file.write(
             f"""
                 <div class="mb-3 me-4">
                     <button class="btn {btn_class} w-100 text-start sticky-top" 
                         type="button" data-bs-toggle="collapse" data-bs-target="#collapse_fully_{category.replace(' ', '_')}">
-                        <strong>{category} Rules ({missing_rule_count if missing_rule_count is not None else len(rules)})</strong>
+                        <strong>{category} Rules ({len(rules)})</strong>
                     </button>
                     <div class="collapse mx-4" id="collapse_fully_{category.replace(' ', '_')}">
             """
