@@ -205,9 +205,15 @@ class SummaryReportGenerator:
                     self.full_eval_rules_undetermined.append(rule_id)
                 elif eval_type == "APPLICABILITY":
                     self.appl_eval_rules_undetermined.append(rule_id)
+            # If a rule has passing and undetermined, but all undetermined are due to missing data
+            elif (
+                outcomes == {"Passing", "Undetermined"}
+                and has_undetermined_missing_data
+            ):
+                self.rules_passed.append(rule_id)
 
-            # Only missing-data undetermined
-            elif has_undetermined_missing_data:
+            # Any missing-data undetermined
+            if has_undetermined_missing_data:
                 self.rules_undetermined_missing_data.append(rule_id)
 
     def extract_model_data(self):
