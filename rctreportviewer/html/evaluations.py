@@ -42,7 +42,11 @@ def is_missing_data_evaluation(evaluation) -> bool:
 
     for msg in msgs:
         msg_l = msg.lower()
-        if "missing:" in msg_l or "is missing " in msg_l or re.search(r"at least one .* value must exist", msg_l):
+        if (
+            "missing:" in msg_l
+            or "is missing " in msg_l
+            or re.search(r"at least one .* value must exist", msg_l)
+        ):
             return True
     return False
 
@@ -78,17 +82,33 @@ def write_evaluations_section(file, rct_detailed_report):
             "btn-danger"
             if category == "Failing"
             else "btn-warning"
-            if category == "Undetermined"
+            if category in ("Undetermined", "Undetermined — Missing Data")
             else "btn-success"
             if category == "Passing"
             else "btn-secondary"
         )
+
+        if category == "Undetermined — Missing Data":
+            missing_rule_count = sum(
+                1
+                for rule_id in rules
+                if split_evaluations(
+                    next(
+                        r
+                        for r in rct_detailed_report.evaluation_data["rules"]
+                        if r["rule_id"] == rule_id
+                    )
+                )[1]
+            )
+        else:
+            missing_rule_count = None
+
         file.write(
             f"""
                 <div class="mb-3 me-4">
                     <button class="btn {btn_class} w-100 text-start sticky-top" 
                         type="button" data-bs-toggle="collapse" data-bs-target="#collapse_fully_{category.replace(' ', '_')}">
-                        <strong>{category} Rules ({len(rules)})</strong>
+                        <strong>{category} Rules ({missing_rule_count if missing_rule_count is not None else len(rules)})</strong>
                     </button>
                     <div class="collapse mx-4" id="collapse_fully_{category.replace(' ', '_')}">
             """
@@ -157,23 +177,13 @@ def write_evaluations_section(file, rct_detailed_report):
                 description = rule_data.get("description", "N/A")
                 standard_section = rule_data.get("standard_section", "N/A")
 
-                # Outcome summary ONLY for missing-data evaluations
-                outcome_counts = {}
-                for ev in missing_evals:
-                    outcome = outcome_disp_map.get(ev["outcome"])
-                    outcome_counts[outcome] = outcome_counts.get(outcome, 0) + 1
-
-                outcome_summary = " | ".join(
-                    f"{k}: {v}" for k, v in outcome_counts.items()
-                )
-
                 file.write(
                     f"""
                         <tr>
                             <td class="rule-id" rowspan="2">{rule_id}</td>
                             <td>{description}</td>
                             <td>{standard_section}</td>
-                            <td class="outcome-summary">{outcome_summary}</td>
+                            <td class="outcome-summary">Missing required input data</td>
                         </tr>
                         <tr>
                             <td colspan="3">
@@ -271,7 +281,7 @@ def write_evaluations_section(file, rct_detailed_report):
 
                 file.write("</ul></div></td></tr>")
 
-        if category == "Undetermined":
+        elif category == "Undetermined":
             sections_seen = set()
             for rule_id in rct_detailed_report.full_eval_rules_undetermined:
                 rule_data = next(
