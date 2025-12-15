@@ -72,9 +72,10 @@ def write_evaluations_section(file, rct_detailed_report):
         "Undetermined": rct_detailed_report.full_eval_rules_undetermined
         + rct_detailed_report.appl_eval_rules_undetermined,
         "N/A": rct_detailed_report.rules_not_applicable,
-        "Undetermined — Missing Data": (
+        "Undetermined - Missing Data": (
             rct_detailed_report.full_eval_rules_undetermined
             + rct_detailed_report.appl_eval_rules_undetermined
+            + rct_detailed_report.rules_failed
         ),
     }
 
@@ -83,13 +84,13 @@ def write_evaluations_section(file, rct_detailed_report):
             "btn-danger"
             if category == "Failing"
             else "btn-warning"
-            if category in ("Undetermined", "Undetermined — Missing Data")
+            if category in ("Undetermined", "Undetermined - Missing Data")
             else "btn-success"
             if category == "Passing"
             else "btn-secondary"
         )
 
-        if category == "Undetermined — Missing Data":
+        if category == "Undetermined - Missing Data":
             missing_rule_count = sum(
                 1
                 for rule_id in rules
@@ -136,7 +137,7 @@ def write_evaluations_section(file, rct_detailed_report):
                 """
         )
 
-        if category == "Undetermined — Missing Data":
+        if category == "Undetermined - Missing Data":
             sections_seen = set()
 
             for rule_id in rules:
@@ -290,6 +291,11 @@ def write_evaluations_section(file, rct_detailed_report):
                     for rule in rct_detailed_report.evaluation_data["rules"]
                     if rule["rule_id"] == rule_id
                 )
+                standard_evals, missing_evals = split_evaluations(rule_data)
+
+                if not standard_evals:
+                    continue
+
                 section = rule_id.split("-")[0]
                 if section not in sections_seen:
                     sections_seen.add(section)
@@ -343,7 +349,6 @@ def write_evaluations_section(file, rct_detailed_report):
                 }
 
                 # Sort evaluations based on outcome priority
-                standard_evals, missing_evals = split_evaluations(rule_data)
                 sorted_evaluations = sorted(
                     standard_evals,
                     key=lambda e: outcome_order.get(e["outcome"], 3),
