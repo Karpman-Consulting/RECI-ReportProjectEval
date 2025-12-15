@@ -44,6 +44,7 @@ def is_missing_data_evaluation(evaluation) -> bool:
         msg_l = msg.lower()
         if (
             "missing:" in msg_l
+            or "missing_" in msg_l
             or "is missing " in msg_l
             or re.search(r"at least one .* value must exist", msg_l)
         ):
