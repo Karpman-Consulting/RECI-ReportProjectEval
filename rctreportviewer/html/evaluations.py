@@ -1,3 +1,8 @@
+import re
+
+from rctreportviewer.constants import outcome_disp_map
+
+
 section_titles_with_colors = {
     1: ("Design Model and Compliance Calculations", "#D8BFD8"),
     2: ("Additions and Alterations", "#66b3ff"),
@@ -25,6 +30,41 @@ section_titles_with_colors = {
 }
 
 
+def is_missing_data_evaluation(evaluation) -> bool:
+    if evaluation.get("outcome") != "UNDETERMINED":
+        return False
+
+    msgs = evaluation.get("messages", [])
+    if isinstance(msgs, str):
+        msgs = [msgs]
+    elif isinstance(msgs, dict):
+        msgs = msgs.values()
+
+    for msg in msgs:
+        msg_l = msg.lower()
+        if (
+            "missing:" in msg_l
+            or "missing_" in msg_l
+            or "is missing " in msg_l
+            or re.search(r"at least one .* value must exist", msg_l)
+        ):
+            return True
+    return False
+
+
+def split_evaluations(rule_data):
+    missing = []
+    standard = []
+
+    for ev in rule_data["evaluations"]:
+        if is_missing_data_evaluation(ev):
+            missing.append(ev)
+        else:
+            standard.append(ev)
+
+    return standard, missing
+
+
 def write_evaluations_section(file, rct_detailed_report):
     rule_categories = {
         "Failing": rct_detailed_report.rules_failed,
@@ -32,6 +72,7 @@ def write_evaluations_section(file, rct_detailed_report):
         "Undetermined": rct_detailed_report.full_eval_rules_undetermined
         + rct_detailed_report.appl_eval_rules_undetermined,
         "N/A": rct_detailed_report.rules_not_applicable,
+        "Missing Data": rct_detailed_report.rules_undetermined_missing_data,
     }
 
     for category, rules in rule_categories.items():
@@ -40,10 +81,13 @@ def write_evaluations_section(file, rct_detailed_report):
             if category == "Failing"
             else "btn-warning"
             if category == "Undetermined"
+            else "btn-light"
+            if category == "Missing Data"
             else "btn-success"
             if category == "Passing"
             else "btn-secondary"
         )
+
         file.write(
             f"""
                 <div class="mb-3 me-4">
@@ -76,7 +120,153 @@ def write_evaluations_section(file, rct_detailed_report):
                 """
         )
 
-        if category == "Undetermined":
+        if category == "Missing Data":
+            sections_seen = set()
+
+            for rule_id in rules:
+                rule_data = next(
+                    rule
+                    for rule in rct_detailed_report.evaluation_data["rules"]
+                    if rule["rule_id"] == rule_id
+                )
+
+                # Split evaluations
+                _, missing_evals = split_evaluations(rule_data)
+
+                # Skip rules with no missing-data evaluations
+                if not missing_evals:
+                    continue
+
+                section = rule_id.split("-")[0]
+                if section not in sections_seen:
+                    sections_seen.add(section)
+                    section_title, section_color = section_titles_with_colors.get(
+                        int(section), ("Unknown Section", "#eeeeee")
+                    )
+                    file.write(
+                        f"""
+                        </tbody>
+                            <thead class="table-group-divider">
+                                <tr>
+                                    <th colspan="4"
+                                        class="section-title sticky-top sticky-top-2"
+                                        style="background-color: {section_color} !important;">
+                                        {section_title}
+                                    </th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        """
+                    )
+
+                description = rule_data.get("description", "N/A")
+                standard_section = rule_data.get("standard_section", "N/A")
+
+                file.write(
+                    f"""
+                        <tr>
+                            <td class="rule-id" rowspan="2">{rule_id}</td>
+                            <td>{description}</td>
+                            <td>{standard_section}</td>
+                            <td class="outcome-summary">{len(missing_evals)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">
+                                <button class="btn btn-primary"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#eval_missing_{rule_id}">
+                                    View Missing Data Evaluations
+                                </button>
+                                <div class="collapse" id="eval_missing_{rule_id}">
+                                    <ul>
+                    """
+                )
+
+                outcome_order = {
+                    "FAILED": 0,
+                    "UNDETERMINED": 1,
+                    "PASS": 2,
+                    "NOT_APPLICABLE": 3,
+                }
+
+                sorted_evaluations = sorted(
+                    missing_evals,
+                    key=lambda e: outcome_order.get(e["outcome"], 3),
+                )
+
+                for evaluation in sorted_evaluations:
+                    has_any_units = False
+                    styles = {
+                        "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
+                        "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
+                        "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
+                        "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
+                    }
+
+                    li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
+
+                    file.write(
+                        f"""
+                            <li style="{li_style}" class="p-2 m-1">
+                                {evaluation["data_group_id"]}
+                                <ul>
+                                    <li><strong>Outcome:</strong> {evaluation["outcome"]}</li>
+                        """
+                    )
+
+                    if evaluation.get("messages"):
+                        msgs = set()
+                        if isinstance(evaluation["messages"], str):
+                            msgs.add(evaluation["messages"])
+                        elif isinstance(evaluation["messages"], dict):
+                            for k, v in evaluation["messages"].items():
+                                msgs.add(f"{k}: {v}")
+                        elif isinstance(evaluation["messages"], list):
+                            for m in evaluation["messages"]:
+                                msgs.add(m)
+
+                        file.write(
+                            f"<li><strong>Messages:</strong> {', '.join(msgs)}</li>"
+                        )
+
+                    if evaluation.get("calculated_values"):
+                        file.write(
+                            """
+                                <li><strong>Calculated Values:</strong>
+                                    <table class="mb-2 me-2 table table-sm table-bordered">
+                                        <thead>
+                                            <tr><th>Variable</th><th>Value</th>
+                            """
+                        )
+                        if any(
+                            cv.get("unit") for cv in evaluation["calculated_values"]
+                        ):
+                            has_any_units = True
+                            file.write("<th>Unit</th>")
+                        file.write("</tr></thead><tbody>")
+
+                        for cv in evaluation["calculated_values"]:
+                            file.write(
+                                f"""
+                                <tr>
+                                    <td>{cv["variable"]}</td>
+                                    <td>{cv["value"][0] if len(cv["value"]) == 1 else cv["value"]}</td>
+                                """
+                            )
+                            if cv.get("unit"):
+                                file.write(f"<td>{cv['unit']}</td>")
+                            elif has_any_units:
+                                file.write("<td></td>")
+                            file.write("</tr>")
+
+                        file.write("</tbody></table></li>")
+
+                    file.write("</ul></li>")
+
+                file.write("</ul></div></td></tr>")
+
+        elif category == "Undetermined":
             sections_seen = set()
             for rule_id in rct_detailed_report.full_eval_rules_undetermined:
                 rule_data = next(
@@ -84,6 +274,11 @@ def write_evaluations_section(file, rct_detailed_report):
                     for rule in rct_detailed_report.evaluation_data["rules"]
                     if rule["rule_id"] == rule_id
                 )
+                standard_evals, missing_evals = split_evaluations(rule_data)
+
+                if not standard_evals:
+                    continue
+
                 section = rule_id.split("-")[0]
                 if section not in sections_seen:
                     sections_seen.add(section)
@@ -138,7 +333,7 @@ def write_evaluations_section(file, rct_detailed_report):
 
                 # Sort evaluations based on outcome priority
                 sorted_evaluations = sorted(
-                    rule_data["evaluations"],
+                    standard_evals,
                     key=lambda e: outcome_order.get(e["outcome"], 3),
                 )
 
@@ -285,8 +480,9 @@ def write_evaluations_section(file, rct_detailed_report):
                 }
 
                 # Sort evaluations based on outcome priority
+                standard_evals, missing_evals = split_evaluations(rule_data)
                 sorted_evaluations = sorted(
-                    rule_data["evaluations"],
+                    standard_evals,
                     key=lambda e: outcome_order.get(e["outcome"], 3),
                 )
 
@@ -416,8 +612,9 @@ def write_evaluations_section(file, rct_detailed_report):
                 }
 
                 # Sort evaluations based on outcome priority
+                standard_evals, missing_evals = split_evaluations(rule_data)
                 sorted_evaluations = sorted(
-                    rule_data["evaluations"],
+                    standard_evals,
                     key=lambda e: outcome_order.get(e["outcome"], 3),
                 )
 
