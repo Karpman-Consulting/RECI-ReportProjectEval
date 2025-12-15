@@ -80,7 +80,9 @@ def write_evaluations_section(file, rct_detailed_report):
             "btn-danger"
             if category == "Failing"
             else "btn-warning"
-            if category in ("Undetermined", "Missing Data")
+            if category == "Undetermined"
+            else "btn-light"
+            if category == "Missing Data"
             else "btn-success"
             if category == "Passing"
             else "btn-secondary"
