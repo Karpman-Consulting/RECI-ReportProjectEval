@@ -196,16 +196,19 @@ class SummaryReportGenerator:
                 self.rules_passed.append(rule_id)
             elif "Failing" in outcomes:
                 self.rules_failed.append(rule_id)
-            elif has_undetermined_missing_data:
-                self.rules_undetermined_missing_data.append(rule_id)
-            elif "Undetermined" in outcomes and eval_type == "FULL":
-                self.full_eval_rules_undetermined.append(rule_id)
-            elif "Undetermined" in outcomes and eval_type == "APPLICABILITY":
-                self.appl_eval_rules_undetermined.append(rule_id)
             elif outcomes == {"Passing"} or outcomes == {"Passing", "N/A"}:
                 self.rules_passed.append(rule_id)
             elif outcomes == {"N/A"}:
                 self.rules_not_applicable.append(rule_id)
+            elif "Undetermined" in outcomes and not has_undetermined_missing_data:
+                if eval_type == "FULL":
+                    self.full_eval_rules_undetermined.append(rule_id)
+                elif eval_type == "APPLICABILITY":
+                    self.appl_eval_rules_undetermined.append(rule_id)
+
+            # Only missing-data undetermined
+            elif has_undetermined_missing_data:
+                self.rules_undetermined_missing_data.append(rule_id)
 
     def extract_model_data(self):
         if len(self.rpd_data) == 1:
