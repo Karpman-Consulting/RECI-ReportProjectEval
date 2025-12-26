@@ -22,7 +22,9 @@ def write_results_summary(file, rct_detailed_report):
     file.write(
         """
                 <div class="row align-items-center mb-3">
-                    <div class="col-md-8 text-center">
+                    <div class="col-md-4"></div>
+
+                    <div class="col-md-4 d-flex justify-content-center">
                         <div class="btn-group" role="group" aria-label="Chart toggle">
                             <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
                             <label class="btn btn-outline-primary" for="btn-elec">Electricity</label>
@@ -160,12 +162,26 @@ def write_results_summary(file, rct_detailed_report):
             f"""
                             <tr>
                                 <td class="text-start">{end_use.replace('_', ' ').title()}</td>
-                                <td>{round(p_site, 1)}</td>
-                                <td>{round(b_site, 1)}</td>
-                                <td>{round(site_savings, 1)}%</td>
-                                <td>-</td><td>-</td><td>-</td>
-                                <td>-</td><td>-</td><td>-</td>
-                                <td>-</td><td>-</td><td>-</td>
+
+                                <!-- Site EUI -->
+                                <td class="siteEnergyProposed">{round(p_site, 1)}</td>
+                                <td class="siteEnergyBaseline">{round(b_site, 1)}</td>
+                                <td class="siteEnergySavings">{round(site_savings, 1)}%</td>
+
+                                <!-- Source EUI -->
+                                <td class="sourceEnergyProposed">0</td>
+                                <td class="sourceEnergyBaseline">0</td>
+                                <td class="sourceEnergySavings">0%</td>
+
+                                <!-- Energy Cost -->
+                                <td class="energyCostProposed">0</td>
+                                <td class="energyCostBaseline">0</td>
+                                <td class="energyCostSavings">0%</td>
+
+                                <!-- GHG -->
+                                <td class="ghgEmissionsProposed">0</td>
+                                <td class="ghgEmissionsBaseline">0</td>
+                                <td class="ghgEmissionsSavings">0%</td>
                             </tr>
 """
         )
