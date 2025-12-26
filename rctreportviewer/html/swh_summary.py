@@ -18,13 +18,15 @@ def write_swh_summary(file, rct_detailed_report):
     file.write("""
 <section class="mb-4">
   <div class="card shadow-sm">
-    <div class="card-header bg-light">
-      <button class="btn btn-info"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapse-swh-summary">
-        Service Water Heating Summary
-      </button>
+
+    <!-- CLICKABLE HEADER -->
+    <div class="card-header bg-light d-flex align-items-center"
+         role="button"
+         data-bs-toggle="collapse"
+         data-bs-target="#collapse-swh-summary"
+         aria-expanded="false"
+         style="cursor: pointer;">
+      <span class="fw-semibold">Service Water Heating Summary</span>
     </div>
 
     <div id="collapse-swh-summary" class="collapse">

@@ -9,18 +9,19 @@ def write_envelope_summary(file, rct_detailed_report):
     file.write(
         """
 <section class="mb-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <button class="btn btn-info"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapse-envelope-summary"
-                    aria-expanded="false">
-                Envelope Summary
-            </button>
-        </div>
+  <div class="card shadow-sm">
 
-        <div id="collapse-envelope-summary" class="collapse">
+    <!-- CLICKABLE HEADER -->
+    <div class="card-header bg-light d-flex align-items-center"
+         role="button"
+         data-bs-toggle="collapse"
+         data-bs-target="#collapse-envelope-summary"
+         aria-expanded="false"
+         style="cursor: pointer;">
+      <span class="fw-semibold">Envelope Summary</span>
+    </div>
+
+    <div id="collapse-envelope-summary" class="collapse">
             <div class="card-body">
 
                 <div class="table-responsive">

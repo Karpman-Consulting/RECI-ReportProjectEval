@@ -12,13 +12,15 @@ def write_hvac_summary(file, rct_detailed_report):
     file.write("""
 <section class="mb-4">
   <div class="card shadow-sm">
-    <div class="card-header bg-light">
-      <button class="btn btn-info"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapse-hvac-summary">
-        HVAC Summary
-      </button>
+
+    <!-- CLICKABLE HEADER -->
+    <div class="card-header bg-light d-flex align-items-center"
+         role="button"
+         data-bs-toggle="collapse"
+         data-bs-target="#collapse-hvac-summary"
+         aria-expanded="false"
+         style="cursor: pointer;">
+      <span class="fw-semibold">HVAC Summary</span>
     </div>
 
     <div id="collapse-hvac-summary" class="collapse">
@@ -171,12 +173,17 @@ def write_hvac_summary(file, rct_detailed_report):
     # ==========================================================
     file.write("""
 <hr>
-<button class="btn btn-info"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#collapse-hvac-details">
-  HVAC Details
-</button>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-header bg-light d-flex align-items-center"
+       role="button"
+       data-bs-toggle="collapse"
+       data-bs-target="#collapse-hvac-details"
+       aria-expanded="false"
+       style="cursor: pointer;">
+    <span class="fw-semibold">HVAC Details</span>
+  </div>
+</div>
 
 <div id="collapse-hvac-details" class="collapse mt-3">
 <div class="table-responsive">

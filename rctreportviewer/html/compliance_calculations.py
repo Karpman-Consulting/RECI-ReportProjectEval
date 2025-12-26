@@ -10,13 +10,15 @@ def write_compliance_calculations(file, rct_detailed_report):
         """
 <section class="mb-4">
   <div class="card shadow-sm">
-    <div class="card-header bg-light">
-      <button class="btn btn-info" type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapse-compliance-calcs"
-              aria-expanded="false">
-        Compliance Calculations
-      </button>
+
+    <!-- CLICKABLE HEADER -->
+    <div class="card-header bg-light d-flex align-items-center"
+         role="button"
+         data-bs-toggle="collapse"
+         data-bs-target="#collapse-compliance-calcs"
+         aria-expanded="false"
+         style="cursor: pointer;">
+      <span class="fw-semibold">Compliance Calculations</span>
     </div>
 
     <div id="collapse-compliance-calcs" class="collapse">
