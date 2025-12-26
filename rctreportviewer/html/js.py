@@ -4,54 +4,39 @@ def write_javascript(file, rct_detailed_report):
 <script>
 document.addEventListener("DOMContentLoaded", () => {{
 
-    /* -------------------- Utilities -------------------- */
+    /* ==================== Utilities ==================== */
 
-    const parseNumber = (str) =>
-        parseFloat((str || "0").replace(/[$,]/g, "")) || 0;
+    const $ = (id) => document.getElementById(id);
+    const sum = (arr) => arr.reduce((a, b) => a + b, 0);
 
-    const getEl = (id) => document.getElementById(id);
+    /* ==================== Back to top ==================== */
 
-    const setText = (id, value) => {{
-        const el = getEl(id);
-        if (el) el.textContent = value;
-    }};
-
-    const setRatio = (id, numerator, denominator) => {{
-        const el = getEl(id);
-        if (!el) return;
-        el.textContent = denominator
-            ? (numerator / denominator).toFixed(2)
-            : "0.00";
-    }};
-
-    /* -------------------- Back to top -------------------- */
-
-    const backToTopBtn = getEl("back-to-top");
-
-    window.addEventListener("scroll", () => {{
-        if (!backToTopBtn) return;
-        const show = window.scrollY > 100;
-        backToTopBtn.style.opacity = show ? "1" : "0";
-        backToTopBtn.style.visibility = show ? "visible" : "hidden";
-    }});
+    const backToTop = $("back-to-top");
+    if (backToTop) {{
+        window.addEventListener("scroll", () => {{
+            const show = window.scrollY > 100;
+            backToTop.style.opacity = show ? "1" : "0";
+            backToTop.style.visibility = show ? "visible" : "hidden";
+        }});
+    }}
 
     window.scrollToTop = () =>
         window.scrollTo({{ top: 0, behavior: "smooth" }});
 
-    /* -------------------- Tooltips -------------------- */
+    /* ==================== Tooltips ==================== */
 
     document
         .querySelectorAll('[data-bs-toggle="tooltip"]')
         .forEach(el => new bootstrap.Tooltip(el, {{ container: "body" }}));
 
-    /* -------------------- Charts -------------------- */
+    /* ==================== Chart Data ==================== */
 
     const labels = {[
-        label.replace("_", " ").title()
-        for label in rct_detailed_report.baseline_model_summary["elec_by_end_use"].keys()
+        k.replace("_", " ").title()
+        for k in rct_detailed_report.baseline_model_summary["elec_by_end_use"].keys()
     ]};
 
-    const elecDataRaw = {{
+    const elecData = {{
         consumption: {{
             baseline: {list(rct_detailed_report.baseline_model_summary["elec_by_end_use"].values())},
             proposed: {list(rct_detailed_report.proposed_model_summary["elec_by_end_use"].values())},
@@ -62,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {{
         }},
     }};
 
-    const gasDataRaw = {{
+    const gasData = {{
         consumption: {{
             baseline: {list(rct_detailed_report.baseline_model_summary["gas_by_end_use"].values())},
             proposed: {list(rct_detailed_report.proposed_model_summary["gas_by_end_use"].values())},
@@ -73,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {{
         }},
     }};
 
-    const energyDataRaw = {{
+    const energyData = {{
         consumption: {{
             baseline: {list(rct_detailed_report.baseline_model_summary["energy_by_end_use"].values())},
             proposed: {list(rct_detailed_report.proposed_model_summary["energy_by_end_use"].values())},
@@ -84,129 +69,126 @@ document.addEventListener("DOMContentLoaded", () => {{
         }},
     }};
 
-    function makeBarChart(canvasId, title, unit, data) {{
-        const ctx = getEl(canvasId);
+    /* ==================== Chart Factory ==================== */
+
+    function makeChart(canvasId, title, unit, data) {{
+        const ctx = $(canvasId);
         if (!ctx) return null;
 
         return new Chart(ctx, {{
             type: "bar",
-            data,
+            data: {{
+                labels,
+                datasets: [
+                    {{
+                        label: "Baseline",
+                        data: data.baseline,
+                        backgroundColor: "rgba(54,162,235,0.7)"
+                    }},
+                    {{
+                        label: "Proposed",
+                        data: data.proposed,
+                        backgroundColor: "rgba(75,192,75,0.7)"
+                    }}
+                ]
+            }},
             options: {{
                 responsive: true,
-                maintainAspectRatio: false,
-                interaction: {{
-                    mode: 'index',
-                    intersect: false
-                }},
+                interaction: {{ mode: "index", intersect: false }},
                 plugins: {{
                     title: {{ display: true, text: title }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false
-                    }}
+                    tooltip: {{ mode: "index", intersect: false }}
                 }},
                 scales: {{
                     y: {{
                         beginAtZero: true,
-                        title: {{ display: true, text: unit }},
-                    }},
-                }},
-            }},
+                        title: {{ display: true, text: unit }}
+                    }}
+                }}
+            }}
         }});
     }}
 
-    const elecChart = makeBarChart(
-        "elecByEndUse",
-        "Electricity By End Use",
-        "kWh",
-        {{
-            labels,
-            datasets: [
-                {{ label: "Baseline", data: elecDataRaw.consumption.baseline, backgroundColor: "rgba(54,162,235,0.7)" }},
-                {{ label: "Proposed", data: elecDataRaw.consumption.proposed, backgroundColor: "rgba(75,192,75,0.7)" }},
-            ],
-        }}
-    );
+    /* ==================== Charts ==================== */
 
-    const gasChart = makeBarChart(
-        "gasByEndUse",
-        "Natural Gas By End Use",
-        "Therms",
-        {{
-            labels,
-            datasets: [
-                {{ label: "Baseline", data: gasDataRaw.consumption.baseline, backgroundColor: "rgba(255,180,80,0.6)" }},
-                {{ label: "Proposed", data: gasDataRaw.consumption.proposed, backgroundColor: "rgba(255,100,100,0.6)" }},
-            ],
-        }}
-    );
+    let currentChart = "elec";
 
-    const energyChart = makeBarChart(
-        "energyByEndUse",
-        "Total Site Energy By End Use",
-        "kBtu",
-        {{
-            labels,
-            datasets: [
-                {{ label: "Baseline", data: energyDataRaw.consumption.baseline, backgroundColor: "rgba(128,0,64,0.6)" }},
-                {{ label: "Proposed", data: energyDataRaw.consumption.proposed, backgroundColor: "rgba(0,128,128,0.6)" }},
-            ],
-        }}
-    );
-
-    /* -------------------- Chart Controls -------------------- */
-
-    const containers = {{
-        elec: getEl("elecChartContainer"),
-        gas: getEl("gasChartContainer"),
-        energy: getEl("energyChartContainer"),
+    const charts = {{
+        elec: makeChart("elecByEndUse", "Electricity By End Use", "kWh", elecData.consumption),
+        gas: makeChart("gasByEndUse", "Natural Gas By End Use", "Therms", gasData.consumption),
+        energy: makeChart("energyByEndUse", "Total Site Energy By End Use", "kBtu", energyData.consumption),
     }};
 
-    function showChart(type) {{
-        Object.entries(containers).forEach(([key, el]) => {{
-            if (!el) return;
-            el.classList.toggle("d-none", key !== type);
+    const containers = {{
+        elec: $("elecChartContainer"),
+        gas: $("gasChartContainer"),
+        energy: $("energyChartContainer"),
+    }};
+
+    /* ==================== Chart Updates ==================== */
+
+    function updateCharts() {{
+        const useEUI = $("unitToggle")?.checked;
+        const unitType = useEUI ? "eui" : "consumption";
+
+        const map = {{
+            elec: elecData,
+            gas: gasData,
+            energy: energyData,
+        }};
+
+        Object.entries(charts).forEach(([key, chart]) => {{
+            if (!chart) return;
+            chart.data.datasets[0].data = map[key][unitType].baseline;
+            chart.data.datasets[1].data = map[key][unitType].proposed;
+            chart.options.scales.y.title.text =
+                unitType === "eui" ? "kBtu/ft²" :
+                key === "elec" ? "kWh" :
+                key === "gas" ? "Therms" : "kBtu";
+            chart.update();
         }});
-        [elecChart, gasChart, energyChart].forEach(c => c && c.resize());
-        currentChart = type;
+
         updateTotals();
     }}
 
     function updateTotals() {{
-        const useEUI = getEl("unitToggle")?.checked;
+        const useEUI = $("unitToggle")?.checked;
         const unitType = useEUI ? "eui" : "consumption";
 
-        let baseline, proposed, unit;
-
+        let data, unit;
         if (currentChart === "elec") {{
-            baseline = elecDataRaw[unitType].baseline;
-            proposed = elecDataRaw[unitType].proposed;
+            data = elecData[unitType];
             unit = unitType === "eui" ? "kBtu/ft²" : "kWh";
         }} else if (currentChart === "gas") {{
-            baseline = gasDataRaw[unitType].baseline;
-            proposed = gasDataRaw[unitType].proposed;
+            data = gasData[unitType];
             unit = unitType === "eui" ? "kBtu/ft²" : "Therms";
         }} else {{
-            baseline = energyDataRaw[unitType].baseline;
-            proposed = energyDataRaw[unitType].proposed;
+            data = energyData[unitType];
             unit = unitType === "eui" ? "kBtu/ft²" : "kBtu";
         }}
 
-        const sum = arr => arr.reduce((a, b) => a + b, 0);
-
-        setText("baselineTotal", `Baseline Total: ${{sum(baseline).toLocaleString()}} ${{unit}}`);
-        setText("proposedTotal", `Proposed Total: ${{sum(proposed).toLocaleString()}} ${{unit}}`);
+        $("baselineTotal").textContent =
+            `Baseline Total: ${{sum(data.baseline).toLocaleString()}} ${{unit}}`;
+        $("proposedTotal").textContent =
+            `Proposed Total: ${{sum(data.proposed).toLocaleString()}} ${{unit}}`;
     }}
 
-    /* -------------------- Event Wiring -------------------- */
+    function showChart(type) {{
+        currentChart = type;
+        Object.entries(containers).forEach(([k, el]) =>
+            el?.classList.toggle("d-none", k !== type)
+        );
+        updateCharts();
+    }}
 
-    let currentChart = "elec";
+    /* ==================== Event Wiring ==================== */
 
-    getEl("btn-elec")?.addEventListener("change", () => showChart("elec"));
-    getEl("btn-gas")?.addEventListener("change", () => showChart("gas"));
-    getEl("btn-energy")?.addEventListener("change", () => showChart("energy"));
+    $("btn-elec")?.addEventListener("change", () => showChart("elec"));
+    $("btn-gas")?.addEventListener("change", () => showChart("gas"));
+    $("btn-energy")?.addEventListener("change", () => showChart("energy"));
+    $("unitToggle")?.addEventListener("change", updateCharts);
 
-    getEl("unitToggle")?.addEventListener("change", updateTotals);
+    /* ==================== Init ==================== */
 
     showChart("elec");
 
