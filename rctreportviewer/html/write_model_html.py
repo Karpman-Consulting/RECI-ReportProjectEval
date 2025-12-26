@@ -3,7 +3,6 @@ from rctreportviewer.html.component_summary import write_component_summary
 from rctreportviewer.html.envelope_summary import write_envelope_summary
 from rctreportviewer.html.hvac_summary import write_hvac_summary
 from rctreportviewer.html.interior_loads_summary import write_interior_loads_summary
-from rctreportviewer.html.lighting_summary import write_interior_lighting_summary
 from rctreportviewer.html.results_summary import write_results_summary
 from rctreportviewer.html.swh_summary import write_swh_summary
 from rctreportviewer.html.js import write_javascript
@@ -63,10 +62,9 @@ def write_html_file(rct_detailed_report):
         write_compliance_calculations(file, rct_detailed_report)
         write_results_summary(file, rct_detailed_report)
         write_envelope_summary(file, rct_detailed_report)
-        write_interior_lighting_summary(file, rct_detailed_report)
-        write_swh_summary(file, rct_detailed_report)
         write_interior_loads_summary(file, rct_detailed_report)
         write_hvac_summary(file, rct_detailed_report)
+        write_swh_summary(file, rct_detailed_report)
 
         file.write("""
   </div>

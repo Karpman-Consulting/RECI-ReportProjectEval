@@ -1,4 +1,5 @@
 import math
+from rctreportviewer.html.interior_lighting_details import write_interior_lighting_details
 
 
 def write_interior_loads_summary(file, rct_detailed_report):
@@ -141,6 +142,13 @@ def write_interior_loads_summary(file, rct_detailed_report):
           * Peak Internal Gain occurs when schedule fraction equals 1.0
         </p>
 
+        <hr class="my-4">
+""")
+
+    # === INTERIOR LIGHTING DETAILS (EMBEDDED) ===
+    write_interior_lighting_details(file, rct_detailed_report)
+
+    file.write("""
       </div>
     </div>
   </div>

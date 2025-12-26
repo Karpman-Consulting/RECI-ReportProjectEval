@@ -33,8 +33,8 @@ def write_envelope_summary(file, rct_detailed_report):
                                 <th colspan="6">Proposed</th>
                             </tr>
                             <tr>
-                                <th rowspan="2">Building Area</th>
-                                <th rowspan="2">Surface Type</th>
+                                <th rowspan="2" style="vertical-align: top;">Building Area</th>
+                                <th rowspan="2" style="vertical-align: top;">Surface Type</th>
                                 <th colspan="3">Opaque Surface</th>
                                 <th colspan="3">Fenestration</th>
                                 <th colspan="3">Opaque Surface</th>
