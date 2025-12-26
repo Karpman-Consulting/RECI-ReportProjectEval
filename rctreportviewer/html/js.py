@@ -94,8 +94,16 @@ document.addEventListener("DOMContentLoaded", () => {{
             options: {{
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {{
+                    mode: 'index',
+                    intersect: false
+                }},
                 plugins: {{
                     title: {{ display: true, text: title }},
+                    tooltip: {{
+                        mode: 'index',
+                        intersect: false
+                    }}
                 }},
                 scales: {{
                     y: {{
