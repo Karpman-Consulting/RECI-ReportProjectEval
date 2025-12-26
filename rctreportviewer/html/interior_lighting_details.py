@@ -1,72 +1,77 @@
 def write_interior_lighting_details(file, rct_detailed_report):
     """
-    Write the interior lighting details as a collapsible subsection.
+    Write the interior lighting details as a collapsible subsection
+    styled to match HVAC Details.
     """
 
     b = rct_detailed_report.baseline_model_summary["int_ltg_summaries"]
     p = rct_detailed_report.proposed_model_summary["int_ltg_summaries"]
 
-    file.write(
-        """
-<!-- INTERIOR LIGHTING DETAILS -->
-<div class="mt-4">
+    file.write("""
+<hr>
 
-  <div class="d-flex align-items-center mb-2"
+<div class="card shadow-sm mb-3">
+  <div class="card-header bg-light d-flex align-items-center"
        role="button"
        data-bs-toggle="collapse"
        data-bs-target="#collapse-interior-lighting-details"
        aria-expanded="false"
        style="cursor: pointer;">
-    <h5 class="mb-0 fw-semibold">Interior Lighting Details</h5>
+    <span class="fw-semibold">Interior Lighting Details</span>
   </div>
+</div>
 
-  <div id="collapse-interior-lighting-details" class="collapse">
-    <div class="table-responsive mt-2">
-      <table class="table table-sm align-middle">
-        <thead class="table-light text-center border-bottom">
-          <tr>
-            <th colspan="2"></th>
-            <th colspan="10">Lighting Power (W)</th>
-            <th colspan="10">Lighting Power Density (W/ft²)</th>
-            <th></th>
-          </tr>
-          <tr>
-            <th colspan="2"></th>
-            <th colspan="5">Baseline</th>
-            <th colspan="5">Proposed</th>
-            <th colspan="5">Baseline</th>
-            <th colspan="5">Proposed</th>
-            <th></th>
-          </tr>
-          <tr class="small align-middle">
-            <th>Interior Lighting ID</th>
-            <th class="vertical-header">Floor Area<br>(ft²)</th>
-            <th class="vertical-header">General</th>
-            <th class="vertical-header">Decorative</th>
-            <th class="vertical-header">Retail</th>
-            <th class="vertical-header">Exempt</th>
-            <th class="vertical-header">Total</th>
-            <th class="vertical-header">General</th>
-            <th class="vertical-header">Decorative</th>
-            <th class="vertical-header">Retail</th>
-            <th class="vertical-header">Exempt</th>
-            <th class="vertical-header">Total</th>
-            <th class="vertical-header">General</th>
-            <th class="vertical-header">Decorative</th>
-            <th class="vertical-header">Retail</th>
-            <th class="vertical-header">Exempt</th>
-            <th class="vertical-header">Total</th>
-            <th class="vertical-header">General</th>
-            <th class="vertical-header">Decorative</th>
-            <th class="vertical-header">Retail</th>
-            <th class="vertical-header">Exempt</th>
-            <th class="vertical-header">Total</th>
-            <th class="vertical-header">% Savings</th>
-          </tr>
-        </thead>
-        <tbody class="small text-center">
-"""
-    )
+<div id="collapse-interior-lighting-details" class="collapse mt-3">
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+<thead class="table-light text-center border-bottom">
+<tr>
+  <th colspan="2"></th>
+  <th colspan="10">Lighting Power (W)</th>
+  <th colspan="10">Lighting Power Density (W/ft²)</th>
+  <th></th>
+</tr>
+<tr>
+  <th colspan="2"></th>
+  <th colspan="5">Baseline</th>
+  <th colspan="5">Proposed</th>
+  <th colspan="5">Baseline</th>
+  <th colspan="5">Proposed</th>
+  <th></th>
+</tr>
+<tr class="small align-middle">
+  <th>Interior Lighting ID</th>
+  <th class="vertical-header">Floor Area<br>(ft²)</th>
+
+  <th class="vertical-header">General</th>
+  <th class="vertical-header">Decorative</th>
+  <th class="vertical-header">Retail</th>
+  <th class="vertical-header">Exempt</th>
+  <th class="vertical-header">Total</th>
+
+  <th class="vertical-header">General</th>
+  <th class="vertical-header">Decorative</th>
+  <th class="vertical-header">Retail</th>
+  <th class="vertical-header">Exempt</th>
+  <th class="vertical-header">Total</th>
+
+  <th class="vertical-header">General</th>
+  <th class="vertical-header">Decorative</th>
+  <th class="vertical-header">Retail</th>
+  <th class="vertical-header">Exempt</th>
+  <th class="vertical-header">Total</th>
+
+  <th class="vertical-header">General</th>
+  <th class="vertical-header">Decorative</th>
+  <th class="vertical-header">Retail</th>
+  <th class="vertical-header">Exempt</th>
+  <th class="vertical-header">Total</th>
+
+  <th class="vertical-header">% Savings</th>
+</tr>
+</thead>
+<tbody class="small text-center">
+""")
 
     all_ids = set(b) | set(p)
 
@@ -86,8 +91,7 @@ def write_interior_lighting_details(file, rct_detailed_report):
             else 0
         )
 
-        file.write(
-            f"""
+        file.write(f"""
 <tr>
   <td>{lid}</td>
   <td>{round(floor):,}</td>
@@ -118,15 +122,11 @@ def write_interior_lighting_details(file, rct_detailed_report):
 
   <td>{round(savings, 1)}%</td>
 </tr>
-"""
-        )
+""")
 
-    file.write(
-        """
-        </tbody>
-      </table>
-    </div>
-  </div>
+    file.write("""
+</tbody>
+</table>
 </div>
-"""
-    )
+</div>
+""")

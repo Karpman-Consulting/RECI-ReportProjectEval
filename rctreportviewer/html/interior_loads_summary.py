@@ -141,8 +141,6 @@ def write_interior_loads_summary(file, rct_detailed_report):
         <p class="small text-muted mt-2">
           * Peak Internal Gain occurs when schedule fraction equals 1.0
         </p>
-
-        <hr class="my-4">
 """)
 
     # === INTERIOR LIGHTING DETAILS (EMBEDDED) ===
