@@ -33,6 +33,17 @@ def write_javascript(file, rct_detailed_report):
     }};
 
     const sum = (arr) => (arr || []).reduce((a, b) => a + (Number(b) || 0), 0);
+    
+    const formatNumber = (v) => unitType() === "eui" ? Number(v).toFixed(1) : Math.round(v).toLocaleString();
+    
+    const formatTooltip = (ctx) => {{
+      const v = ctx.parsed.y;
+      return unitType() === "eui" ? v.toFixed(1) : Math.round(v).toLocaleString();
+    }};
+    
+    const formatTotal = (v) => unitType() === "eui"
+        ? v.toLocaleString(undefined, {{ minimumFractionDigits: 1, maximumFractionDigits: 1 }})
+        : v.toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
 
     /* ==================== Back to top ==================== */
 
@@ -435,8 +446,17 @@ def write_javascript(file, rct_detailed_report):
           interaction: {{ mode: "index", intersect: false }},
           plugins: {{
             title: {{ display: true, text: title }},
-            // Show BOTH series together
-            tooltip: {{ mode: "index", intersect: false }}
+            tooltip: {{
+              callbacks: {{
+                label: (ctx) => {{
+                  const v = ctx.parsed.y;
+                  const val = unitType() === "eui"
+                    ? v.toFixed(1)
+                    : Math.round(v).toLocaleString();
+                  return `${{ctx.dataset.label}}: ${{val}}`;
+                }}
+              }}
+            }}
           }},
           scales: {{
             x: {{
@@ -448,7 +468,11 @@ def write_javascript(file, rct_detailed_report):
             }},
             y: {{
               beginAtZero: true,
-              title: {{ display: true, text: unit, font: {{ size: 14 }} }}
+              title: {{ display: true, text: unit, font: {{ size: 14 }} }},
+              ticks: {{
+                callback: (value) =>
+                  unitType() === "eui" ? value.toFixed(1) : Math.round(value)
+              }}
             }}
           }}
         }}
@@ -491,8 +515,8 @@ def write_javascript(file, rct_detailed_report):
         unitLabel = (u === "eui") ? "kBtu/ft²" : "kBtu";
       }}
 
-      setText("baselineTotal", `Baseline Total: ${{sum(baseline).toLocaleString(undefined, {{ maximumFractionDigits: 0 }})}} ${{unitLabel}}`);
-      setText("proposedTotal", `Proposed Total: ${{sum(proposed).toLocaleString(undefined, {{ maximumFractionDigits: 0 }})}} ${{unitLabel}}`);
+      setText("baselineTotal", `Baseline Total: ${{formatTotal(sum(baseline))}} ${{unitLabel}}`);
+      setText("proposedTotal", `Proposed Total: ${{formatTotal(sum(proposed))}} ${{unitLabel}}`);
 
       const baselineEl = $("baselineTotal");
       const proposedEl = $("proposedTotal");
