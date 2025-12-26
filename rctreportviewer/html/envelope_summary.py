@@ -1,121 +1,139 @@
-import math
-
-
 def write_envelope_summary(file, rct_detailed_report):
     """
     Write the envelope summary section of the RCT detailed report.
-
-    :param file: The file object to write the HTML content to.
-    :param rct_detailed_report: The RCT detailed report object containing model summaries.
     """
 
-    # Write the envelope summary section
+    b = rct_detailed_report.baseline_model_summary
+    p = rct_detailed_report.proposed_model_summary
+
     file.write(
         """
-        <div class="mb-3 me-4">
-            <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-envelope-summary" aria-expanded="false">
-                Envelope Summary
-            </button>
+<section class="mb-4">
+  <div class="card shadow-sm">
 
-            <div id="collapse-envelope-summary" class="accordion-collapse collapse">
-                <div class="accordion-body">
-                    <table class="table table-sm table-borderless mb-0" style="width: 1300px;">
-                        <thead>
-                            <tr class="text-center">
+    <!-- CLICKABLE HEADER -->
+    <div class="card-header bg-light d-flex align-items-center"
+         role="button"
+         data-bs-toggle="collapse"
+         data-bs-target="#collapse-envelope-summary"
+         aria-expanded="false"
+         style="cursor: pointer;">
+      <span class="fw-semibold">Envelope Summary</span>
+    </div>
+
+    <div id="collapse-envelope-summary" class="collapse">
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light text-center border-bottom">
+                            <tr>
                                 <th colspan="2"></th>
-                                <th colspan="6" style="border: 2px solid black;">Baseline</th>
-                                <th colspan="6" style="border: 2px solid black;">Proposed</th>
+                                <th colspan="6">Baseline</th>
+                                <th colspan="6">Proposed</th>
                             </tr>
-                            <tr class="text-center">
-                                <th rowspan="2" style="border: 2px solid black;">Building Area</th>
-                                <th rowspan="2" style="border: 2px solid black;">Surface Type</th>
-                                <th colspan="3" style="border: 2px solid black;">Opaque Surface</th>
-                                <th colspan="3" style="border: 2px solid black;">Fenestration</th>
-                                <th colspan="3" style="border: 2px solid black;">Opaque Surface</th>
-                                <th colspan="3" style="border: 2px solid black;">Fenestration</th>
+                            <tr>
+                                <th rowspan="2" style="vertical-align: top;">Building Area</th>
+                                <th rowspan="2" style="vertical-align: top;">Surface Type</th>
+                                <th colspan="3">Opaque Surface</th>
+                                <th colspan="3">Fenestration</th>
+                                <th colspan="3">Opaque Surface</th>
+                                <th colspan="3">Fenestration</th>
                             </tr>
-                            <tr class="text-center">
-                                <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;"> % </th>
-                                <th style="border: 2px solid black;"> U-Factor </th>
-                                <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;"> % </th>
-                                <th style="border: 2px solid black;"> U-Factor </th>
-                                <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;"> % </th>
-                                <th style="border: 2px solid black;"> U-Factor </th>
-                                <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;"> % </th>
-                                <th style="border: 2px solid black;"> U-Factor </th>
+                            <tr>
+                                <th>Area (ft²)</th>
+                                <th>%</th>
+                                <th>U-Factor</th>
+                                <th>Area (ft²)</th>
+                                <th>%</th>
+                                <th>U-Factor</th>
+                                <th>Area (ft²)</th>
+                                <th>%</th>
+                                <th>U-Factor</th>
+                                <th>Area (ft²)</th>
+                                <th>%</th>
+                                <th>U-Factor</th>
                             </tr>
                         </thead>
-                        <tbody style="border: 2px solid black;">
-        """
+                        <tbody class="small text-center">
+"""
     )
 
-    for building_segment_id in rct_detailed_report.baseline_model_summary[
-        "total_floor_area_by_building_segment"
-    ]:
-        if (
-            building_segment_id
-            in rct_detailed_report.baseline_model_summary[
-                "total_roof_area_by_building_segment"
-            ]
-        ):
+    for segment in b["total_floor_area_by_building_segment"]:
+
+        # ---------- Roof ----------
+        if segment in b["total_roof_area_by_building_segment"]:
+            b_roof = b["total_roof_area_by_building_segment"].get(segment, 0)
+            b_sky = b["total_skylight_area_by_building_segment"].get(segment, 0)
+
+            p_roof = p["total_roof_area_by_building_segment"].get(segment, 0)
+            p_sky = p["total_skylight_area_by_building_segment"].get(segment, 0)
+
             file.write(
                 f"""
-                                <tr style="font-size: 12px;" class="lh-1 text-center">
-                                    <td>{building_segment_id}</td>
-                                    <td style="border-right: 2px solid black;">Roof</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) * 100, 1)}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.baseline_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, 0) * 100, 1)}</td>
-                                    <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.proposed_model_summary["total_roof_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary['total_skylight_area_by_building_segment'].get(building_segment_id, 0)) / rct_detailed_report.proposed_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["overall_roof_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_skylight_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.proposed_model_summary['total_roof_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["overall_skylight_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                </tr>
-                """
+                            <tr>
+                                <td>{segment}</td>
+                                <td>Roof</td>
+                                <td>{round(b_roof - b_sky):,}</td>
+                                <td>{round((b_roof - b_sky) / b_roof * 100, 1) if b_roof else 0}</td>
+                                <td>{round(b["overall_roof_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                                <td>{round(b_sky):,}</td>
+                                <td>{round(b_sky / b_roof * 100, 1) if b_roof else 0}</td>
+                                <td>{round(b["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                                <td>{round(p_roof - p_sky):,}</td>
+                                <td>{round((p_roof - p_sky) / p_roof * 100, 1) if p_roof else 0}</td>
+                                <td>{round(p["overall_roof_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                                <td>{round(p_sky):,}</td>
+                                <td>{round(p_sky / p_roof * 100, 1) if p_roof else 0}</td>
+                                <td>{round(p["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                            </tr>
+"""
             )
 
-        if (
-            building_segment_id
-            in rct_detailed_report.baseline_model_summary[
-                "total_wall_area_by_building_segment"
-            ]
-        ):
+        # ---------- Exterior Wall ----------
+        if segment in b["total_wall_area_by_building_segment"]:
+            b_wall = b["total_wall_area_by_building_segment"].get(segment, 0)
+            b_win = b["total_window_area_by_building_segment"].get(segment, 0)
+
+            p_wall = p["total_wall_area_by_building_segment"].get(segment, 0)
+            p_win = p["total_window_area_by_building_segment"].get(segment, 0)
+
             file.write(
                 f"""
-                                <tr style="font-size: 12px;" class="lh-1 text-center">
-                                    <td>{building_segment_id}</td>
-                                    <td style="border-right: 2px solid black;">Ext. Wall</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) - rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.baseline_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.baseline_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, 0) * 100, 1)}</td>
-                                    <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round((rct_detailed_report.proposed_model_summary["total_wall_area_by_building_segment"].get(building_segment_id, 0) - rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)) / rct_detailed_report.proposed_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["overall_wall_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0)):,}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["total_window_area_by_building_segment"].get(building_segment_id, 0) / rct_detailed_report.proposed_model_summary['total_wall_area_by_building_segment'].get(building_segment_id, math.inf) * 100, 1)}</td>
-                                    <td>{round(rct_detailed_report.proposed_model_summary["overall_window_u_factor_by_building_segment"].get(building_segment_id, 0), 3)}</td>
-                                </tr>
-                """
+                            <tr>
+                                <td>{segment}</td>
+                                <td>Ext. Wall</td>
+                                <td>{round(b_wall - b_win):,}</td>
+                                <td>{round((b_wall - b_win) / b_wall * 100, 1) if b_wall else 0}</td>
+                                <td>{round(b["overall_wall_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                                <td>{round(b_win):,}</td>
+                                <td>{round(b_win / b_wall * 100, 1) if b_wall else 0}</td>
+                                <td>{round(b["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                                <td>{round(p_wall - p_win):,}</td>
+                                <td>{round((p_wall - p_win) / p_wall * 100, 1) if p_wall else 0}</td>
+                                <td>{round(p["overall_wall_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                                <td>{round(p_win):,}</td>
+                                <td>{round(p_win / p_wall * 100, 1) if p_wall else 0}</td>
+                                <td>{round(p["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                            </tr>
+"""
             )
 
     file.write(
-        """          </tbody>
-                        </table>
-                        <p style="font-size: 0.75rem;" class="ms-2">*U-Factors represent area-weighted averages for the corresponding Building Area & Surface Type</p>
-                    </div>
-                </div>
-            </div>
         """
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="small text-muted mt-2">
+                    * U-factors represent area-weighted averages for the corresponding building area and surface type.
+                </p>
+
+            </div>
+        </div>
+    </div>
+</section>
+"""
     )

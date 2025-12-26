@@ -1,7 +1,5 @@
 import re
 
-from rctreportviewer.constants import outcome_disp_map
-
 
 section_titles_with_colors = {
     1: ("Design Model and Compliance Calculations", "#D8BFD8"),
@@ -90,7 +88,7 @@ def write_evaluations_section(file, rct_detailed_report):
 
         file.write(
             f"""
-                <div class="mb-3 me-4">
+                <div class="mb-3">
                     <button class="btn {btn_class} w-100 text-start sticky-top" 
                         type="button" data-bs-toggle="collapse" data-bs-target="#collapse_fully_{category.replace(' ', '_')}">
                         <strong>{category} Rules ({len(rules)})</strong>

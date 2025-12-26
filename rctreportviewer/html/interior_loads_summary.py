@@ -1,170 +1,157 @@
 import math
+from rctreportviewer.html.interior_lighting_details import write_interior_lighting_details
 
 
 def write_interior_loads_summary(file, rct_detailed_report):
-    file.write(
-        f"""
-        <div class="mb-3 me-4">
-            <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-internal-loads-summary" aria-expanded="false">
-                Internal Loads Summary
-            </button>
+    baseline = rct_detailed_report.baseline_model_summary
+    proposed = rct_detailed_report.proposed_model_summary
 
-            <div id="collapse-internal-loads-summary" class="accordion-collapse collapse">
-                <div class="accordion-body">
-                    <h3>Space Type Summary</h3>
-                    <table class="table table-sm table-borderless" style="width: 900px;">
-                        <thead>
-                            <tr class="text-center">
-                                <th colspan="2" class="col-4"></th>
-                                <th colspan="4" class="col-4" style="border: 2px solid black;">Baseline</th>
-                                <th colspan="3" class="col-4" style="border: 2px solid black;">Proposed</th>
-                            </tr>
-                            <tr class="text-center">
-                                <th style="border: 2px solid black;">Space Type</th>
-                                <th style="border: 2px solid black;">Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">Occupancy Density (ft<sup>2</sup>/person)</th>
-                                <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">Allowed Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">Occupancy Density (ft<sup>2</sup>/person)</th>
-                                <th style="border: 2px solid black;">Equipment Power Density (W/ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">Lighting Power Density (W/ft<sup>2</sup>)</th>
-                            </tr>
-                        </thead>
-                        <tbody style="border: 2px solid black;">
-    """
-    )
+    file.write("""
+<section class="mb-4">
+  <div class="card shadow-sm">
 
-    for space_type in rct_detailed_report.baseline_model_summary[
-        "total_floor_area_by_space_type"
-    ]:
-        area = rct_detailed_report.baseline_model_summary[
-            "total_floor_area_by_space_type"
-        ].get(space_type, 0)
-        occupants_b = rct_detailed_report.baseline_model_summary[
-            "total_occupants_by_space_type"
-        ].get(space_type, 0)
+    <!-- CLICKABLE HEADER -->
+    <div class="card-header bg-light d-flex align-items-center"
+         role="button"
+         data-bs-toggle="collapse"
+         data-bs-target="#collapse-internal-loads-summary"
+         aria-expanded="false"
+         style="cursor: pointer;">
+      <span class="fw-semibold">Internal Loads Summary</span>
+    </div>
+
+    <div id="collapse-internal-loads-summary" class="collapse">
+      <div class="card-body">
+
+        <h5 class="mb-3">Space Type Summary</h5>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th rowspan="2">Space Type</th>
+                <th rowspan="2">Area (ft²)</th>
+                <th colspan="4">Baseline</th>
+                <th colspan="3">Proposed</th>
+              </tr>
+              <tr>
+                <th>Occ. Density<br>(ft²/person)</th>
+                <th>Equip. Power<br>(W/ft²)</th>
+                <th>Allowed LPD<br>(W/ft²)</th>
+                <th>LPD<br>(W/ft²)</th>
+                <th>Occ. Density<br>(ft²/person)</th>
+                <th>Equip. Power<br>(W/ft²)</th>
+                <th>LPD<br>(W/ft²)</th>
+              </tr>
+            </thead>
+            <tbody class="small">
+""")
+
+    for space_type, area in baseline["total_floor_area_by_space_type"].items():
+        occupants_b = baseline["total_occupants_by_space_type"].get(space_type, 0)
+        occupants_p = proposed["total_occupants_by_space_type"].get(space_type, 0)
+
         occ_density_b = area / (occupants_b or math.inf)
-        eqp_density_b = rct_detailed_report.baseline_model_summary[
-            "total_miscellaneous_equipment_power_by_space_type"
-        ].get(space_type, 0) / (area or math.inf)
-        ltg_density_allowed_b = (
-            rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(
-                space_type, 0
-            )
-            / (area or math.inf)
-        )
-        ltg_density_b = rct_detailed_report.baseline_model_summary[
-            "total_lighting_power_by_space_type"
-        ].get(space_type, 0) / (area or math.inf)
-        occupants_p = rct_detailed_report.proposed_model_summary[
-            "total_occupants_by_space_type"
-        ].get(space_type, 0)
         occ_density_p = area / (occupants_p or math.inf)
-        eqp_density_p = rct_detailed_report.proposed_model_summary[
-            "total_miscellaneous_equipment_power_by_space_type"
-        ].get(space_type, 0) / (area or math.inf)
-        ltg_density_p = rct_detailed_report.proposed_model_summary[
-            "total_lighting_power_by_space_type"
-        ].get(space_type, 0) / (area or math.inf)
-        file.write(
-            f"""
-                            <tr style="font-size: 12px;" class="lh-1 text-center">
-                                <td>{space_type.replace("_", " ").title()}</td>
-                                <td style="border-right: 2px solid black;">{round(area):,}</td>
-                                <td>{round(occ_density_b)}</td>
-                                <td>{round(eqp_density_b, 2)}</td>
-                                <td>{round(ltg_density_allowed_b, 2)}</td>
-                                <td style="border-right: 2px solid black;">{round(ltg_density_b, 2)}</td>
-                                <td>{round(occ_density_p)}</td>
-                                <td>{round(eqp_density_p, 2)}</td>
-                                <td>{round(ltg_density_p, 2)}</td>
-                            </tr>
-            """
+
+        eqp_density_b = baseline["total_miscellaneous_equipment_power_by_space_type"].get(space_type, 0) / (area or math.inf)
+        eqp_density_p = proposed["total_miscellaneous_equipment_power_by_space_type"].get(space_type, 0) / (area or math.inf)
+
+        lpd_allowed_b = (
+            rct_detailed_report.baseline_lighting_power_allowance_by_space_type
+            .get(space_type, 0)
         )
+        lpd_b = baseline["total_lighting_power_by_space_type"].get(space_type, 0) / (area or math.inf)
+        lpd_p = proposed["total_lighting_power_by_space_type"].get(space_type, 0) / (area or math.inf)
 
-    file.write(
-        f"""
-                            <tr  style="font-size: 12px; border-top: 1px solid black;" class="lh-1 fw-bold text-center">
-                                <td>Total</td>
-                                <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_floor_area']):,}</td>
-                                <td>{round(rct_detailed_report.baseline_model_summary['total_floor_area'] / rct_detailed_report.baseline_model_summary['total_occupants'], 2)}</td>
-                                <td>{round(rct_detailed_report.baseline_model_summary['total_equipment_power'] / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
-                                <td>{round(rct_detailed_report.baseline_total_lighting_power_allowance / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
-                                <td style="border-right: 2px solid black;">{round(rct_detailed_report.baseline_model_summary['total_lighting_power'] / rct_detailed_report.baseline_model_summary['total_floor_area'], 2)}</td>
-                                <td>{round(rct_detailed_report.proposed_model_summary['total_floor_area'] / rct_detailed_report.proposed_model_summary['total_occupants'], 2)}</td>
-                                <td>{round(rct_detailed_report.proposed_model_summary['total_equipment_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
-                                <td>{round(rct_detailed_report.proposed_model_summary['total_lighting_power'] / rct_detailed_report.proposed_model_summary['total_floor_area'], 2)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-    """
-    )
+        file.write(f"""
+<tr>
+  <td>{space_type.replace("_", " ").title()}</td>
+  <td>{round(area):,}</td>
+  <td>{round(occ_density_b)}</td>
+  <td>{round(eqp_density_b, 2)}</td>
+  <td>{round(lpd_allowed_b, 2)}</td>
+  <td>{round(lpd_b, 2)}</td>
+  <td>{round(occ_density_p)}</td>
+  <td>{round(eqp_density_p, 2)}</td>
+  <td>{round(lpd_p, 2)}</td>
+</tr>
+""")
 
-    # ----------------------- Schedule Summary Table -----------------------
-    file.write(
-        f"""
-                    <h3>Schedule Summary</h3>
-                    <table class="table table-sm table-borderless" style="width: 1250px;">
-                        <thead>
-                            <tr class="text-center">
-                                <th colspan="1" class="col-4"></th>
-                                <th colspan="5" class="col-4" style="border: 2px solid black;">Baseline</th>
-                                <th colspan="5" class="col-4" style="border: 2px solid black;">Proposed</th>
-                            </tr>
-                            <tr class="text-center">
-                                <th style="border: 2px solid black;">Schedule</th>
-                                <th style="border: 2px solid black;">EFLH</th>
-                                <th style="border: 2px solid black;">Associated Floor Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">% of Total Lighting Watts Controlled</th>
-                                <th style="border: 2px solid black;">% of Total Equipment Watts Controlled</th>
-                                <th style="border: 2px solid black;">Associated Peak Internal Gain (kBtu/hr)</th>
-                                <th style="border: 2px solid black;">EFLH</th>
-                                <th style="border: 2px solid black;">Associated Floor Area (ft<sup>2</sup>)</th>
-                                <th style="border: 2px solid black;">% of Total Lighting Watts Controlled</th>
-                                <th style="border: 2px solid black;">% of Total Equipment Watts Controlled</th>
-                                <th style="border: 2px solid black;">Associated Peak Internal Gain (kBtu/hr)</th>
-                            </tr>
-                        </thead>
-                        <tbody style="border: 2px solid black;">
-    """
-    )
+    file.write(f"""
+<tr class="fw-bold border-top">
+  <td>Total</td>
+  <td>{round(baseline["total_floor_area"]):,}</td>
+  <td>{round(baseline["total_floor_area"] / baseline["total_occupants"], 2)}</td>
+  <td>{round(baseline["total_equipment_power"] / baseline["total_floor_area"], 2)}</td>
+  <td>{round(rct_detailed_report.baseline_total_lighting_power_allowance / baseline["total_floor_area"], 2)}</td>
+  <td>{round(baseline["total_lighting_power"] / baseline["total_floor_area"], 2)}</td>
+  <td>{round(proposed["total_floor_area"] / proposed["total_occupants"], 2)}</td>
+  <td>{round(proposed["total_equipment_power"] / proposed["total_floor_area"], 2)}</td>
+  <td>{round(proposed["total_lighting_power"] / proposed["total_floor_area"], 2)}</td>
+</tr>
+            </tbody>
+          </table>
+        </div>
 
-    baseline_schedule_summaries = rct_detailed_report.baseline_model_summary[
-        "schedule_summaries"
-    ]
-    for schedule_id in baseline_schedule_summaries.keys():
-        baseline_schedule_summary = rct_detailed_report.baseline_model_summary[
-            "schedule_summaries"
-        ].get(schedule_id, {})
-        proposed_schedule_summary = rct_detailed_report.proposed_model_summary[
-            "schedule_summaries"
-        ].get(schedule_id, {})
-        file.write(
-            f"""
-                                <tr style="font-size: 12px;" class="lh-1 text-center">
-                                    <td style="border-right: 2px solid black;">{schedule_id}</td>
-                                    <td>{round(baseline_schedule_summary.get("EFLH", 0)):,}</td>
-                                    <td>{round(baseline_schedule_summary.get("associated_floor_area", 0.0)):,}</td>
-                                    <td>{round(baseline_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
-                                    <td>{round(baseline_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
-                                    <td style="border-right: 2px solid black;">{round(baseline_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
-                                    <td>{round(proposed_schedule_summary.get("EFLH", 0)):,}</td>
-                                    <td>{round(proposed_schedule_summary.get("associated_floor_area", 0.0)):,}</td>
-                                    <td>{round(proposed_schedule_summary.get("percent_total_lighting_power", 0.0), 1):,}</td>
-                                    <td>{round(proposed_schedule_summary.get("percent_total_equipment_power", 0.0), 1):,}</td>
-                                    <td>{round(proposed_schedule_summary.get("associated_peak_internal_gain", 0.0), 1):,}</td>
-                                </tr>
-            """
-        )
-    file.write(
-        f"""
+        <h5 class="mt-4 mb-3">Schedule Summary</h5>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th rowspan="2">Schedule</th>
+                <th colspan="5">Baseline</th>
+                <th colspan="5">Proposed</th>
+              </tr>
+              <tr>
+                <th>EFLH</th>
+                <th>Floor Area (ft²)</th>
+                <th>% Lighting</th>
+                <th>% Equipment</th>
+                <th>Peak Gain (kBtu/hr)</th>
+                <th>EFLH</th>
+                <th>Floor Area (ft²)</th>
+                <th>% Lighting</th>
+                <th>% Equipment</th>
+                <th>Peak Gain (kBtu/hr)</th>
+              </tr>
+            </thead>
+            <tbody class="small">
+""")
 
-                            </tbody>
-                        </table>
-                        <p style="font-size: 0.75rem;" class="ms-2">*Peak Internal Gain = Internal Gain when hourly fractional value is 1 or 100%</p>
-                    </div>
-                </div>
-            </div>
-        """
-    )
+    for sched_id, base_sched in baseline["schedule_summaries"].items():
+        prop_sched = proposed["schedule_summaries"].get(sched_id, {})
+        file.write(f"""
+<tr>
+  <td>{sched_id}</td>
+  <td>{round(base_sched.get("EFLH", 0)):,}</td>
+  <td>{round(base_sched.get("associated_floor_area", 0)):,}</td>
+  <td>{round(base_sched.get("percent_total_lighting_power", 0), 1)}</td>
+  <td>{round(base_sched.get("percent_total_equipment_power", 0), 1)}</td>
+  <td>{round(base_sched.get("associated_peak_internal_gain", 0), 1)}</td>
+  <td>{round(prop_sched.get("EFLH", 0)):,}</td>
+  <td>{round(prop_sched.get("associated_floor_area", 0)):,}</td>
+  <td>{round(prop_sched.get("percent_total_lighting_power", 0), 1)}</td>
+  <td>{round(prop_sched.get("percent_total_equipment_power", 0), 1)}</td>
+  <td>{round(prop_sched.get("associated_peak_internal_gain", 0), 1)}</td>
+</tr>
+""")
+
+    file.write("""
+            </tbody>
+          </table>
+        </div>
+
+        <p class="small text-muted mt-2">
+          * Peak Internal Gain occurs when schedule fraction equals 1.0
+        </p>
+""")
+
+    # === INTERIOR LIGHTING DETAILS (EMBEDDED) ===
+    write_interior_lighting_details(file, rct_detailed_report)
+
+    file.write("""
+      </div>
+    </div>
+  </div>
+</section>
+""")

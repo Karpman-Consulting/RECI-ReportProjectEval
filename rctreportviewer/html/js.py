@@ -2,630 +2,611 @@ def write_javascript(file, rct_detailed_report):
     file.write(
         f"""
 <script>
-    const inputs = document.querySelectorAll('#energySourceTable input');
-    const rows = document.querySelectorAll('#energySourceTable tbody tr');
-    const energyPerformanceInputs = document.querySelectorAll('#energySourcePerformanceTable input');
-    const energyPerformanceRows = document.querySelectorAll('#energyPerformanceTable tbody tr');
+(() => {{
+  "use strict";
 
-    const parseNumber = (str) => parseFloat(str.replace(/,/g, "")) || 0;
-    const getText = (id) => parseNumber(document.getElementById(id).textContent);
-    const setText = (id, value) => {{
-        document.getElementById(id).textContent = value.toLocaleString();
+  document.addEventListener("DOMContentLoaded", () => {{
+
+    /* ==================== Utilities ==================== */
+
+    const $ = (id) => document.getElementById(id);
+
+    const parseNumber = (str) => {{
+      if (str == null) return 0;
+      return parseFloat(String(str).replace(/[$,]/g, "")) || 0;
     }};
+
+    const getTextNumber = (id) => {{
+      const el = $(id);
+      return el ? parseNumber(el.textContent) : 0;
+    }};
+
+    const setText = (id, value) => {{
+      const el = $(id);
+      if (el) el.textContent = value;
+    }};
+
     const setRatio = (id, numerator, denominator) => {{
-        const ratio = denominator !== 0 ? (numerator / denominator).toFixed(2) : "0.00";
-        document.getElementById(id).textContent = ratio;
+      const el = $(id);
+      if (!el) return;
+      el.textContent = denominator !== 0 ? (numerator / denominator).toFixed(2) : "0.00";
+    }};
+
+    const sum = (arr) => (arr || []).reduce((a, b) => a + (Number(b) || 0), 0);
+    
+    const formatNumber = (v) => unitType() === "eui" ? Number(v).toFixed(1) : Math.round(v).toLocaleString();
+    
+    const formatTooltip = (ctx) => {{
+      const v = ctx.parsed.y;
+      return unitType() === "eui" ? v.toFixed(1) : Math.round(v).toLocaleString();
     }};
     
-    document.addEventListener("DOMContentLoaded", () => {{
-        document.querySelectorAll("[data-bs-toggle='tooltip']").forEach(el => {{
-            if (el.getAttribute("title") == null) {{
-                el.setAttribute("title", "");
-            }}
-        }});
-    }});
+    const formatTotal = (v) => unitType() === "eui"
+        ? v.toLocaleString(undefined, {{ minimumFractionDigits: 1, maximumFractionDigits: 1 }})
+        : v.toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
 
-    function recalculateEnergyMetrics() {{
-        let proposedSourceEnergy = 0;
-        let proposedGHGEmissions = 0;
-        let baselineUnregulatedSourceEnergy = 0;
-        let baselineUnregulatedGHGEmissions = 0;
-        let baselineRegulatedSourceEnergy = 0;
-        let baselineRegulatedGHGEmissions = 0;
+    /* ==================== Back to top ==================== */
 
-        rows.forEach(row => {{
-            const getVal = (cls) => parseNumber(row.querySelector(`.${{cls}}`)?.textContent || "0");
-            const getInputVal = (cls) => parseNumber(row.querySelector(`.${{cls}}`)?.value || "0");
+    const backToTopBtn = $("back-to-top");
+    const toggleBackToTopButton = () => {{
+      if (!backToTopBtn) return;
+      const show = (document.body.scrollTop > 100) || (document.documentElement.scrollTop > 100) || (window.scrollY > 100);
+      backToTopBtn.style.opacity = show ? "1" : "0";
+      backToTopBtn.style.visibility = show ? "visible" : "hidden";
+    }};
+    window.addEventListener("scroll", toggleBackToTopButton);
 
-            const proposed = getVal('proposedEnergyUse');
-            const unreg = getVal('baselineUnregulatedEnergy');
-            const reg = getVal('baselineRegulatedEnergy');
-            const ssr = getInputVal('siteSourceRatio');
-            const ghg = getInputVal('ghgEmissionFactor');
-
-            proposedSourceEnergy += proposed * ssr;
-            proposedGHGEmissions += proposed * ghg;
-            baselineUnregulatedSourceEnergy += unreg * ssr;
-            baselineUnregulatedGHGEmissions += unreg * ghg;
-            baselineRegulatedSourceEnergy += reg * ssr;
-            baselineRegulatedGHGEmissions += reg * ghg;
-        }});
-
-        const baselineSourceEnergy = baselineUnregulatedSourceEnergy + baselineRegulatedSourceEnergy;
-        const baselineGHGEmissions = baselineUnregulatedGHGEmissions + baselineRegulatedGHGEmissions;
-
-        const proposedSiteEnergy = getText('pbp_nre_site_energy') - getText('proposed_site_energy_savings');
-        const proposedSrcEnergy = proposedSourceEnergy - getText('proposed_source_energy_savings');
-        const proposedGHG = proposedGHGEmissions - getText('proposed_ghg_savings');
-
-        const baselineSiteEnergy = getText('bbp_site_energy');
-        const baselineUnregulatedSiteEnergy = getText('bbuec_site_energy');
-        const baselineRegulatedSiteEnergy = getText('bbrec_site_energy');
-
-        const bpfSite = getText('bpf_site_energy');
-        const bpfSource = getText('bpf_source_energy');
-        const bpfGHG = getText('bpf_ghg_emissions');
-
-        setText('pbp_nre_source_energy', proposedSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('pbp_nre_ghg', proposedGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('pbp_site_energy', proposedSiteEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('pbp_source_energy', proposedSrcEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('pbp_ghg', proposedGHG.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        
-        setText('bbuec_source_energy', baselineUnregulatedSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('bbuec_ghg', baselineUnregulatedGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('bbrec_source_energy', baselineRegulatedSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('bbrec_ghg', baselineRegulatedGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('bbp_source_energy', baselineSourceEnergy.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-        setText('bbp_ghg', baselineGHGEmissions.toLocaleString(undefined, {{ minimumFractionDigits: 0, maximumFractionDigits: 0 }}));
-
-        // PCIt ratios
-        setRatio('pcit_site_energy', baselineUnregulatedSiteEnergy + bpfSite * baselineRegulatedSiteEnergy, baselineSiteEnergy);
-        setRatio('pcit_source_energy', baselineUnregulatedSourceEnergy + bpfSource * baselineRegulatedSourceEnergy, baselineSourceEnergy);
-        setRatio('pcit_ghg_emissions', baselineUnregulatedGHGEmissions + bpfGHG * baselineRegulatedGHGEmissions, baselineGHGEmissions);
-
-        setRatio('pci_nre_site_energy', getText('pbp_nre_site_energy'), baselineSiteEnergy);
-        setRatio('pci_nre_source_energy', proposedSourceEnergy, baselineSourceEnergy);
-        setRatio('pci_nre_ghg', proposedGHGEmissions, baselineGHGEmissions);
-
-        // PCIadjusted calculations
-        const capFraction = 0.05;
-        const adjustedSiteSavings = Math.min(getText('proposed_site_energy_savings'), capFraction * baselineSiteEnergy);
-        const adjustedSourceSavings = Math.min(getText('proposed_source_energy_savings'), capFraction * baselineSourceEnergy);
-        const adjustedGHGSavings = Math.min(getText('proposed_ghg_savings'), capFraction * baselineGHGEmissions);
-
-        const adjustedPBPSite = getText('pbp_nre_site_energy') - adjustedSiteSavings;
-        const adjustedPBPSource = proposedSourceEnergy - adjustedSourceSavings;
-        const adjustedPBPGHG = proposedGHGEmissions - adjustedGHGSavings;
-
-        const pciAdjustedSite = adjustedPBPSite / baselineSiteEnergy;
-        const pciAdjustedSource = adjustedPBPSource / baselineSourceEnergy;
-        const pciAdjustedGHG = adjustedPBPGHG / baselineGHGEmissions;
-
-        // Update the table
-        setText('pci_adjusted_site_energy', pciAdjustedSite.toLocaleString(undefined, {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}));
-        setText('pci_adjusted_source_energy', pciAdjustedSource.toLocaleString(undefined, {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}));
-        setText('pci_adjusted_ghg', pciAdjustedGHG.toLocaleString(undefined, {{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}));
-
-        const getCost = (id) => parseNumber(document.getElementById(id).textContent.replace(/[$,]/g, ''));
-
-        // Get cost values
-        const baselineCost = getCost('bbp_cost');
-        const proposedCost = getCost('pbp_cost');
-        const proposedNRECost = getCost('pbp_nre_cost');
-
-        // % Improvement excluding renewables
-        const cost_savings_nre = ((baselineCost - proposedNRECost) / baselineCost) * 100;
-        const site_savings_nre = ((baselineSiteEnergy - getText('pbp_nre_site_energy')) / baselineSiteEnergy) * 100;
-        const source_savings_nre = ((baselineSourceEnergy - proposedSourceEnergy) / baselineSourceEnergy) * 100;
-        const ghg_savings_nre = ((baselineGHGEmissions - proposedGHGEmissions) / baselineGHGEmissions) * 100;
-
-        setText('cost_savings_nre', cost_savings_nre.toFixed(1) + '%');
-        setText('site_savings_nre', site_savings_nre.toFixed(1) + '%');
-        setText('source_savings_nre', source_savings_nre.toFixed(1) + '%');
-        setText('ghg_savings_nre', ghg_savings_nre.toFixed(1) + '%');
-
-        // % Improvement including renewables
-        const cost_savings = ((baselineCost - proposedCost) / baselineCost) * 100;
-        const site_savings = ((baselineSiteEnergy - getText('pbp_site_energy')) / baselineSiteEnergy) * 100;
-        const source_savings = ((baselineSourceEnergy - proposedSrcEnergy) / baselineSourceEnergy) * 100;
-        const ghg_savings = ((baselineGHGEmissions - proposedGHG) / baselineGHGEmissions) * 100;
-
-        setText('cost_savings', cost_savings.toFixed(1) + '%');
-        setText('site_savings', site_savings.toFixed(1) + '%');
-        setText('source_savings', source_savings.toFixed(1) + '%');
-        setText('ghg_savings', ghg_savings.toFixed(1) + '%');
-    }}
-
-    function recalculateEnergyPerformanceMetrics() {{
-        let totProposedSiteEnergy = 0;
-        let totBaselineSiteEnergy = 0;
-        let totProposedSourceEnergy = 0;
-        let totBaselineSourceEnergy = 0;
-        let totProposedCost = 0;
-        let totBaselineCost = 0;
-        let totProposedGHGEmissions = 0;
-        let totBaselineGHGEmissions = 0;
-
-        const electricitySiteSourceRatio = parseFloat(document.querySelector('.electricitySiteSourceRatio').value || 2.80);
-        const naturalGasSiteSourceRatio = parseFloat(document.querySelector('.naturalGasSiteSourceRatio').value || 1.05);
-        const electricityGHGEmissionFactor = parseFloat(document.querySelector('.electricityGhgEmissionFactor').value || 0.37);
-        const naturalGasGHGEmissionFactor = parseFloat(document.querySelector('.naturalGasGhgEmissionFactor').value || 0.53);
-        energyPerformanceRows.forEach(row => {{
-            const getRowText = (id) => parseFloat(row.getElementsByClassName(id)[0].textContent.replace(/[^0-9.\-]/g, ''));
-            const setRowText = (id, value, percentile, currency) => {{
-                if (percentile) {{
-                    row.getElementsByClassName(id)[0].textContent = value.toFixed(1).toLocaleString() + "%";
-                }}
-                else if (currency) {{
-                    row.getElementsByClassName(id)[0].textContent = value.toLocaleString('en-US', {{
-                        style: 'currency',
-                        currency: 'USD',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }});
-                }}
-                else {{
-                    row.getElementsByClassName(id)[0].textContent = value.toFixed(1).toLocaleString();
-                }} 
-            }};
-            if (row === energyPerformanceRows[energyPerformanceRows.length - 1]){{
-                let totSiteSavings = totBaselineSiteEnergy ? (totBaselineSiteEnergy - totProposedSiteEnergy) / totBaselineSiteEnergy * 100 : (0 - totProposedSiteEnergy) * 100;
-                let totSourceSavings = totBaselineSourceEnergy ? (totBaselineSourceEnergy - totProposedSourceEnergy) / totBaselineSourceEnergy * 100 : (0 - totProposedSourceEnergy) * 100;
-                let totCostSavings = totBaselineCost ? (totBaselineCost - totProposedCost) / totBaselineCost * 100 : (0 - totProposedCost) * 100;
-                let totGHGSavings = totBaselineGHGEmissions ? (totBaselineGHGEmissions - totProposedGHGEmissions) / totBaselineGHGEmissions * 100 : (0 - totProposedGHGEmissions) * 100;
-
-                setRowText('totSiteEnergyProposed', totProposedSiteEnergy);
-                setRowText('totSiteEnergyBaseline', totBaselineSiteEnergy);
-                setRowText('totSiteEnergySavings', totSiteSavings, true);
-                setRowText('totSourceEnergyProposed', totProposedSourceEnergy);
-                setRowText('totSourceEnergyBaseline', totBaselineSourceEnergy);
-                setRowText('totSourceEnergySavings', totSourceSavings, true);
-                setRowText('totCostProposed', totProposedCost, false, true);
-                setRowText('totCostBaseline', totBaselineCost, false, true);
-                setRowText('totCostSavings', totCostSavings, true);
-                setRowText('totGhgEmissionsProposed', totProposedGHGEmissions);
-                setRowText('totGhgEmissionsBaseline', totBaselineGHGEmissions);
-                setRowText('totGhgEmissionsSavings', totGHGSavings, true);
-                return;
-            }};
-            
-            const proposedSiteEnergy = getRowText('siteEnergyProposed');
-            const baselineSiteEnergy = getRowText('siteEnergyBaseline');
-            const proposedCost = getRowText('energyCostProposed');
-            const baselineCost = getRowText('energyCostBaseline');
-
-            let proposedSourceEnergy = ((getRowText('electricityProposed') * electricitySiteSourceRatio) + (getRowText('naturalGasProposed') * naturalGasSiteSourceRatio));
-            let baselineSourceEnergy = ((getRowText('electricityBaseline') * electricitySiteSourceRatio) + (getRowText('naturalGasBaseline') * naturalGasSiteSourceRatio));
-            let sourceEnergySavings = baselineSourceEnergy ? ((baselineSourceEnergy - proposedSourceEnergy) / baselineSourceEnergy * 100) : (0 - proposedSourceEnergy) * 100;
-            
-            setRowText('sourceEnergyProposed', proposedSourceEnergy);
-            setRowText('sourceEnergyBaseline', baselineSourceEnergy);
-            setRowText('sourceEnergySavings', sourceEnergySavings);
-
-            let proposedGHGEmissions = ((getRowText('electricityProposed') * electricityGHGEmissionFactor) + (getRowText('naturalGasProposed') * naturalGasGHGEmissionFactor));
-            let baselineGHGEmissions = ((getRowText('electricityBaseline') * electricityGHGEmissionFactor) + (getRowText('naturalGasBaseline') * naturalGasGHGEmissionFactor));
-            let ghgSavings = baselineGHGEmissions ? ((baselineGHGEmissions - proposedGHGEmissions) / baselineGHGEmissions * 100) : (0 - proposedGHGEmissions) * 100;
-            
-            setRowText('ghgEmissionsProposed', proposedGHGEmissions);
-            setRowText('ghgEmissionsBaseline', baselineGHGEmissions);
-            setRowText('ghgEmissionsSavings', ghgSavings);
-
-            totProposedSiteEnergy += proposedSiteEnergy;
-            totBaselineSiteEnergy += baselineSiteEnergy;
-            totProposedSourceEnergy += proposedSourceEnergy;
-            totBaselineSourceEnergy += baselineSourceEnergy;
-            totProposedCost += proposedCost;
-            totBaselineCost += baselineCost;
-            totProposedGHGEmissions += proposedGHGEmissions;
-            totBaselineGHGEmissions += baselineGHGEmissions;
-        }});
-    }}
-
-    function toggleBackToTopButton() {{
-        const backToTopButton = document.getElementById("back-to-top");
-        if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {{
-            backToTopButton.style.opacity = "1";
-            backToTopButton.style.visibility = "visible";
-        }}  
-        else {{
-            backToTopButton.style.opacity = "0";
-            backToTopButton.style.visibility = "hidden";
-        }}
-    }}
-
-    function scrollToTop() {{
-        window.scrollTo({{
-            top: 0,
-            behavior: 'smooth'
-        }});
-    }}
-
-    function calculateSubtotals() {{
-        document.querySelectorAll(".fan-summary").forEach(table => {{
-            let columnSums = [];
-            let columnPrecisions = [];
-
-            table.querySelectorAll("tr").forEach(row => {{
-                if (row.classList.contains("subtotal")) {{
-                    row.querySelectorAll("td").forEach((td, colIndex) => {{
-                        if (colIndex === 0) return;
-                        let sum = columnSums[colIndex] || 0;
-                        let precision = columnPrecisions[colIndex] || 0;
-                        td.textContent = sum.toLocaleString(undefined, {{ minimumFractionDigits: precision, maximumFractionDigits: precision }});
-                    }});
-                    columnSums = [];
-                    columnPrecisions = [];
-                }} else {{
-                    row.querySelectorAll("td").forEach((td, colIndex) => {{
-                        let cleanedText = td.textContent.replace(/,/g, "").trim();
-                        let value = parseFloat(cleanedText) || 0;
-                        let decimalPlaces = (cleanedText.split(".")[1] || "").length;
-                        columnPrecisions[colIndex] = Math.max(columnPrecisions[colIndex] || 0, decimalPlaces);
-                        columnSums[colIndex] = (columnSums[colIndex] || 0) + value;
-                    }});
-                }}
-            }});
-        }});
-    }}
-
-    window.onscroll = function() {{
-        toggleBackToTopButton();
+    window.scrollToTop = () => {{
+      window.scrollTo({{ top: 0, behavior: "smooth" }});
     }};
 
-    inputs.forEach(input => {{
-        input.addEventListener('input', recalculateEnergyMetrics);
+    /* ==================== Bootstrap tooltips ==================== */
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {{
+      // ensure title exists so bootstrap doesn't throw
+      if (el.getAttribute("title") == null) el.setAttribute("title", "");
+      new bootstrap.Tooltip(el, {{ container: "body" }});
     }});
 
-    energyPerformanceInputs.forEach(input => {{
-        input.addEventListener('input', recalculateEnergyPerformanceMetrics);
-    }});
+    /* ==================== Energy metrics recalculation (safe) ==================== */
 
-    document.addEventListener("DOMContentLoaded", () => {{
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl =>
-          new bootstrap.Tooltip(tooltipTriggerEl, {{
-            container: 'body',
-          }})
-        );
+    const energySourceTable = $("energySourceTable");
+    const inputs = energySourceTable ? energySourceTable.querySelectorAll("input") : [];
+    const rows = energySourceTable ? energySourceTable.querySelectorAll("tbody tr") : [];
 
-        if (inputs.length > 0) {{
-            recalculateEnergyMetrics();
-        }}
+    function recalculateEnergyMetrics() {{
+      if (!rows || rows.length === 0) return;
 
-        if (energyPerformanceInputs.length > 0) {{
-            recalculateEnergyPerformanceMetrics();
-        }}
+      let proposedSourceEnergy = 0;
+      let proposedGHGEmissions = 0;
+      let baselineUnregulatedSourceEnergy = 0;
+      let baselineUnregulatedGHGEmissions = 0;
+      let baselineRegulatedSourceEnergy = 0;
+      let baselineRegulatedGHGEmissions = 0;
 
-        calculateSubtotals();
+      rows.forEach(row => {{
+        const getVal = (cls) => parseNumber(row.querySelector(`.${{cls}}`)?.textContent || "0");
+        const getInputVal = (cls) => parseNumber(row.querySelector(`.${{cls}}`)?.value || "0");
 
-        // Chart labels
-        const labels = {[label.replace('_', ' ').title() for label in rct_detailed_report.baseline_model_summary["elec_by_end_use"].keys()]};
+        const proposed = getVal("proposedEnergyUse");
+        const unreg = getVal("baselineUnregulatedEnergy");
+        const reg = getVal("baselineRegulatedEnergy");
+        const ssr = getInputVal("siteSourceRatio");
+        const ghg = getInputVal("ghgEmissionFactor");
 
-        const elecDataRaw = {{
-          consumption: {{
-            baseline: {list(rct_detailed_report.baseline_model_summary["elec_by_end_use"].values())},
-            proposed: {list(rct_detailed_report.proposed_model_summary["elec_by_end_use"].values())}
-          }},
-          eui: {{
-            baseline: {list(rct_detailed_report.baseline_model_summary["elec_by_end_use_eui"].values())},
-            proposed: {list(rct_detailed_report.proposed_model_summary["elec_by_end_use_eui"].values())}
-          }}
-        }};
+        proposedSourceEnergy += proposed * ssr;
+        proposedGHGEmissions += proposed * ghg;
+        baselineUnregulatedSourceEnergy += unreg * ssr;
+        baselineUnregulatedGHGEmissions += unreg * ghg;
+        baselineRegulatedSourceEnergy += reg * ssr;
+        baselineRegulatedGHGEmissions += reg * ghg;
+      }});
 
-        const gasDataRaw = {{
-          consumption: {{
-            baseline: {list(rct_detailed_report.baseline_model_summary["gas_by_end_use"].values())},
-            proposed: {list(rct_detailed_report.proposed_model_summary["gas_by_end_use"].values())}
-          }},
-          eui: {{
-            baseline: {list(rct_detailed_report.baseline_model_summary["gas_by_end_use_eui"].values())},
-            proposed: {list(rct_detailed_report.proposed_model_summary["gas_by_end_use_eui"].values())}
-          }}
-        }};
+      const baselineSourceEnergy = baselineUnregulatedSourceEnergy + baselineRegulatedSourceEnergy;
+      const baselineGHGEmissions = baselineUnregulatedGHGEmissions + baselineRegulatedGHGEmissions;
 
-        const energyDataRaw = {{
-          consumption: {{
-            baseline: {list(rct_detailed_report.baseline_model_summary["energy_by_end_use"].values())},
-            proposed: {list(rct_detailed_report.proposed_model_summary["energy_by_end_use"].values())}
-          }},
-          eui: {{
-            baseline: {list(rct_detailed_report.baseline_model_summary["energy_by_end_use_eui"].values())},
-            proposed: {list(rct_detailed_report.proposed_model_summary["energy_by_end_use_eui"].values())}
-          }}
-        }};
+      // All getTextNumber() are safe (0 if missing) to avoid console null errors
+      const proposedSiteEnergy = getTextNumber("pbp_nre_site_energy") - getTextNumber("proposed_site_energy_savings");
+      const proposedSrcEnergy = proposedSourceEnergy - getTextNumber("proposed_source_energy_savings");
+      const proposedGHG = proposedGHGEmissions - getTextNumber("proposed_ghg_savings");
 
-        // Electricity Datasets
-        const elecData = {{
-            labels: labels,
-            datasets: [
-                {{
-                    label: 'Baseline',
-                    data: {list(rct_detailed_report.baseline_model_summary["elec_by_end_use"].values())},
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)'
-                }},
-                {{
-                    label: 'Proposed',
-                    data: {list(rct_detailed_report.proposed_model_summary["elec_by_end_use"].values())},
-                    backgroundColor: 'rgba(75, 192, 75, 0.7)'
-                }}
-            ]
-        }};
+      const baselineSiteEnergy = getTextNumber("bbp_site_energy");
+      const baselineUnregulatedSiteEnergy = getTextNumber("bbuec_site_energy");
+      const baselineRegulatedSiteEnergy = getTextNumber("bbrec_site_energy");
 
-        const elecConfig = {{
-            type: 'bar',
-            data: elecData,
-            options: {{
-                responsive: true,
-                plugins: {{
-                    title: {{
-                        display: true,
-                        text: 'Electricity By End Use'
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false
-                    }}
-                }},
-                interaction: {{
-                    mode: 'index',
-                    intersect: false
-                }},
-                scales: {{
-                    x: {{
-                        stacked: false,
-                        ticks: {{
-                            minRotation: 60,
-                            maxRotation: 60
-                        }}
-                    }},
-                    y: {{
-                        beginAtZero: true,
-                        title: {{
-                            display: true,
-                            text: 'kWh',
-                            font: {{
-                                size: 14
-                            }}
-                        }}
-                    }}
-                }}
-            }}
-        }};
+      const bpfSite = getTextNumber("bpf_site_energy");
+      const bpfSource = getTextNumber("bpf_source_energy");
+      const bpfGHG = getTextNumber("bpf_ghg_emissions");
 
-        const gasData = {{
-            labels: labels,
-            datasets: [
-                {{
-                    label: 'Baseline',
-                    data: {list(rct_detailed_report.baseline_model_summary["gas_by_end_use"].values())},
-                    backgroundColor: 'rgba(255, 180, 80, 0.5)'
-                }},
-                {{
-                    label: 'Proposed',
-                    data: {list(rct_detailed_report.proposed_model_summary["gas_by_end_use"].values())},
-                    backgroundColor: 'rgba(255, 100, 100, 0.5)'
-                }}
-            ]
-        }};
+      // write totals (as strings, because some targets might be ratios/percent strings elsewhere)
+      setText("pbp_nre_source_energy", proposedSourceEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("pbp_nre_ghg", proposedGHGEmissions.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("pbp_site_energy", proposedSiteEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("pbp_source_energy", proposedSrcEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("pbp_ghg", proposedGHG.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
 
-        const gasConfig = {{
-            type: 'bar',
-            data: gasData,
-            options: {{
-                responsive: true,
-                plugins: {{
-                    title: {{
-                        display: true,
-                        text: 'Natural Gas By End Use'
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false
-                    }}
-                }},
-                interaction: {{
-                    mode: 'index',
-                    intersect: false
-                }},
-                scales: {{
-                    x: {{
-                        stacked: false,
-                        ticks: {{
-                            minRotation: 60,
-                            maxRotation: 60
-                        }}
-                    }},
-                    y: {{
-                        beginAtZero: true,
-                        title: {{
-                            display: true,
-                            text: 'Therms',
-                            font: {{
-                                size: 14
-                            }}
-                        }}
-                    }}
-                }}
-            }}
-        }};
+      setText("bbuec_source_energy", baselineUnregulatedSourceEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("bbuec_ghg", baselineUnregulatedGHGEmissions.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("bbrec_source_energy", baselineRegulatedSourceEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("bbrec_ghg", baselineRegulatedGHGEmissions.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("bbp_source_energy", baselineSourceEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
+      setText("bbp_ghg", baselineGHGEmissions.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
 
-        const energyData = {{
-            labels: labels,
-            datasets: [
-                {{
-                    label: 'Baseline',
-                    data: {list(rct_detailed_report.baseline_model_summary["energy_by_end_use"].values())},
-                    backgroundColor: 'rgba(128, 0, 64, 0.6)'
-                }},
-                {{
-                    label: 'Proposed',
-                    data: {list(rct_detailed_report.proposed_model_summary["energy_by_end_use"].values())},
-                    backgroundColor: 'rgba(0, 128, 128, 0.6)'
-                }}
-            ]
-        }};
+      // PCIt ratios
+      setRatio("pcit_site_energy",
+        baselineUnregulatedSiteEnergy + bpfSite * baselineRegulatedSiteEnergy,
+        baselineSiteEnergy
+      );
+      setRatio("pcit_source_energy",
+        baselineUnregulatedSourceEnergy + bpfSource * baselineRegulatedSourceEnergy,
+        baselineSourceEnergy
+      );
+      setRatio("pcit_ghg_emissions",
+        baselineUnregulatedGHGEmissions + bpfGHG * baselineRegulatedGHGEmissions,
+        baselineGHGEmissions
+      );
 
-        const energyConfig = {{
-            type: 'bar',
-            data: energyData,
-            options: {{
-                responsive: true,
-                plugins: {{
-                    title: {{
-                        display: true,
-                        text: 'Total Site Energy By End Use'
-                    }},
-                    tooltip: {{
-                        mode: 'index',
-                        intersect: false
-                    }}
-                }},
-                interaction: {{
-                    mode: 'index',
-                    intersect: false
-                }},
-                scales: {{
-                    x: {{
-                        stacked: false,
-                        ticks: {{
-                            minRotation: 60,
-                            maxRotation: 60
-                        }}
-                    }},
-                    y: {{
-                        beginAtZero: true,
-                        title: {{
-                            display: true,
-                            text: 'kBtu',
-                            font: {{
-                                size: 14
-                            }}
-                        }}
-                    }}
-                }}
-            }}
-        }};
+      setRatio("pci_nre_site_energy", getTextNumber("pbp_nre_site_energy"), baselineSiteEnergy);
+      setRatio("pci_nre_source_energy", proposedSourceEnergy, baselineSourceEnergy);
+      setRatio("pci_nre_ghg", proposedGHGEmissions, baselineGHGEmissions);
 
-        const elecChart = new Chart(document.getElementById('elecByEndUse'), elecConfig);
-        const gasChart = new Chart(document.getElementById('gasByEndUse'), gasConfig);
-        const energyChart = new Chart(document.getElementById('energyByEndUse'), energyConfig);
+      // PCI adjusted
+      const capFraction = 0.05;
+      const adjustedSiteSavings = Math.min(getTextNumber("proposed_site_energy_savings"), capFraction * baselineSiteEnergy);
+      const adjustedSourceSavings = Math.min(getTextNumber("proposed_source_energy_savings"), capFraction * baselineSourceEnergy);
+      const adjustedGHGSavings = Math.min(getTextNumber("proposed_ghg_savings"), capFraction * baselineGHGEmissions);
 
-        function updateCharts(unitType) {{
-          // Update Electricity
-          elecChart.data.datasets[0].data = elecDataRaw[unitType].baseline;
-          elecChart.data.datasets[1].data = elecDataRaw[unitType].proposed;
-          elecChart.options.scales.y.title.text = unitType === 'consumption' ? 'kWh' : 'kBtu/ft²';
-          elecChart.update();
+      const adjustedPBPSite = getTextNumber("pbp_nre_site_energy") - adjustedSiteSavings;
+      const adjustedPBPSource = proposedSourceEnergy - adjustedSourceSavings;
+      const adjustedPBPGHG = proposedGHGEmissions - adjustedGHGSavings;
 
-          // Update Gas
-          gasChart.data.datasets[0].data = gasDataRaw[unitType].baseline;
-          gasChart.data.datasets[1].data = gasDataRaw[unitType].proposed;
-          gasChart.options.scales.y.title.text = unitType === 'consumption' ? 'Therms' : 'kBtu/ft²';
-          gasChart.update();
+      const pciAdjustedSite = baselineSiteEnergy ? adjustedPBPSite / baselineSiteEnergy : 0;
+      const pciAdjustedSource = baselineSourceEnergy ? adjustedPBPSource / baselineSourceEnergy : 0;
+      const pciAdjustedGHG = baselineGHGEmissions ? adjustedPBPGHG / baselineGHGEmissions : 0;
 
-          // Update Total Energy
-          energyChart.data.datasets[0].data = energyDataRaw[unitType].baseline;
-          energyChart.data.datasets[1].data = energyDataRaw[unitType].proposed;
-          energyChart.options.scales.y.title.text = unitType === 'consumption' ? 'MMBtu' : 'kBtu/ft²';
-          energyChart.update();
-        }}
+      setText("pci_adjusted_site_energy", pciAdjustedSite.toFixed(2));
+      setText("pci_adjusted_source_energy", pciAdjustedSource.toFixed(2));
+      setText("pci_adjusted_ghg", pciAdjustedGHG.toFixed(2));
 
-        function sumArray(arr) {{
-          return arr.reduce((acc, val) => acc + val, 0);
-        }}
+      const getCost = (id) => {{
+        const el = $(id);
+        return el ? parseNumber(el.textContent) : 0;
+      }};
 
-        function getUnitLabel(source, unitType) {{
-          if (unitType === 'eui') {{
-            return 'kBtu/ft²';
+      const baselineCost = getCost("bbp_cost");
+      const proposedCost = getCost("pbp_cost");
+      const proposedNRECost = getCost("pbp_nre_cost");
+
+      // % Improvement excluding renewables
+      const cost_savings_nre = baselineCost ? ((baselineCost - proposedNRECost) / baselineCost) * 100 : 0;
+      const site_savings_nre = baselineSiteEnergy ? ((baselineSiteEnergy - getTextNumber("pbp_nre_site_energy")) / baselineSiteEnergy) * 100 : 0;
+      const source_savings_nre = baselineSourceEnergy ? ((baselineSourceEnergy - proposedSourceEnergy) / baselineSourceEnergy) * 100 : 0;
+      const ghg_savings_nre = baselineGHGEmissions ? ((baselineGHGEmissions - proposedGHGEmissions) / baselineGHGEmissions) * 100 : 0;
+
+      setText("cost_savings_nre", cost_savings_nre.toFixed(1) + "%");
+      setText("site_savings_nre", site_savings_nre.toFixed(1) + "%");
+      setText("source_savings_nre", source_savings_nre.toFixed(1) + "%");
+      setText("ghg_savings_nre", ghg_savings_nre.toFixed(1) + "%");
+
+      // % Improvement including renewables
+      const cost_savings = baselineCost ? ((baselineCost - proposedCost) / baselineCost) * 100 : 0;
+      const site_savings = baselineSiteEnergy ? ((baselineSiteEnergy - getTextNumber("pbp_site_energy")) / baselineSiteEnergy) * 100 : 0;
+      const source_savings = baselineSourceEnergy ? ((baselineSourceEnergy - proposedSrcEnergy) / baselineSourceEnergy) * 100 : 0;
+      const ghg_savings = baselineGHGEmissions ? ((baselineGHGEmissions - proposedGHG) / baselineGHGEmissions) * 100 : 0;
+
+      setText("cost_savings", cost_savings.toFixed(1) + "%");
+      setText("site_savings", site_savings.toFixed(1) + "%");
+      setText("source_savings", source_savings.toFixed(1) + "%");
+      setText("ghg_savings", ghg_savings.toFixed(1) + "%");
+    }}
+
+    // wire energySourceTable inputs
+    if (inputs && inputs.length) {{
+      inputs.forEach(inp => inp.addEventListener("input", recalculateEnergyMetrics));
+      recalculateEnergyMetrics();
+    }}
+
+    /* ==================== Energy performance metrics ==================== */
+
+    const espTable = $("energySourcePerformanceTable");
+    const energyPerformanceTable = $("energyPerformanceTable");
+
+    const energyPerformanceInputs = espTable ? espTable.querySelectorAll("input") : [];
+    const energyPerformanceRows = energyPerformanceTable ? energyPerformanceTable.querySelectorAll("tbody tr") : [];
+
+    function recalculateEnergyPerformanceMetrics() {{
+      if (!energyPerformanceRows || energyPerformanceRows.length === 0) return;
+
+      let totProposedSiteEnergy = 0;
+      let totBaselineSiteEnergy = 0;
+      let totProposedSourceEnergy = 0;
+      let totBaselineSourceEnergy = 0;
+      let totProposedCost = 0;
+      let totBaselineCost = 0;
+      let totProposedGHGEmissions = 0;
+      let totBaselineGHGEmissions = 0;
+
+      const electricitySiteSourceRatio = parseFloat(document.querySelector(".electricitySiteSourceRatio")?.value || 2.80);
+      const naturalGasSiteSourceRatio = parseFloat(document.querySelector(".naturalGasSiteSourceRatio")?.value || 1.05);
+      const electricityGHGEmissionFactor = parseFloat(document.querySelector(".electricityGhgEmissionFactor")?.value || 0.37);
+      const naturalGasGHGEmissionFactor = parseFloat(document.querySelector(".naturalGasGhgEmissionFactor")?.value || 0.53);
+
+      const rowsArr = Array.from(energyPerformanceRows);
+
+      rowsArr.forEach((row, idx) => {{
+        const getCell = (cls) => row.getElementsByClassName(cls)[0];
+        const getRowText = (cls) => parseNumber(getCell(cls)?.textContent || "0");
+
+        const setRowText = (cls, value, asPercent=false, asCurrency=false) => {{
+          const cell = getCell(cls);
+          if (!cell) return;
+          if (asPercent) {{
+            cell.textContent = value.toFixed(1) + "%";
+          }} else if (asCurrency) {{
+            cell.textContent = value.toLocaleString("en-US", {{
+              style: "currency",
+              currency: "USD",
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }});
           }} else {{
-            return source === 'elec' ? 'kWh' : source === 'gas' ? 'Therms' : 'MMBtu';
+            cell.textContent = value.toFixed(1).toLocaleString();
           }}
+        }};
+
+        if (idx === rowsArr.length - 1) {{
+          const totSiteSavings = totBaselineSiteEnergy ? (totBaselineSiteEnergy - totProposedSiteEnergy) / totBaselineSiteEnergy * 100 : 0;
+          const totSourceSavings = totBaselineSourceEnergy ? (totBaselineSourceEnergy - totProposedSourceEnergy) / totBaselineSourceEnergy * 100 : 0;
+          const totCostSavings = totBaselineCost ? (totBaselineCost - totProposedCost) / totBaselineCost * 100 : 0;
+          const totGHGSavings = totBaselineGHGEmissions ? (totBaselineGHGEmissions - totProposedGHGEmissions) / totBaselineGHGEmissions * 100 : 0;
+
+          setRowText("totSiteEnergyProposed", totProposedSiteEnergy);
+          setRowText("totSiteEnergyBaseline", totBaselineSiteEnergy);
+          setRowText("totSiteEnergySavings", totSiteSavings, true);
+
+          setRowText("totSourceEnergyProposed", totProposedSourceEnergy);
+          setRowText("totSourceEnergyBaseline", totBaselineSourceEnergy);
+          setRowText("totSourceEnergySavings", totSourceSavings, true);
+
+          setRowText("totCostProposed", totProposedCost, false, true);
+          setRowText("totCostBaseline", totBaselineCost, false, true);
+          setRowText("totCostSavings", totCostSavings, true);
+
+          setRowText("totGhgEmissionsProposed", totProposedGHGEmissions);
+          setRowText("totGhgEmissionsBaseline", totBaselineGHGEmissions);
+          setRowText("totGhgEmissionsSavings", totGHGSavings, true);
+          return;
         }}
 
-        function updateTotalColors(source) {{
-          const baselineEl = document.getElementById('baselineTotal');
-          const proposedEl = document.getElementById('proposedTotal');
+        const proposedSiteEnergy = getRowText("siteEnergyProposed");
+        const baselineSiteEnergy = getRowText("siteEnergyBaseline");
+        const proposedCost = getRowText("energyCostProposed");
+        const baselineCost = getRowText("energyCostBaseline");
 
-          if (source === 'elec') {{
-            baselineEl.style.color = 'rgb(54, 162, 235)'; // Blue
-            proposedEl.style.color = 'rgb(75, 192, 75)';  // Green
-          }} else if (source === 'gas') {{
-            baselineEl.style.color = 'rgb(255, 180, 80)'; // Orange
-            proposedEl.style.color = 'rgb(255, 100, 100)'; // Red
-          }} else if (source === 'energy') {{
-              baselineEl.style.color = 'rgb(128, 0, 64)';   // Maroon
-              proposedEl.style.color = 'rgb(0, 128, 128)';  // Teal
+        const elecP = getRowText("electricityProposed");
+        const gasP = getRowText("naturalGasProposed");
+        const elecB = getRowText("electricityBaseline");
+        const gasB = getRowText("naturalGasBaseline");
+
+        const proposedSourceEnergy = (elecP * electricitySiteSourceRatio) + (gasP * naturalGasSiteSourceRatio);
+        const baselineSourceEnergy = (elecB * electricitySiteSourceRatio) + (gasB * naturalGasSiteSourceRatio);
+        const sourceEnergySavings = baselineSourceEnergy ? ((baselineSourceEnergy - proposedSourceEnergy) / baselineSourceEnergy * 100) : 0;
+
+        setRowText("sourceEnergyProposed", proposedSourceEnergy);
+        setRowText("sourceEnergyBaseline", baselineSourceEnergy);
+        setRowText("sourceEnergySavings", sourceEnergySavings, true);
+
+        const proposedGHG = (elecP * electricityGHGEmissionFactor) + (gasP * naturalGasGHGEmissionFactor);
+        const baselineGHG = (elecB * electricityGHGEmissionFactor) + (gasB * naturalGasGHGEmissionFactor);
+        const ghgSavings = baselineGHG ? ((baselineGHG - proposedGHG) / baselineGHG * 100) : 0;
+
+        setRowText("ghgEmissionsProposed", proposedGHG);
+        setRowText("ghgEmissionsBaseline", baselineGHG);
+        setRowText("ghgEmissionsSavings", ghgSavings, true);
+
+        totProposedSiteEnergy += proposedSiteEnergy;
+        totBaselineSiteEnergy += baselineSiteEnergy;
+        totProposedSourceEnergy += proposedSourceEnergy;
+        totBaselineSourceEnergy += baselineSourceEnergy;
+        totProposedCost += proposedCost;
+        totBaselineCost += baselineCost;
+        totProposedGHGEmissions += proposedGHG;
+        totBaselineGHGEmissions += baselineGHG;
+      }});
+    }}
+
+    if (energyPerformanceInputs && energyPerformanceInputs.length) {{
+      energyPerformanceInputs.forEach(inp => inp.addEventListener("input", recalculateEnergyPerformanceMetrics));
+      recalculateEnergyPerformanceMetrics();
+    }}
+
+    /* ==================== Subtotals (fan-summary tables) ==================== */
+
+    function calculateSubtotals() {{
+      document.querySelectorAll(".fan-summary").forEach(table => {{
+        let columnSums = [];
+        let columnPrecisions = [];
+
+        table.querySelectorAll("tr").forEach(row => {{
+          if (row.classList.contains("subtotal")) {{
+            row.querySelectorAll("td").forEach((td, colIndex) => {{
+              if (colIndex === 0) return;
+              const sumVal = columnSums[colIndex] || 0;
+              const precision = columnPrecisions[colIndex] || 0;
+              td.textContent = sumVal.toLocaleString(undefined, {{
+                minimumFractionDigits: precision,
+                maximumFractionDigits: precision
+              }});
+            }});
+            columnSums = [];
+            columnPrecisions = [];
+          }} else {{
+            row.querySelectorAll("td").forEach((td, colIndex) => {{
+              let cleaned = (td.textContent || "").replace(/,/g, "").trim();
+              let val = parseFloat(cleaned);
+              if (!Number.isFinite(val)) val = 0;
+              let decimals = (cleaned.split(".")[1] || "").length;
+              columnPrecisions[colIndex] = Math.max(columnPrecisions[colIndex] || 0, decimals);
+              columnSums[colIndex] = (columnSums[colIndex] || 0) + val;
+            }});
+          }}
+        }});
+      }});
+    }}
+    calculateSubtotals();
+
+    /* ==================== Charts ==================== */
+
+    const labels = {[
+      k.replace("_", " ").title()
+      for k in rct_detailed_report.baseline_model_summary["elec_by_end_use"].keys()
+    ]};
+
+    const elecDataRaw = {{
+      consumption: {{
+        baseline: {list(rct_detailed_report.baseline_model_summary["elec_by_end_use"].values())},
+        proposed: {list(rct_detailed_report.proposed_model_summary["elec_by_end_use"].values())}
+      }},
+      eui: {{
+        baseline: {list(rct_detailed_report.baseline_model_summary["elec_by_end_use_eui"].values())},
+        proposed: {list(rct_detailed_report.proposed_model_summary["elec_by_end_use_eui"].values())}
+      }}
+    }};
+
+    const gasDataRaw = {{
+      consumption: {{
+        baseline: {list(rct_detailed_report.baseline_model_summary["gas_by_end_use"].values())},
+        proposed: {list(rct_detailed_report.proposed_model_summary["gas_by_end_use"].values())}
+      }},
+      eui: {{
+        baseline: {list(rct_detailed_report.baseline_model_summary["gas_by_end_use_eui"].values())},
+        proposed: {list(rct_detailed_report.proposed_model_summary["gas_by_end_use_eui"].values())}
+      }}
+    }};
+
+    const energyDataRaw = {{
+      consumption: {{
+        baseline: {list(rct_detailed_report.baseline_model_summary["energy_by_end_use"].values())},
+        proposed: {list(rct_detailed_report.proposed_model_summary["energy_by_end_use"].values())}
+      }},
+      eui: {{
+        baseline: {list(rct_detailed_report.baseline_model_summary["energy_by_end_use_eui"].values())},
+        proposed: {list(rct_detailed_report.proposed_model_summary["energy_by_end_use_eui"].values())}
+      }}
+    }};
+
+    // Your original palette:
+    // elec: baseline blue, proposed green
+    // gas: baseline orange, proposed red
+    // energy: baseline maroon, proposed teal
+    const COLORS = {{
+      elec: {{
+        baselineBg: "rgba(54, 162, 235, 0.7)",
+        proposedBg: "rgba(75, 192, 75, 0.7)",
+        baselineText: "rgb(54, 162, 235)",
+        proposedText: "rgb(75, 192, 75)"
+      }},
+      gas: {{
+        baselineBg: "rgba(255, 180, 80, 0.5)",
+        proposedBg: "rgba(255, 100, 100, 0.5)",
+        baselineText: "rgb(255, 180, 80)",
+        proposedText: "rgb(255, 100, 100)"
+      }},
+      energy: {{
+        baselineBg: "rgba(128, 0, 64, 0.6)",
+        proposedBg: "rgba(0, 128, 128, 0.6)",
+        baselineText: "rgb(128, 0, 64)",
+        proposedText: "rgb(0, 128, 128)"
+      }}
+    }};
+
+    function makeChart(canvasId, title, unit, palette, dataPair) {{
+      const canvas = $(canvasId);
+      if (!canvas) return null;
+
+      return new Chart(canvas, {{
+        type: "bar",
+        data: {{
+          labels,
+          datasets: [
+            {{
+              label: "Baseline",
+              data: dataPair.baseline,
+              backgroundColor: palette.baselineBg
+            }},
+            {{
+              label: "Proposed",
+              data: dataPair.proposed,
+              backgroundColor: palette.proposedBg
             }}
-        }}
-
-        function updateTotals(source, unitType) {{
-          let baseline, proposed;
-
-          if (source === 'elec') {{
-            baseline = unitType === 'eui'
-              ? {list(rct_detailed_report.baseline_model_summary["elec_by_end_use_eui"].values())}
-              : {list(rct_detailed_report.baseline_model_summary["elec_by_end_use"].values())};
-
-            proposed = unitType === 'eui'
-              ? {list(rct_detailed_report.proposed_model_summary["elec_by_end_use_eui"].values())}
-              : {list(rct_detailed_report.proposed_model_summary["elec_by_end_use"].values())};
-
-          }} else if (source === 'gas') {{
-            baseline = unitType === 'eui'
-              ? {list(rct_detailed_report.baseline_model_summary["gas_by_end_use_eui"].values())}
-              : {list(rct_detailed_report.baseline_model_summary["gas_by_end_use"].values())};
-
-            proposed = unitType === 'eui'
-              ? {list(rct_detailed_report.proposed_model_summary["gas_by_end_use_eui"].values())}
-              : {list(rct_detailed_report.proposed_model_summary["gas_by_end_use"].values())};
-
-          }} else if (source === 'energy') {{
-            baseline = unitType === 'eui'
-              ? {list(rct_detailed_report.baseline_model_summary["energy_by_end_use_eui"].values())}
-              : {list(rct_detailed_report.baseline_model_summary["energy_by_end_use"].values())};
-
-            proposed = unitType === 'eui'
-              ? {list(rct_detailed_report.proposed_model_summary["energy_by_end_use_eui"].values())}
-              : {list(rct_detailed_report.proposed_model_summary["energy_by_end_use"].values())};
+          ]
+        }},
+        options: {{
+          responsive: true,
+          interaction: {{ mode: "index", intersect: false }},
+          plugins: {{
+            title: {{ display: true, text: title }},
+            tooltip: {{
+              callbacks: {{
+                label: (ctx) => {{
+                  const v = ctx.parsed.y;
+                  const val = unitType() === "eui"
+                    ? v.toFixed(1)
+                    : Math.round(v).toLocaleString();
+                  return `${{ctx.dataset.label}}: ${{val}}`;
+                }}
+              }}
+            }}
+          }},
+          scales: {{
+            x: {{
+              stacked: false,
+              ticks: {{
+                minRotation: 60,
+                maxRotation: 60
+              }}
+            }},
+            y: {{
+              beginAtZero: true,
+              title: {{ display: true, text: unit, font: {{ size: 14 }} }},
+              ticks: {{
+                callback: (value) =>
+                  unitType() === "eui" ? value.toFixed(1) : Math.round(value)
+              }}
+            }}
           }}
-
-          const unit = getUnitLabel(source, unitType);
-          const baselineSum = sumArray(baseline).toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
-          const proposedSum = sumArray(proposed).toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
-
-          document.getElementById('baselineTotal').textContent = `Baseline Total: ${{baselineSum}} ${{unit}}`;
-          document.getElementById('proposedTotal').textContent = `Proposed Total: ${{proposedSum}} ${{unit}}`;
         }}
+      }});
+    }}
 
-        let currentChart = 'elec';
+    const elecChart = makeChart("elecByEndUse", "Electricity By End Use", "kWh", COLORS.elec, elecDataRaw.consumption);
+    const gasChart = makeChart("gasByEndUse", "Natural Gas By End Use", "Therms", COLORS.gas, gasDataRaw.consumption);
+    const energyChart = makeChart("energyByEndUse", "Total Site Energy By End Use", "kBtu", COLORS.energy, energyDataRaw.consumption);
 
-        window.toggleUnits = function() {{
-          const useEUI = document.getElementById('unitToggle').checked;
-          const unitType = useEUI ? 'eui' : 'consumption';
-          updateCharts(unitType);
-          updateTotals(currentChart, unitType);
-        }};
+    let currentChart = "elec";
 
-        window.showChart = function(type) {{
-          const elecContainer = document.getElementById('elecChartContainer');
-          const gasContainer = document.getElementById('gasChartContainer');
-          const energyContainer = document.getElementById('energyChartContainer');
-          elecContainer.style.display = type === 'elec' ? 'block' : 'none';
-          gasContainer.style.display = type === 'gas' ? 'block' : 'none';
-          energyContainer.style.display = type === 'energy' ? 'block' : 'none';
-          currentChart = type;
-          const useEUI = document.getElementById('unitToggle').checked;
-          const unitType = useEUI ? 'eui' : 'consumption';
-          updateTotals(type, unitType);
-          updateTotalColors(type);
-        }};
+    const containers = {{
+      elec: $("elecChartContainer"),
+      gas: $("gasChartContainer"),
+      energy: $("energyChartContainer")
+    }};
 
-        // Initial total update
-        updateTotals(currentChart, 'consumption');
-        updateTotalColors(currentChart);
+    function unitType() {{
+      return $("unitToggle")?.checked ? "eui" : "consumption";
+    }}
 
-    }});
+    function updateTotals() {{
+      const u = unitType();
+      let baseline = [];
+      let proposed = [];
+      let unitLabel = "";
+
+      if (currentChart === "elec") {{
+        baseline = elecDataRaw[u].baseline;
+        proposed = elecDataRaw[u].proposed;
+        unitLabel = (u === "eui") ? "kBtu/ft²" : "kWh";
+      }} else if (currentChart === "gas") {{
+        baseline = gasDataRaw[u].baseline;
+        proposed = gasDataRaw[u].proposed;
+        unitLabel = (u === "eui") ? "kBtu/ft²" : "Therms";
+      }} else {{
+        baseline = energyDataRaw[u].baseline;
+        proposed = energyDataRaw[u].proposed;
+        unitLabel = (u === "eui") ? "kBtu/ft²" : "kBtu";
+      }}
+
+      setText("baselineTotal", `Baseline Total: ${{formatTotal(sum(baseline))}} ${{unitLabel}}`);
+      setText("proposedTotal", `Proposed Total: ${{formatTotal(sum(proposed))}} ${{unitLabel}}`);
+
+      const baselineEl = $("baselineTotal");
+      const proposedEl = $("proposedTotal");
+      if (baselineEl) baselineEl.style.color = COLORS[currentChart].baselineText;
+      if (proposedEl) proposedEl.style.color = COLORS[currentChart].proposedText;
+    }}
+
+    function updateChartsForUnits() {{
+      const u = unitType();
+
+      if (elecChart) {{
+        elecChart.data.datasets[0].data = elecDataRaw[u].baseline;
+        elecChart.data.datasets[1].data = elecDataRaw[u].proposed;
+        elecChart.options.scales.y.title.text = (u === "eui") ? "kBtu/ft²" : "kWh";
+        elecChart.update();
+      }}
+
+      if (gasChart) {{
+        gasChart.data.datasets[0].data = gasDataRaw[u].baseline;
+        gasChart.data.datasets[1].data = gasDataRaw[u].proposed;
+        gasChart.options.scales.y.title.text = (u === "eui") ? "kBtu/ft²" : "Therms";
+        gasChart.update();
+      }}
+
+      if (energyChart) {{
+        energyChart.data.datasets[0].data = energyDataRaw[u].baseline;
+        energyChart.data.datasets[1].data = energyDataRaw[u].proposed;
+        energyChart.options.scales.y.title.text = (u === "eui") ? "kBtu/ft²" : "kBtu";
+        energyChart.update();
+      }}
+
+      updateTotals();
+    }}
+
+    function showChart(type) {{
+      currentChart = type;
+
+      Object.entries(containers).forEach(([k, el]) => {{
+        if (!el) return;
+        el.classList.toggle("d-none", k !== type);
+      }});
+
+      // Some browsers/containers need a tick before resize renders correctly
+      setTimeout(() => {{
+        if (type === "elec" && elecChart) elecChart.resize();
+        if (type === "gas" && gasChart) gasChart.resize();
+        if (type === "energy" && energyChart) energyChart.resize();
+      }}, 0);
+
+      updateTotals();
+    }}
+
+    /* ==================== Wire chart controls (NO inline handlers) ==================== */
+
+    const btnElec = $("btn-elec");
+    const btnGas = $("btn-gas");
+    const btnEnergy = $("btn-energy");
+    const unitToggle = $("unitToggle");
+
+    const lblElec = document.querySelector('label[for="btn-elec"]');
+    const lblGas = document.querySelector('label[for="btn-gas"]');
+    const lblEnergy = document.querySelector('label[for="btn-energy"]');
+
+    const wireShow = (radioEl, labelEl, type) => {{
+      if (radioEl) {{
+        radioEl.addEventListener("change", () => {{
+          if (radioEl.checked) showChart(type);
+        }});
+      }}
+      if (labelEl) {{
+        // Some Bootstrap btn-check setups don't reliably fire "change" in all cases;
+        // clicking label always works.
+        labelEl.addEventListener("click", () => showChart(type));
+      }}
+    }};
+
+    wireShow(btnElec, lblElec, "elec");
+    wireShow(btnGas, lblGas, "gas");
+    wireShow(btnEnergy, lblEnergy, "energy");
+
+    if (unitToggle) {{
+      unitToggle.addEventListener("change", updateChartsForUnits);
+    }}
+
+    // Init (default checked is elec)
+    showChart("elec");
+    updateChartsForUnits();
+
+  }});
+}})();
 </script>
-    """
+"""
     )

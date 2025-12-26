@@ -5,6 +5,10 @@ path_to_bpf_data = os.path.join(
     os.path.dirname(__file__),
     "BPFs.json",
 )
+path_to_lpd_data = os.path.join(
+    os.path.dirname(__file__),
+    "LPDs.json",
+)
 path_to_ureg = os.path.join(
     os.path.dirname(__file__),
     "unit_registry.txt",

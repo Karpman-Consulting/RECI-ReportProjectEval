@@ -4,7 +4,6 @@ from rctreportviewer.html.envelope_summary import write_envelope_summary
 from rctreportviewer.html.evaluations import write_evaluations_section
 from rctreportviewer.html.hvac_summary import write_hvac_summary
 from rctreportviewer.html.interior_loads_summary import write_interior_loads_summary
-from rctreportviewer.html.lighting_summary import write_interior_lighting_summary
 from rctreportviewer.html.results_summary import write_results_summary
 from rctreportviewer.html.swh_summary import write_swh_summary
 from rctreportviewer.html.js import write_javascript
@@ -16,68 +15,80 @@ def write_html_file(rct_detailed_report):
     """
 
     with open(rct_detailed_report.output_file_path, "w", encoding="utf-8") as file:
+
+        # ---------- HEAD ----------
         file.write(
-            """
-        <!DOCTYPE HTML>
-        <html style="scrollbar-gutter: stable;">
-        <head>
-            <meta charset="UTF-8">
-            <title>SIMcheck Detailed Evaluation Report</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <style>
-                td.rule-id { white-space: nowrap; }
-                td.outcome-summary { white-space: pre-wrap; }
-                .sticky-top-2 {
-                    top: 37px;
-                    z-index: 1029;
-                }
-            </style>
-        </head>
-        """
+            """<!DOCTYPE html>
+<html lang="en" style="scrollbar-gutter: stable;">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMcheck Detailed Evaluation Report</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .vertical-header {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+        }
+        td.rule-id { white-space: nowrap; }
+        td.outcome-summary { white-space: pre-wrap; }
+
+        td {
+            font-size: 0.95rem;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+"""
         )
 
+        # ---------- BODY / CONTAINER ----------
         file.write(
             f"""
-        <body class="mt-2 ms-2">
-            <div class="d-flex flex-nowrap">
+<body>
+    <div class="container-xl py-3">
 
-                <div class="flex-grow-1">
-                    <h2 class="text-center mb-4">{rct_detailed_report.evaluation_data["ruleset"]} Model Report</h2>
-                    <div class="mb-3">
-                        <p><strong>Generated on:</strong> {rct_detailed_report.evaluation_data["date_run"]}</p>
-                    </div>
-        """
+        <header class="mb-4">
+            <h2 class="text-center">
+                {rct_detailed_report.evaluation_data["ruleset"]} Model Report
+            </h2>
+            <p class="text-center text-muted mb-0">
+                Generated on: {rct_detailed_report.evaluation_data["date_run"]}
+            </p>
+        </header>
+"""
         )
 
+        # ---------- SECTIONS ----------
         write_component_summary(file, rct_detailed_report)
-
         write_compliance_calculations(file, rct_detailed_report)
-
         write_results_summary(file, rct_detailed_report)
-
         write_envelope_summary(file, rct_detailed_report)
-
-        write_interior_lighting_summary(file, rct_detailed_report)
-
-        write_swh_summary(file, rct_detailed_report)
-
         write_interior_loads_summary(file, rct_detailed_report)
-
         write_hvac_summary(file, rct_detailed_report)
-
+        write_swh_summary(file, rct_detailed_report)
         write_evaluations_section(file, rct_detailed_report)
 
+        # ---------- FOOTER / UI ----------
         file.write(
             """
-                </div>
-            </div>
-            <div class="position-fixed bottom-0 end-0 mb-2 me-2" style="z-index: 1050;">
-                <button id="back-to-top" class="btn btn-primary" onclick="scrollToTop()" style="opacity: 0; visibility: hidden;"> ↑ </button>
-            </div>
-        </body>
-        """
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 mb-3 me-3" style="z-index: 1050;">
+        <button id="back-to-top"
+                class="btn btn-primary"
+                onclick="scrollToTop()"
+                style="opacity: 0; visibility: hidden;">
+            ↑
+        </button>
+    </div>
+</body>
+"""
         )
 
         write_javascript(file, rct_detailed_report)
