@@ -10,6 +10,7 @@ from rctreportviewer.html.write_model_html import (
 from rctreportviewer.html.write_html import write_html_file
 from rctreportviewer.constants import (
     path_to_bpf_data,
+    path_to_lpd_data,
     model_type_disp_map,
     outcome_disp_map,
 )
@@ -82,6 +83,7 @@ class SummaryReportGenerator:
         self.evaluation_data = self.load_file(self.detailed_evaluation_report_file_path)
         self.rpd_data = [self.load_file(file_path) for file_path in self.rpd_file_paths]
         self.bpf_data = self.load_file(path_to_bpf_data)
+        self.lpd_data = self.load_file(path_to_lpd_data)
 
     def load_evaluation_file(self):
         """
@@ -95,6 +97,7 @@ class SummaryReportGenerator:
         """
         self.rpd_data = [self.load_file(file_path) for file_path in self.rpd_file_paths]
         self.bpf_data = self.load_file(path_to_bpf_data)
+        self.lpd_data = self.load_file(path_to_lpd_data)
 
     def extract_evaluation_data(self):
         """

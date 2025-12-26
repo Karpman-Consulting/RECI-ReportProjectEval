@@ -56,7 +56,10 @@ def write_interior_loads_summary(file, rct_detailed_report):
         eqp_density_b = baseline["total_miscellaneous_equipment_power_by_space_type"].get(space_type, 0) / (area or math.inf)
         eqp_density_p = proposed["total_miscellaneous_equipment_power_by_space_type"].get(space_type, 0) / (area or math.inf)
 
-        lpd_allowed_b = rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(space_type, 0) / (area or math.inf)
+        lpd_allowed_b = (
+            rct_detailed_report.baseline_lighting_power_allowance_by_space_type
+            .get(space_type, 0)
+        )
         lpd_b = baseline["total_lighting_power_by_space_type"].get(space_type, 0) / (area or math.inf)
         lpd_p = proposed["total_lighting_power_by_space_type"].get(space_type, 0) / (area or math.inf)
 

@@ -1,5 +1,3 @@
-import re
-
 from rctreportviewer.constants import bpf_area_type_map
 from rctreportviewer.units import convert_unit
 
@@ -71,23 +69,28 @@ def perform_analytic_calculations(rct_report_viewer):
                 metric
             ] = compute_area_weighted_bpf_for_metric(bpf_data)
 
-    # Calculate the LPD allowance based on evaluation data + RPD data combined
-    for space_id in rct_report_viewer.space_areas:
+    # === BASELINE ALLOWED LPD (JSON-BASED) ===
+    # TODO: Make LPD table selection dynamic by ruleset (currently hardcoded to 90.1-2019)
+
+    lpd_table = rct_report_viewer.lpd_data.get("90.1-2019 Table G3.7", {})
+
+    rct_report_viewer.baseline_lighting_power_allowance_by_space_type = {}
+    rct_report_viewer.baseline_total_lighting_power_allowance = 0.0
+
+    for lighting_space_type, area_m2 in (
+            rct_report_viewer.baseline_model_summary["total_floor_area_by_space_type"].items()
+    ):
+        allowed_lpd = lpd_table.get(lighting_space_type, 0.0)
+
+        # store LPD directly (W/ft²)
+        rct_report_viewer.baseline_lighting_power_allowance_by_space_type[
+            lighting_space_type
+        ] = allowed_lpd
+
+        # total is area-weighted LPD (still useful for the TOTAL row)
         rct_report_viewer.baseline_total_lighting_power_allowance += (
-            rct_report_viewer.space_lpd_allowances.get(space_id, 0)
-            * convert_unit(rct_report_viewer.space_areas[space_id], "m2", "ft2")
+                allowed_lpd * convert_unit(area_m2, from_unit="m2", to_unit="ft2")
         )
-        space_type = rct_report_viewer.baseline_space_types.get(space_id)
-        if space_type:
-            rct_report_viewer.baseline_lighting_power_allowance_by_space_type[
-                space_type
-            ] = rct_report_viewer.baseline_lighting_power_allowance_by_space_type.get(
-                space_type, 0
-            ) + rct_report_viewer.space_lpd_allowances.get(
-                space_id, 0
-            ) * convert_unit(
-                rct_report_viewer.space_areas[space_id], "m2", "ft2"
-            )
 
     compute_u_factors(rct_report_viewer.baseline_model_summary)
     compute_u_factors(rct_report_viewer.proposed_model_summary)
