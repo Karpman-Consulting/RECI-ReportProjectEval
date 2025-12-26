@@ -9,11 +9,13 @@ def write_hvac_summary(file, rct_detailed_report):
     b = rct_detailed_report.baseline_model_summary
     p = rct_detailed_report.proposed_model_summary
 
+    # ==========================================================
+    # HVAC SUMMARY (COLLAPSIBLE)
+    # ==========================================================
     file.write("""
 <section class="mb-4">
   <div class="card shadow-sm">
 
-    <!-- CLICKABLE HEADER -->
     <div class="card-header bg-light d-flex align-items-center"
          role="button"
          data-bs-toggle="collapse"
@@ -42,23 +44,14 @@ def write_hvac_summary(file, rct_detailed_report):
   <th colspan="4">Proposed</th>
 </tr>
 <tr>
-  <th>Chillers</th>
-  <th>Capacity (ton)</th>
-  <th>CT GPM</th>
-  <th>CT HP</th>
-  <th>Chillers</th>
-  <th>Capacity (ton)</th>
-  <th>CT GPM</th>
-  <th>CT HP</th>
+  <th>Chillers</th><th>Capacity (ton)</th><th>CT GPM</th><th>CT HP</th>
+  <th>Chillers</th><th>Capacity (ton)</th><th>CT GPM</th><th>CT HP</th>
 </tr>
 </thead>
 <tbody class="text-center small">
 """)
 
-        if _has_any_positive(
-            b.get("electric_chiller_count", 0),
-            p.get("electric_chiller_count", 0),
-        ):
+        if _has_any_positive(b.get("electric_chiller_count", 0), p.get("electric_chiller_count", 0)):
             file.write(f"""
 <tr>
   <td>Electricity</td>
@@ -73,10 +66,7 @@ def write_hvac_summary(file, rct_detailed_report):
 </tr>
 """)
 
-        if _has_any_positive(
-            p.get("fossil_fuel_chiller_count", 0),
-            p.get("fossil_fuel_chiller_plant_capacity", 0),
-        ):
+        if _has_any_positive(p.get("fossil_fuel_chiller_count", 0)):
             file.write(f"""
 <tr>
   <td>Fossil Fuel</td>
@@ -109,7 +99,7 @@ def write_hvac_summary(file, rct_detailed_report):
     # ==========================================================
     if b["boiler_count"] + p["boiler_count"] > 0:
         file.write("""
-<h4>Heating Plant Summary</h4>
+<h5>Heating Plant Summary</h5>
 <div class="table-responsive">
 <table class="table table-sm">
 <thead class="table-light text-center">
@@ -119,19 +109,14 @@ def write_hvac_summary(file, rct_detailed_report):
   <th colspan="2">Proposed</th>
 </tr>
 <tr>
-  <th>Boilers</th>
-  <th>Capacity (kBtu/hr)</th>
-  <th>Boilers</th>
-  <th>Capacity (kBtu/hr)</th>
+  <th>Boilers</th><th>Capacity (kBtu/hr)</th>
+  <th>Boilers</th><th>Capacity (kBtu/hr)</th>
 </tr>
 </thead>
 <tbody class="text-center small">
 """)
 
-        if _has_any_positive(
-            p.get("electric_boiler_count", 0),
-            p.get("electric_boiler_plant_capacity", 0),
-        ):
+        if _has_any_positive(p.get("electric_boiler_count", 0)):
             file.write(f"""
 <tr>
   <td>Electricity</td>
@@ -141,10 +126,7 @@ def write_hvac_summary(file, rct_detailed_report):
 </tr>
 """)
 
-        if _has_any_positive(
-            b.get("fossil_fuel_boiler_count", 0),
-            p.get("fossil_fuel_boiler_count", 0),
-        ):
+        if _has_any_positive(b.get("fossil_fuel_boiler_count", 0), p.get("fossil_fuel_boiler_count", 0)):
             file.write(f"""
 <tr>
   <td>Fossil Fuel</td>
@@ -162,6 +144,66 @@ def write_hvac_summary(file, rct_detailed_report):
   <td>{round(b.get("fossil_fuel_boiler_plant_capacity", 0),1):,}</td>
   <td>{round(p.get("boiler_count", 0)):,}</td>
   <td>{round(p.get("electric_boiler_plant_capacity", 0) + p.get("fossil_fuel_boiler_plant_capacity", 0),1):,}</td>
+</tr>
+</tbody>
+</table>
+</div>
+""")
+
+    # ==========================================================
+    # Air-Side HVAC Capacity Summary
+    # ==========================================================
+    file.write("""
+<h5>Air-Side HVAC Capacity Summary</h5>
+<div class="table-responsive">
+<table class="table table-sm">
+<thead class="table-light text-center">
+<tr>
+  <th rowspan="2">Fuel Type</th>
+  <th colspan="2">Baseline</th>
+  <th colspan="2">Proposed</th>
+</tr>
+<tr>
+  <th>Heating (kBtu/hr)</th><th>Cooling (kBtu/hr)</th>
+  <th>Heating (kBtu/hr)</th><th>Cooling (kBtu/hr)</th>
+</tr>
+</thead>
+<tbody class="text-center small">
+""")
+
+    fuel_rows = [
+        "Electricity",
+        "Fossil Fuel",
+        "On-site Boiler Plant",
+        "Purchased Heat",
+        "On-site Chiller Plant",
+        "Purchased CHW",
+    ]
+
+    for fuel in fuel_rows:
+        bh = b["heating_capacity_by_fuel_type"].get(fuel, 0)
+        bc = b["cooling_capacity_by_fuel_type"].get(fuel, 0)
+        ph = p["heating_capacity_by_fuel_type"].get(fuel, 0)
+        pc = p["cooling_capacity_by_fuel_type"].get(fuel, 0)
+
+        if _has_any_positive(bh, bc, ph, pc):
+            file.write(f"""
+<tr>
+  <td>{fuel}</td>
+  <td>{round(bh):,}</td>
+  <td>{round(bc):,}</td>
+  <td>{round(ph):,}</td>
+  <td>{round(pc):,}</td>
+</tr>
+""")
+
+    file.write(f"""
+<tr class="fw-bold border-top">
+  <td>Total</td>
+  <td>{round(b["heating_capacity_by_fuel_type"].get("Total", 0)):,}</td>
+  <td>{round(b["cooling_capacity_by_fuel_type"].get("Total", 0)):,}</td>
+  <td>{round(p["heating_capacity_by_fuel_type"].get("Total", 0)):,}</td>
+  <td>{round(p["cooling_capacity_by_fuel_type"].get("Total", 0)):,}</td>
 </tr>
 </tbody>
 </table>
@@ -205,6 +247,7 @@ def write_hvac_summary(file, rct_detailed_report):
 """)
 
     for s in b["hvac_system_summaries"]:
+
         def eff(vals, types):
             if not vals or not types:
                 return "-", "-"
