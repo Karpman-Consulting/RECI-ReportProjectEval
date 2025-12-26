@@ -25,19 +25,19 @@ def write_results_summary(file, rct_detailed_report):
                     <div class="col-md-8 text-center">
                         <div class="btn-group" role="group" aria-label="Chart toggle">
                             <input type="radio" class="btn-check" name="chartOptions" id="btn-elec" autocomplete="off" checked>
-                            <label class="btn btn-outline-primary" for="btn-elec" onclick="showChart('elec')">Electricity</label>
+                            <label class="btn btn-outline-primary" for="btn-elec">Electricity</label>
 
                             <input type="radio" class="btn-check" name="chartOptions" id="btn-gas" autocomplete="off">
-                            <label class="btn btn-outline-danger" for="btn-gas" onclick="showChart('gas')">Gas</label>
+                            <label class="btn btn-outline-danger" for="btn-gas">Gas</label>
 
                             <input type="radio" class="btn-check" name="chartOptions" id="btn-energy" autocomplete="off">
-                            <label class="btn btn-outline-success" for="btn-energy" onclick="showChart('energy')">Total</label>
+                            <label class="btn btn-outline-success" for="btn-energy">Total</label>
                         </div>
                     </div>
 
                     <div class="col-md-4 text-md-end text-center mt-2 mt-md-0">
                         <div class="form-check form-switch d-inline-block">
-                            <input class="form-check-input" type="checkbox" id="unitToggle" onchange="toggleUnits()">
+                            <input class="form-check-input" type="checkbox" id="unitToggle">
                             <label class="form-check-label" for="unitToggle">
                                 Show EUI (kBtu/ft²)
                             </label>
