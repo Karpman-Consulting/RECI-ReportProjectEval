@@ -34,7 +34,7 @@ def write_hvac_summary(file, rct_detailed_report):
     # ==========================================================
     if b["chiller_count"] + p["chiller_count"] > 0:
         file.write("""
-<h4>Cooling Plant Summary</h4>
+<h5>Cooling Plant Summary</h5>
 <div class="table-responsive">
 <table class="table table-sm">
 <thead class="table-light text-center">
