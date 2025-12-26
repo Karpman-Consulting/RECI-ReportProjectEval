@@ -1,7 +1,5 @@
 import re
 
-from rctreportviewer.constants import outcome_disp_map
-
 
 section_titles_with_colors = {
     1: ("Design Model and Compliance Calculations", "#D8BFD8"),

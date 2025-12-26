@@ -1,7 +1,7 @@
 def write_component_summary(file, rct_detailed_report):
     # ----------------------- HVAC System Type Summary Tooltip -----------------------
     tooltip_lines = []
-    total_qty = 0
+    # total_qty = 0
 
     # for system_type, systems in rct_detailed_report.hvac_system_types_b.items():
     #     qty = len(systems)
@@ -12,44 +12,124 @@ def write_component_summary(file, rct_detailed_report):
 
     tooltip_html = "".join(tooltip_lines)
 
+    b = rct_detailed_report.baseline_model_summary
+    p = rct_detailed_report.proposed_model_summary
+
     file.write(
         f"""
-        <div class="mb-3 me-4">
-            <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-model-component-summary" aria-expanded="false">
+<section class="mb-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <button class="btn btn-info"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapse-model-component-summary"
+                    aria-expanded="false">
                 Model Component Summary
             </button>
+        </div>
 
-            <div id="collapse-model-component-summary" class="accordion-collapse collapse">
-                <div class="accordion-body">
-                    <table class="table table-sm table-borderless" style="width: 400px;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid black;"><th class="col-4 text-end"></th><th class="col-4 text-center">Baseline</th><th class="col-4 text-center">Proposed</th></tr>
+        <div id="collapse-model-component-summary" class="collapse">
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="border-bottom">
+                            <tr>
+                                <th></th>
+                                <th class="text-center">Baseline</th>
+                                <th class="text-center">Proposed</th>
+                            </tr>
                         </thead>
-                        <tbody>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["building_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["building_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Total Floor Area</td><td class="col-4 text-center">{round(rct_detailed_report.baseline_model_summary['total_floor_area']):,}</td><td class="col-4 text-center">{round(rct_detailed_report.proposed_model_summary["total_floor_area"]):,}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Building Area Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["building_segment_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["building_segment_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1">
-                                <td class="col-3 text-end">System Qty</td>
-                                <td class="col-4 text-center">
-                                    <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="{tooltip_html}" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">
-                                        {rct_detailed_report.baseline_model_summary["system_count"]}
+                        <tbody class="small">
+
+                            <tr>
+                                <td class="text-end">Building Qty</td>
+                                <td class="text-center">{b["building_count"]}</td>
+                                <td class="text-center">{p["building_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Total Floor Area</td>
+                                <td class="text-center">{round(b["total_floor_area"]):,}</td>
+                                <td class="text-center">{round(p["total_floor_area"]):,}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Building Area Qty</td>
+                                <td class="text-center">{b["building_segment_count"]}</td>
+                                <td class="text-center">{p["building_segment_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">System Qty</td>
+                                <td class="text-center">
+                                    <span class="d-inline-block"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-html="true"
+                                          title="{tooltip_html}"
+                                          style="text-decoration: underline dotted; cursor: help;">
+                                        {b["system_count"]}
                                     </span>
                                 </td>
-                                <td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["system_count"]}</td>
+                                <td class="text-center">{p["system_count"]}</td>
                             </tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Zone Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["zone_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["zone_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Space Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["space_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["space_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Fluid Loops</td><td class="col-4 text-center">{", ".join(s.title() for s in rct_detailed_report.baseline_model_summary["fluid_loop_types"])}</td><td class="col-4 text-center">{", ".join(s.title() for s in rct_detailed_report.proposed_model_summary["fluid_loop_types"])}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Pump Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["pump_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["pump_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Boiler Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["boiler_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["boiler_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Chiller Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["chiller_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["chiller_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">Heat Rejection Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["heat_rejection_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["heat_rejection_count"]}</td></tr>
-                            <tr style="font-size: 12px;" class="lh-1"><td class="col-3 text-end">SWH Heater Qty</td><td class="col-4 text-center">{rct_detailed_report.baseline_model_summary["water_heater_count"]}</td><td class="col-4 text-center">{rct_detailed_report.proposed_model_summary["water_heater_count"]}</td></tr>
+
+                            <tr>
+                                <td class="text-end">Zone Qty</td>
+                                <td class="text-center">{b["zone_count"]}</td>
+                                <td class="text-center">{p["zone_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Space Qty</td>
+                                <td class="text-center">{b["space_count"]}</td>
+                                <td class="text-center">{p["space_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Fluid Loops</td>
+                                <td class="text-center">{", ".join(s.title() for s in b["fluid_loop_types"])}</td>
+                                <td class="text-center">{", ".join(s.title() for s in p["fluid_loop_types"])}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Pump Qty</td>
+                                <td class="text-center">{b["pump_count"]}</td>
+                                <td class="text-center">{p["pump_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Boiler Qty</td>
+                                <td class="text-center">{b["boiler_count"]}</td>
+                                <td class="text-center">{p["boiler_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Chiller Qty</td>
+                                <td class="text-center">{b["chiller_count"]}</td>
+                                <td class="text-center">{p["chiller_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">Heat Rejection Qty</td>
+                                <td class="text-center">{b["heat_rejection_count"]}</td>
+                                <td class="text-center">{p["heat_rejection_count"]}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-end">SWH Heater Qty</td>
+                                <td class="text-center">{b["water_heater_count"]}</td>
+                                <td class="text-center">{p["water_heater_count"]}</td>
+                            </tr>
+
                         </tbody>
                     </table>
                 </div>
+
             </div>
         </div>
-    """
+    </div>
+</section>
+"""
     )
