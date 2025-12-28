@@ -83,7 +83,7 @@ def write_component_summary(file, rct_detailed_report):
   <div class="card shadow-sm">
 
     <!-- CLICKABLE HEADER -->
-    <div class="card-header bg-light d-flex align-items-center"
+    <div class="card-header bg-light d-flex align-items-center sticky-top"
          role="button"
          data-bs-toggle="collapse"
          data-bs-target="#collapse-model-component-summary"
