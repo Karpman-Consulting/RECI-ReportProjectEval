@@ -90,7 +90,7 @@ def write_hvac_summary(file, rct_detailed_report):
         file.write(
             f"""
 <tr class="fw-bold border-top">
-  <td>Total</td>
+  <td class="border-start">Total</td>
   <td class="border-start">{round(b.get("electric_chiller_count", 0)):,}</td>
   <td class="border-start">{round(b.get("electric_chiller_plant_capacity", 0),1):,}</td>
   <td class="border-start">{round(b.get("cooling_tower_gpm", 0),1):,}</td>
