@@ -27,18 +27,18 @@ def write_envelope_summary(file, rct_detailed_report):
                 <div class="table-responsive">
                     <table class="table table-sm align-middle">
                         <thead class="table-light text-center border-bottom">
-                            <tr>
-                                <th colspan="2"></th>
+                            <tr class="border-top">
+                                <th colspan="2" class="border-start"></th>
                                 <th colspan="6" class="border-start">Baseline</th>
-                                <th colspan="6" class="border-start">Proposed</th>
+                                <th colspan="6" class="border-start border-end">Proposed</th>
                             </tr>
                             <tr>
-                                <th rowspan="2" style="vertical-align: top;">Building Area</th>
-                                <th rowspan="2" style="vertical-align: top;">Surface Type</th>
+                                <th rowspan="2" class="border-start" style="vertical-align: top;">Building Area</th>
+                                <th rowspan="2" class="border-start" style="vertical-align: top;">Surface Type</th>
                                 <th colspan="3" class="border-start">Opaque Surface</th>
                                 <th colspan="3" class="border-start">Fenestration</th>
                                 <th colspan="3" class="border-start">Opaque Surface</th>
-                                <th colspan="3" class="border-start">Fenestration</th>
+                                <th colspan="3" class="border-start border-end">Fenestration</th>
                             </tr>
                             <tr>
                                 <th class="border-start">Area (ft²)</th>
@@ -52,7 +52,7 @@ def write_envelope_summary(file, rct_detailed_report):
                                 <th class="border-start">U-Factor</th>
                                 <th class="border-start">Area (ft²)</th>
                                 <th class="border-start">%</th>
-                                <th class="border-start">U-Factor</th>
+                                <th class="border-start border-end">U-Factor</th>
                             </tr>
                         </thead>
                         <tbody class="small text-center">
@@ -66,7 +66,7 @@ def write_envelope_summary(file, rct_detailed_report):
             file.write(
                 f"""
               <tr class="table-secondary fw-semibold">
-                <td colspan="14" class="text-start">{segment}</td>
+                <td colspan="14" class="border-start border-end text-start">{segment}</td>
               </tr>
 """
             )
@@ -82,7 +82,7 @@ def write_envelope_summary(file, rct_detailed_report):
             file.write(
                 f"""
               <tr>
-                <td></td>
+                <td class="border-start"></td>
                 <td class="text-start">Roof</td>
 
                 <td class="border-start">{round(b_roof - b_sky):,}</td>
@@ -99,7 +99,7 @@ def write_envelope_summary(file, rct_detailed_report):
 
                 <td class="border-start">{round(p_sky):,}</td>
                 <td class="border-start text-muted">{round(p_sky / p_roof * 100, 1) if p_roof else 0}</td>
-                <td class="border-start">{round(p["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                <td class="border-start border-end">{round(p["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
               </tr>
 """
             )
@@ -114,7 +114,7 @@ def write_envelope_summary(file, rct_detailed_report):
             file.write(
                 f"""
               <tr>
-                <td></td>
+                <td class="border-start"></td>
                 <td class="text-start">Ext. Wall</td>
 
                 <td class="border-start">{round(b_wall - b_win):,}</td>
@@ -131,7 +131,7 @@ def write_envelope_summary(file, rct_detailed_report):
 
                 <td class="border-start">{round(p_win):,}</td>
                 <td class="border-start text-muted">{round(p_win / p_wall * 100, 1) if p_wall else 0}</td>
-                <td class="border-start">{round(p["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+                <td class="border-start border-end">{round(p["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
               </tr>
 """
             )

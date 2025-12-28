@@ -44,11 +44,11 @@ def write_hvac_summary(file, rct_detailed_report):
 <tr class="border-top">
   <th rowspan="2" class="border-start">Fuel Type</th>
   <th colspan="4" class="border-start">Baseline</th>
-  <th colspan="4" class="border-start">Proposed</th>
+  <th colspan="4" class="border-start border-end">Proposed</th>
 </tr>
 <tr>
   <th class="border-start">Chillers</th><th class="border-start">Capacity (ton)</th><th class="border-start">CT GPM</th><th class="border-start">CT HP</th>
-  <th class="border-start">Chillers</th><th class="border-start">Capacity (ton)</th><th class="border-start">CT GPM</th><th class="border-start">CT HP</th>
+  <th class="border-start">Chillers</th><th class="border-start">Capacity (ton)</th><th class="border-start">CT GPM</th><th class="border-start border-end">CT HP</th>
 </tr>
 </thead>
 <tbody class="text-center small">
@@ -61,15 +61,15 @@ def write_hvac_summary(file, rct_detailed_report):
             file.write(
                 f"""
 <tr>
-  <td>Electricity</td>
-  <td>{round(b.get("electric_chiller_count", 0)):,}</td>
-  <td>{round(b.get("electric_chiller_plant_capacity", 0),1):,}</td>
-  <td>{round(b.get("cooling_tower_gpm", 0),1):,}</td>
-  <td>{round(b.get("cooling_tower_hp", 0),1):,}</td>
-  <td>{round(p.get("electric_chiller_count", 0)):,}</td>
-  <td>{round(p.get("electric_chiller_plant_capacity", 0),1):,}</td>
-  <td>{round(p.get("cooling_tower_gpm", 0),1):,}</td>
-  <td>{round(p.get("cooling_tower_hp", 0),1):,}</td>
+  <td class="border-start">Electricity</td>
+  <td class="border-start">{round(b.get("electric_chiller_count", 0)):,}</td>
+  <td class="border-start">{round(b.get("electric_chiller_plant_capacity", 0),1):,}</td>
+  <td class="border-start">{round(b.get("cooling_tower_gpm", 0),1):,}</td>
+  <td class="border-start">{round(b.get("cooling_tower_hp", 0),1):,}</td>
+  <td class="border-start">{round(p.get("electric_chiller_count", 0)):,}</td>
+  <td class="border-start">{round(p.get("electric_chiller_plant_capacity", 0),1):,}</td>
+  <td class="border-start">{round(p.get("cooling_tower_gpm", 0),1):,}</td>
+  <td class="border-start border-end">{round(p.get("cooling_tower_hp", 0),1):,}</td>
 </tr>
 """
             )
@@ -78,11 +78,11 @@ def write_hvac_summary(file, rct_detailed_report):
             file.write(
                 f"""
 <tr>
-  <td>Fossil Fuel</td>
-  <td colspan="4">—</td>
-  <td>{round(p.get("fossil_fuel_chiller_count", 0)):,}</td>
-  <td>{round(p.get("fossil_fuel_chiller_plant_capacity", 0),1):,}</td>
-  <td colspan="2">—</td>
+  <td class="border-start">Fossil Fuel</td>
+  <td class="border-start" colspan="4">—</td>
+  <td class="border-start">{round(p.get("fossil_fuel_chiller_count", 0)):,}</td>
+  <td class="border-start">{round(p.get("fossil_fuel_chiller_plant_capacity", 0),1):,}</td>
+  <td class="border-start border-end" colspan="2">—</td>
 </tr>
 """
             )
@@ -91,14 +91,14 @@ def write_hvac_summary(file, rct_detailed_report):
             f"""
 <tr class="fw-bold border-top">
   <td>Total</td>
-  <td>{round(b.get("electric_chiller_count", 0)):,}</td>
-  <td>{round(b.get("electric_chiller_plant_capacity", 0),1):,}</td>
-  <td>{round(b.get("cooling_tower_gpm", 0),1):,}</td>
-  <td>{round(b.get("cooling_tower_hp", 0),1):,}</td>
-  <td>{round(p.get("chiller_count", 0)):,}</td>
-  <td>{round(p.get("electric_chiller_plant_capacity", 0) + p.get("fossil_fuel_chiller_plant_capacity", 0),1):,}</td>
-  <td>{round(p.get("cooling_tower_gpm", 0),1):,}</td>
-  <td>{round(p.get("cooling_tower_hp", 0),1):,}</td>
+  <td class="border-start">{round(b.get("electric_chiller_count", 0)):,}</td>
+  <td class="border-start">{round(b.get("electric_chiller_plant_capacity", 0),1):,}</td>
+  <td class="border-start">{round(b.get("cooling_tower_gpm", 0),1):,}</td>
+  <td class="border-start">{round(b.get("cooling_tower_hp", 0),1):,}</td>
+  <td class="border-start">{round(p.get("chiller_count", 0)):,}</td>
+  <td class="border-start">{round(p.get("electric_chiller_plant_capacity", 0) + p.get("fossil_fuel_chiller_plant_capacity", 0),1):,}</td>
+  <td class="border-start">{round(p.get("cooling_tower_gpm", 0),1):,}</td>
+  <td class="border-start border-end">{round(p.get("cooling_tower_hp", 0),1):,}</td>
 </tr>
 </tbody>
 </table>
