@@ -15,7 +15,6 @@ def write_html_file(rct_detailed_report):
     """
 
     with open(rct_detailed_report.output_file_path, "w", encoding="utf-8") as file:
-
         # ---------- HEAD ----------
         file.write(
             """<!DOCTYPE html>

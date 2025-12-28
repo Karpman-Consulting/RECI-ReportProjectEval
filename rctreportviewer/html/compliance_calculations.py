@@ -109,16 +109,21 @@ def write_compliance_calculations(file, rct_detailed_report):
 </tr>
 """
 
-    file.write(row(
-        "Proposed building performance before site-generated renewable energy",
-        "PBP<sub>nre</sub>",
-        "pbp_nre_cost", "pbp_nre_site_energy",
-        "pbp_nre_source_energy", "pbp_nre_ghg",
-        f"${round(output.get('total_proposed_building_energy_cost_excluding_renewable_energy',0)):,}",
-        round(proposed_compliance.get("pbp_nre",{}).get("site_energy",0))
-    ))
+    file.write(
+        row(
+            "Proposed building performance before site-generated renewable energy",
+            "PBP<sub>nre</sub>",
+            "pbp_nre_cost",
+            "pbp_nre_site_energy",
+            "pbp_nre_source_energy",
+            "pbp_nre_ghg",
+            f"${round(output.get('total_proposed_building_energy_cost_excluding_renewable_energy',0)):,}",
+            round(proposed_compliance.get("pbp_nre", {}).get("site_energy", 0)),
+        )
+    )
 
-    file.write("""
+    file.write(
+        """
 <tr>
   <td class="text-start">Proposed design on-site renewable savings</td>
   <td>-</td>
@@ -127,45 +132,63 @@ def write_compliance_calculations(file, rct_detailed_report):
   <td id="proposed_source_energy_savings">0</td>
   <td id="proposed_ghg_savings">0</td>
 </tr>
-""")
+"""
+    )
 
-    file.write(row(
-        "Proposed building performance including on-site renewable energy",
-        "PBP",
-        "pbp_cost", "pbp_site_energy",
-        "pbp_source_energy", "pbp_ghg",
-        f"${round(output.get('total_proposed_building_energy_cost_including_renewable_energy',0)):,}",
-        "-"
-    ))
+    file.write(
+        row(
+            "Proposed building performance including on-site renewable energy",
+            "PBP",
+            "pbp_cost",
+            "pbp_site_energy",
+            "pbp_source_energy",
+            "pbp_ghg",
+            f"${round(output.get('total_proposed_building_energy_cost_including_renewable_energy',0)):,}",
+            "-",
+        )
+    )
 
-    file.write(row(
-        "Baseline building unregulated energy",
-        "BBUEC",
-        "bbuec_cost", "bbuec_site_energy",
-        "bbuec_source_energy", "bbuec_ghg",
-        f"${round(output.get('baseline_building_unregulated_energy_cost',0)):,}",
-        round(baseline_compliance.get("bbuec",{}).get("site_energy",0))
-    ))
+    file.write(
+        row(
+            "Baseline building unregulated energy",
+            "BBUEC",
+            "bbuec_cost",
+            "bbuec_site_energy",
+            "bbuec_source_energy",
+            "bbuec_ghg",
+            f"${round(output.get('baseline_building_unregulated_energy_cost',0)):,}",
+            round(baseline_compliance.get("bbuec", {}).get("site_energy", 0)),
+        )
+    )
 
-    file.write(row(
-        "Baseline building regulated energy",
-        "BBREC",
-        "bbrec_cost", "bbrec_site_energy",
-        "bbrec_source_energy", "bbrec_ghg",
-        f"${round(output.get('baseline_building_regulated_energy_cost',0)):,}",
-        round(baseline_compliance.get("bbrec",{}).get("site_energy",0))
-    ))
+    file.write(
+        row(
+            "Baseline building regulated energy",
+            "BBREC",
+            "bbrec_cost",
+            "bbrec_site_energy",
+            "bbrec_source_energy",
+            "bbrec_ghg",
+            f"${round(output.get('baseline_building_regulated_energy_cost',0)):,}",
+            round(baseline_compliance.get("bbrec", {}).get("site_energy", 0)),
+        )
+    )
 
-    file.write(row(
-        "Baseline building performance",
-        "BBP",
-        "bbp_cost", "bbp_site_energy",
-        "bbp_source_energy", "bbp_ghg",
-        f"${round(output.get('baseline_building_performance_energy_cost',0)):,}",
-        round(baseline_compliance.get("bbp",{}).get("site_energy",0))
-    ))
+    file.write(
+        row(
+            "Baseline building performance",
+            "BBP",
+            "bbp_cost",
+            "bbp_site_energy",
+            "bbp_source_energy",
+            "bbp_ghg",
+            f"${round(output.get('baseline_building_performance_energy_cost',0)):,}",
+            round(baseline_compliance.get("bbp", {}).get("site_energy", 0)),
+        )
+    )
 
-    file.write(f"""
+    file.write(
+        f"""
 <tr>
   <td class="text-start">Building Performance Factor</td>
   <td><strong>BPF</strong></td>

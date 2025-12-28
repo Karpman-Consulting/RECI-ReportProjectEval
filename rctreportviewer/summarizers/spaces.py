@@ -20,10 +20,10 @@ def summarize_rmd_space_data(
 
         if "floor_area" in space:
             rmd_building_summary["total_floor_area"] += space["floor_area"]
-            rmd_building_summary["total_floor_area_by_building_segment"][
+            rmd_building_summary["floor_area_by_building_segment"][
                 building_segment["id"]
             ] = (
-                rmd_building_summary["total_floor_area_by_building_segment"].get(
+                rmd_building_summary["floor_area_by_building_segment"].get(
                     building_segment["id"], 0
                 )
                 + space["floor_area"]
@@ -38,6 +38,12 @@ def summarize_rmd_space_data(
 
         if "number_of_occupants" in space:
             rmd_building_summary["total_occupants"] += space["number_of_occupants"]
+            rmd_building_summary["occupants_by_building_segment"].setdefault(
+                building_segment["id"], 0
+            )
+            rmd_building_summary["occupants_by_building_segment"][
+                building_segment["id"]
+            ] += space["number_of_occupants"]
             if "lighting_space_type" in space:
                 rmd_building_summary["total_occupants_by_space_type"][
                     space["lighting_space_type"]
@@ -98,6 +104,12 @@ def summarize_rmd_space_data(
                 ] = interior_lighting_summary
 
                 rmd_building_summary["total_lighting_power"] += int_ltg_power
+                rmd_building_summary["lighting_power_by_building_segment"].setdefault(
+                    building_segment["id"], 0
+                )
+                rmd_building_summary["lighting_power_by_building_segment"][
+                    building_segment["id"]
+                ] += int_ltg_power
 
                 if "lighting_space_type" in space:
                     rmd_building_summary["total_floor_area_by_space_type"][
@@ -114,7 +126,7 @@ def summarize_rmd_space_data(
                         rmd_building_summary["total_lighting_power_by_space_type"].get(
                             space["lighting_space_type"], 0
                         )
-                        + interior_lighting["power_per_area"] * space["floor_area"]
+                        + int_ltg_power
                     )
 
                 # Save lighting schedule data
@@ -146,6 +158,12 @@ def summarize_rmd_space_data(
                 rmd_building_summary[
                     "total_equipment_power"
                 ] += miscellaneous_equipment["power"]
+                rmd_building_summary[
+                    "miscellaneous_equipment_power_by_building_segment"
+                ].setdefault(building_segment["id"], 0)
+                rmd_building_summary[
+                    "miscellaneous_equipment_power_by_building_segment"
+                ][building_segment["id"]] += miscellaneous_equipment["power"]
 
                 if "lighting_space_type" in space:
                     rmd_building_summary[

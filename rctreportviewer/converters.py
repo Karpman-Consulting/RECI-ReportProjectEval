@@ -120,7 +120,7 @@ def convert_model_data_units(
             "Btu / h / ft2 / degR",
         ),
         "average_lighting_power_by_space_type": ("W / m2", "W / ft2"),
-        "total_floor_area_by_building_segment": ("m2", "ft2"),
+        "floor_area_by_building_segment": ("m2", "ft2"),
         "floor_area_by_schedule": ("m2", "ft2"),
         "total_wall_area_by_building_segment": ("m2", "ft2"),
         "total_roof_area_by_building_segment": ("m2", "ft2"),

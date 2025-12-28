@@ -1,8 +1,81 @@
+def build_segment_cards(b, p):
+    segment_ids = sorted(
+        set(b.get("system_count_by_building_segment", {}).keys())
+        | set(p.get("system_count_by_building_segment", {}).keys())
+    )
+
+    cards = []
+    for seg in segment_ids:
+        cards.append(
+            f"""
+            <div class="col">
+              <div class="card h-100 border-light shadow-sm">
+
+                <div class="card-header bg-light fw-semibold py-2 px-3">
+                  {seg}
+                </div>
+
+                <div class="card-body p-3">
+
+                  <!-- Baseline / Proposed headers -->
+                  <div class="row small fw-semibold border-bottom pb-1 mb-2">
+                    <div class="col-6"></div>
+                    <div class="col-3 text-center">B</div>
+                    <div class="col-3 text-center">P</div>
+                  </div>
+
+                  <div class="row small mb-1">
+                    <div class="col-6">Floor Area (ft<sup>2</sup>)</div>
+                    <div class="col-3 text-center">{round(b["floor_area_by_building_segment"].get(seg, 0)):,}</div>
+                    <div class="col-3 text-center">{round(p["floor_area_by_building_segment"].get(seg, 0)):,}</div>
+                  </div>
+                  
+                  <div class="row small mb-1">
+                    <div class="col-6">Systems</div>
+                    <div class="col-3 text-center">{b["system_count_by_building_segment"].get(seg, 0)}</div>
+                    <div class="col-3 text-center">{p["system_count_by_building_segment"].get(seg, 0)}</div>
+                  </div>
+
+                  <div class="row small mb-1">
+                    <div class="col-6">Zones</div>
+                    <div class="col-3 text-center">{b["zone_count_by_building_segment"].get(seg, 0)}</div>
+                    <div class="col-3 text-center">{p["zone_count_by_building_segment"].get(seg, 0)}</div>
+                  </div>
+
+                  <div class="row small mb-1">
+                    <div class="col-6">Lighting (W)</div>
+                    <div class="col-3 text-center">{b["lighting_power_by_building_segment"].get(seg, 0):,.0f}</div>
+                    <div class="col-3 text-center">{p["lighting_power_by_building_segment"].get(seg, 0):,.0f}</div>
+                  </div>
+
+                  <div class="row small">
+                    <div class="col-6">Equipment (W)</div>
+                    <div class="col-3 text-center">{b["miscellaneous_equipment_power_by_building_segment"].get(seg, 0):,.0f}</div>
+                    <div class="col-3 text-center">{p["miscellaneous_equipment_power_by_building_segment"].get(seg, 0):,.0f}</div>
+                  </div>
+                  
+                  <div class="row small mb-1">
+                    <div class="col-6">Occupants</div>
+                    <div class="col-3 text-center">{b["occupants_by_building_segment"].get(seg, 0):,.0f}</div>
+                    <div class="col-3 text-center">{p["occupants_by_building_segment"].get(seg, 0):,.0f}</div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            """
+        )
+
+    return "\n".join(cards)
+
+
 def write_component_summary(file, rct_detailed_report):
     tooltip_html = ""
 
     b = rct_detailed_report.baseline_model_summary
     p = rct_detailed_report.proposed_model_summary
+
+    segment_cards_html = build_segment_cards(b, p)
 
     file.write(
         f"""
@@ -22,129 +95,76 @@ def write_component_summary(file, rct_detailed_report):
     <div id="collapse-model-component-summary" class="collapse">
       <div class="card-body">
 
-        <div class="table-responsive">
-          <table class="table table-sm align-middle">
+        <div class="row g-4">
 
-            <!-- COLUMN SIZING -->
-            <colgroup>
-              <!-- Label -->
-              <col style="width:1%; white-space:nowrap;">
-              <!-- Baseline -->
-              <col style="width:1%; white-space:nowrap;">
-              <!-- Proposed -->
-              <col style="width:1%; white-space:nowrap;">
-              <!-- FILLER -->
-              <col style="width:auto;">
-            </colgroup>
-
-            <thead class="border-bottom">
-              <tr>
-                <th class="ps-3"></th>
-                <th class="text-center px-3">Baseline</th>
-                <th class="text-center px-3">Proposed</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody class="small">
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Building Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["building_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["building_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Total Floor Area</td>
-                <td class="text-center px-3 text-nowrap">{round(b["total_floor_area"]):,}</td>
-                <td class="text-center px-3 text-nowrap">{round(p["total_floor_area"]):,}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Building Area Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["building_segment_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["building_segment_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">System Qty</td>
-                <td class="text-center px-3 text-nowrap">
-                  <span class="d-inline-block"
-                        data-bs-toggle="tooltip"
-                        data-bs-html="true"
-                        title="{tooltip_html}"
-                        style="text-decoration: underline dotted; cursor: help;">
-                    {b["system_count"]}
-                  </span>
-                </td>
-                <td class="text-center px-3 text-nowrap">{p["system_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Zone Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["zone_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["zone_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Space Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["space_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["space_count"]}</td>
-                <td></td>
-              </tr>
-
-              <!-- Fluid Loops: allow wrapping -->
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Fluid Loops</td>
-                <td class="text-center px-3">{", ".join(s.title() for s in b["fluid_loop_types"])}</td>
-                <td class="text-center px-3">{", ".join(s.title() for s in p["fluid_loop_types"])}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Pump Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["pump_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["pump_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Boiler Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["boiler_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["boiler_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Chiller Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["chiller_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["chiller_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">Heat Rejection Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["heat_rejection_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["heat_rejection_count"]}</td>
-                <td></td>
-              </tr>
-
-              <tr>
-                <td class="text-start ps-3 pe-4 text-nowrap">SWH Heater Qty</td>
-                <td class="text-center px-3 text-nowrap">{b["water_heater_count"]}</td>
-                <td class="text-center px-3 text-nowrap">{p["water_heater_count"]}</td>
-                <td></td>
-              </tr>
-
-            </tbody>
-          </table>
+          <!-- SECTION 1: PROJECT SUMMARY -->
+        <div class="col-12 col-lg-6">
+          <div class="fw-semibold mb-2">Project Summary</div>
+          <div class="card border-light shadow-sm">
+        
+            <div class="card-header bg-light fw-semibold py-2 px-3">
+              {rct_detailed_report.project_name}
+            </div>
+        
+            <div class="card-body p-3">
+        
+              <!-- Baseline / Proposed headers -->
+              <div class="row small fw-semibold border-bottom pb-1 mb-2">
+                <div class="col-6"></div>
+                <div class="col-3 text-center">B</div>
+                <div class="col-3 text-center">P</div>
+              </div>
+        
+              <div class="row small mb-1">
+                <div class="col-6">Buildings</div>
+                <div class="col-3 text-center">{b["building_count"]}</div>
+                <div class="col-3 text-center">{p["building_count"]}</div>
+              </div>
+        
+              <div class="row small mb-1">
+                <div class="col-6">Total Floor Area (ft<sup>2</sup>)</div>
+                <div class="col-3 text-center">{round(b["total_floor_area"]):,}</div>
+                <div class="col-3 text-center">{round(p["total_floor_area"]):,}</div>
+              </div>
+        
+              <div class="row small mb-1">
+                <div class="col-6">Building Areas</div>
+                <div class="col-3 text-center">{b["building_segment_count"]}</div>
+                <div class="col-3 text-center">{p["building_segment_count"]}</div>
+              </div>
+        
+              <div class="row small mb-1">
+                <div class="col-6">Systems</div>
+                <div class="col-3 text-center">{b["system_count"]}</div>
+                <div class="col-3 text-center">{p["system_count"]}</div>
+              </div>
+        
+              <div class="row small mb-1">
+                <div class="col-6">Zones</div>
+                <div class="col-3 text-center">{b["zone_count"]}</div>
+                <div class="col-3 text-center">{p["zone_count"]}</div>
+              </div>
+        
+              <div class="row small">
+                <div class="col-6">Spaces</div>
+                <div class="col-3 text-center">{b["space_count"]}</div>
+                <div class="col-3 text-center">{p["space_count"]}</div>
+              </div>
+        
+            </div>
+          </div>
         </div>
 
+          <!-- SECTION 2: BUILDING SEGMENT SUBCARDS -->
+          <div class="col-12 col-lg-6">
+            <div class="fw-semibold mb-2">Building Area Summary</div>
+
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+              {segment_cards_html}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>

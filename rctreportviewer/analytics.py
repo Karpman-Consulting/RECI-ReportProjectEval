@@ -25,7 +25,7 @@ def perform_analytic_calculations(rct_report_viewer):
             try:
                 bpf = metric_bpf_data[bpf_area_type]
                 area = rct_report_viewer.baseline_model_summary[
-                    "total_floor_area_by_building_segment"
+                    "floor_area_by_building_segment"
                 ].get(building_segment_id, 0)
                 total_weighted += bpf * area
                 total_area += area
@@ -77,9 +77,9 @@ def perform_analytic_calculations(rct_report_viewer):
     rct_report_viewer.baseline_lighting_power_allowance_by_space_type = {}
     rct_report_viewer.baseline_total_lighting_power_allowance = 0.0
 
-    for lighting_space_type, area_m2 in (
-            rct_report_viewer.baseline_model_summary["total_floor_area_by_space_type"].items()
-    ):
+    for lighting_space_type, area_m2 in rct_report_viewer.baseline_model_summary[
+        "total_floor_area_by_space_type"
+    ].items():
         allowed_lpd = lpd_table.get(lighting_space_type, 0.0)
 
         # store LPD directly (W/ft²)
@@ -89,7 +89,7 @@ def perform_analytic_calculations(rct_report_viewer):
 
         # total is area-weighted LPD (still useful for the TOTAL row)
         rct_report_viewer.baseline_total_lighting_power_allowance += (
-                allowed_lpd * convert_unit(area_m2, from_unit="m2", to_unit="ft2")
+            allowed_lpd * convert_unit(area_m2, from_unit="m2", to_unit="ft2")
         )
 
     compute_u_factors(rct_report_viewer.baseline_model_summary)
