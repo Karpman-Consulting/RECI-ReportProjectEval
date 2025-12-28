@@ -6,7 +6,15 @@ from rctreportviewer.summarizers.systems import summarize_heating_cooling_capaci
 def summarize_building_segment_data(rct_report_viewer, building, rmd_building_summary):
     for building_segment in building.get("building_segments", []):
         rmd_building_summary["zone_count"] += len(building_segment.get("zones", []))
+        rmd_building_summary["zone_count_by_building_segment"][
+            building_segment["id"]
+        ] = len(building_segment.get("zones", []))
         rmd_building_summary["system_count"] += len(
+            building_segment.get("heating_ventilating_air_conditioning_systems", [])
+        )
+        rmd_building_summary["system_count_by_building_segment"][
+            building_segment["id"]
+        ] = len(
             building_segment.get("heating_ventilating_air_conditioning_systems", [])
         )
 

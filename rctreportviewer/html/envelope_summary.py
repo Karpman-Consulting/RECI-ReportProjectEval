@@ -22,72 +22,85 @@ def write_envelope_summary(file, rct_detailed_report):
     </div>
 
     <div id="collapse-envelope-summary" class="collapse">
-            <div class="card-body">
+      <div class="card-body">
 
                 <div class="table-responsive">
                     <table class="table table-sm align-middle">
                         <thead class="table-light text-center border-bottom">
                             <tr>
                                 <th colspan="2"></th>
-                                <th colspan="6">Baseline</th>
-                                <th colspan="6">Proposed</th>
+                                <th colspan="6" class="border-start">Baseline</th>
+                                <th colspan="6" class="border-start">Proposed</th>
                             </tr>
                             <tr>
                                 <th rowspan="2" style="vertical-align: top;">Building Area</th>
                                 <th rowspan="2" style="vertical-align: top;">Surface Type</th>
-                                <th colspan="3">Opaque Surface</th>
-                                <th colspan="3">Fenestration</th>
-                                <th colspan="3">Opaque Surface</th>
-                                <th colspan="3">Fenestration</th>
+                                <th colspan="3" class="border-start">Opaque Surface</th>
+                                <th colspan="3" class="border-start">Fenestration</th>
+                                <th colspan="3" class="border-start">Opaque Surface</th>
+                                <th colspan="3" class="border-start">Fenestration</th>
                             </tr>
                             <tr>
-                                <th>Area (ft²)</th>
-                                <th>%</th>
-                                <th>U-Factor</th>
-                                <th>Area (ft²)</th>
-                                <th>%</th>
-                                <th>U-Factor</th>
-                                <th>Area (ft²)</th>
-                                <th>%</th>
-                                <th>U-Factor</th>
-                                <th>Area (ft²)</th>
-                                <th>%</th>
-                                <th>U-Factor</th>
+                                <th class="border-start">Area (ft²)</th>
+                                <th class="border-start">%</th>
+                                <th class="border-start">U-Factor</th>
+                                <th class="border-start">Area (ft²)</th>
+                                <th class="border-start">%</th>
+                                <th class="border-start">U-Factor</th>
+                                <th class="border-start">Area (ft²)</th>
+                                <th class="border-start">%</th>
+                                <th class="border-start">U-Factor</th>
+                                <th class="border-start">Area (ft²)</th>
+                                <th class="border-start">%</th>
+                                <th class="border-start">U-Factor</th>
                             </tr>
                         </thead>
                         <tbody class="small text-center">
 """
     )
 
-    for segment in b["total_floor_area_by_building_segment"]:
+    last_segment = None
+
+    for segment in b["floor_area_by_building_segment"]:
+        if segment != last_segment:
+            file.write(
+                f"""
+              <tr class="table-secondary fw-semibold">
+                <td colspan="14" class="text-start">{segment}</td>
+              </tr>
+"""
+            )
+            last_segment = segment
 
         # ---------- Roof ----------
         if segment in b["total_roof_area_by_building_segment"]:
             b_roof = b["total_roof_area_by_building_segment"].get(segment, 0)
             b_sky = b["total_skylight_area_by_building_segment"].get(segment, 0)
-
             p_roof = p["total_roof_area_by_building_segment"].get(segment, 0)
             p_sky = p["total_skylight_area_by_building_segment"].get(segment, 0)
 
             file.write(
                 f"""
-                            <tr>
-                                <td>{segment}</td>
-                                <td>Roof</td>
-                                <td>{round(b_roof - b_sky):,}</td>
-                                <td>{round((b_roof - b_sky) / b_roof * 100, 1) if b_roof else 0}</td>
-                                <td>{round(b["overall_roof_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
-                                <td>{round(b_sky):,}</td>
-                                <td>{round(b_sky / b_roof * 100, 1) if b_roof else 0}</td>
-                                <td>{round(b["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+              <tr>
+                <td></td>
+                <td class="text-start">Roof</td>
 
-                                <td>{round(p_roof - p_sky):,}</td>
-                                <td>{round((p_roof - p_sky) / p_roof * 100, 1) if p_roof else 0}</td>
-                                <td>{round(p["overall_roof_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
-                                <td>{round(p_sky):,}</td>
-                                <td>{round(p_sky / p_roof * 100, 1) if p_roof else 0}</td>
-                                <td>{round(p["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
-                            </tr>
+                <td class="border-start">{round(b_roof - b_sky):,}</td>
+                <td class="border-start text-muted">{round((b_roof - b_sky) / b_roof * 100, 1) if b_roof else 0}</td>
+                <td class="border-start">{round(b["overall_roof_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                <td class="border-start">{round(b_sky):,}</td>
+                <td class="border-start text-muted">{round(b_sky / b_roof * 100, 1) if b_roof else 0}</td>
+                <td class="border-start">{round(b["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                <td class="border-start">{round(p_roof - p_sky):,}</td>
+                <td class="border-start text-muted">{round((p_roof - p_sky) / p_roof * 100, 1) if p_roof else 0}</td>
+                <td class="border-start">{round(p["overall_roof_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                <td class="border-start">{round(p_sky):,}</td>
+                <td class="border-start text-muted">{round(p_sky / p_roof * 100, 1) if p_roof else 0}</td>
+                <td class="border-start">{round(p["overall_skylight_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+              </tr>
 """
             )
 
@@ -95,45 +108,47 @@ def write_envelope_summary(file, rct_detailed_report):
         if segment in b["total_wall_area_by_building_segment"]:
             b_wall = b["total_wall_area_by_building_segment"].get(segment, 0)
             b_win = b["total_window_area_by_building_segment"].get(segment, 0)
-
             p_wall = p["total_wall_area_by_building_segment"].get(segment, 0)
             p_win = p["total_window_area_by_building_segment"].get(segment, 0)
 
             file.write(
                 f"""
-                            <tr>
-                                <td>{segment}</td>
-                                <td>Ext. Wall</td>
-                                <td>{round(b_wall - b_win):,}</td>
-                                <td>{round((b_wall - b_win) / b_wall * 100, 1) if b_wall else 0}</td>
-                                <td>{round(b["overall_wall_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
-                                <td>{round(b_win):,}</td>
-                                <td>{round(b_win / b_wall * 100, 1) if b_wall else 0}</td>
-                                <td>{round(b["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+              <tr>
+                <td></td>
+                <td class="text-start">Ext. Wall</td>
 
-                                <td>{round(p_wall - p_win):,}</td>
-                                <td>{round((p_wall - p_win) / p_wall * 100, 1) if p_wall else 0}</td>
-                                <td>{round(p["overall_wall_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
-                                <td>{round(p_win):,}</td>
-                                <td>{round(p_win / p_wall * 100, 1) if p_wall else 0}</td>
-                                <td>{round(p["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
-                            </tr>
+                <td class="border-start">{round(b_wall - b_win):,}</td>
+                <td class="border-start text-muted">{round((b_wall - b_win) / b_wall * 100, 1) if b_wall else 0}</td>
+                <td class="border-start">{round(b["overall_wall_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                <td class="border-start">{round(b_win):,}</td>
+                <td class="border-start text-muted">{round(b_win / b_wall * 100, 1) if b_wall else 0}</td>
+                <td class="border-start">{round(b["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                <td class="border-start">{round(p_wall - p_win):,}</td>
+                <td class="border-start text-muted">{round((p_wall - p_win) / p_wall * 100, 1) if p_wall else 0}</td>
+                <td class="border-start">{round(p["overall_wall_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+
+                <td class="border-start">{round(p_win):,}</td>
+                <td class="border-start text-muted">{round(p_win / p_wall * 100, 1) if p_wall else 0}</td>
+                <td class="border-start">{round(p["overall_window_u_factor_by_building_segment"].get(segment, 0), 3)}</td>
+              </tr>
 """
             )
 
     file.write(
         """
-                        </tbody>
-                    </table>
-                </div>
-
-                <p class="small text-muted mt-2">
-                    * U-factors represent area-weighted averages for the corresponding building area and surface type.
-                </p>
-
-            </div>
+            </tbody>
+          </table>
         </div>
+
+        <p class="small text-muted mt-2">
+          * U-factors are area-weighted averages by surface type.
+        </p>
+
+      </div>
     </div>
+  </div>
 </section>
 """
     )

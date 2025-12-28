@@ -7,7 +7,8 @@ def write_interior_lighting_details(file, rct_detailed_report):
     b = rct_detailed_report.baseline_model_summary["int_ltg_summaries"]
     p = rct_detailed_report.proposed_model_summary["int_ltg_summaries"]
 
-    file.write("""
+    file.write(
+        """
 <hr>
 
 <div class="card shadow-sm mb-3">
@@ -71,7 +72,8 @@ def write_interior_lighting_details(file, rct_detailed_report):
 </tr>
 </thead>
 <tbody class="small text-center">
-""")
+"""
+    )
 
     all_ids = set(b) | set(p)
 
@@ -86,12 +88,14 @@ def write_interior_lighting_details(file, rct_detailed_report):
 
         savings = (
             (v(bl, "int_ltg_power_total") - v(pl, "int_ltg_power_total"))
-            / v(bl, "int_ltg_power_total") * 100
+            / v(bl, "int_ltg_power_total")
+            * 100
             if v(bl, "int_ltg_power_total") > 0
             else 0
         )
 
-        file.write(f"""
+        file.write(
+            f"""
 <tr>
   <td>{lid}</td>
   <td>{round(floor):,}</td>
@@ -122,11 +126,14 @@ def write_interior_lighting_details(file, rct_detailed_report):
 
   <td>{round(savings, 1)}%</td>
 </tr>
-""")
+"""
+        )
 
-    file.write("""
+    file.write(
+        """
 </tbody>
 </table>
 </div>
 </div>
-""")
+"""
+    )

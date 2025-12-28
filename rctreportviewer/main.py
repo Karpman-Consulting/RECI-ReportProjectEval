@@ -38,8 +38,10 @@ class SummaryReportGenerator:
         self.rpd_data = None
         self.evaluation_data = None
         self.bpf_data = None
+        self.lpd_data = None
         self.ruleset = None
 
+        self.project_name = ""
         self.model_types = set()
         self.space_areas = {}
         self.baseline_space_types = {}
@@ -270,6 +272,8 @@ class SummaryReportGenerator:
                                 pass
 
             self.rpd_data = merged
+
+        self.project_name = self.rpd_data["id"]
 
         proposed_rmd = next(
             (

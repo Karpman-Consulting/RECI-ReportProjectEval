@@ -33,14 +33,14 @@ def write_javascript(file, rct_detailed_report):
     }};
 
     const sum = (arr) => (arr || []).reduce((a, b) => a + (Number(b) || 0), 0);
-    
+
     const formatNumber = (v) => unitType() === "eui" ? Number(v).toFixed(1) : Math.round(v).toLocaleString();
-    
+
     const formatTooltip = (ctx) => {{
       const v = ctx.parsed.y;
       return unitType() === "eui" ? v.toFixed(1) : Math.round(v).toLocaleString();
     }};
-    
+
     const formatTotal = (v) => unitType() === "eui"
         ? v.toLocaleString(undefined, {{ minimumFractionDigits: 1, maximumFractionDigits: 1 }})
         : v.toLocaleString(undefined, {{ maximumFractionDigits: 0 }});
@@ -63,7 +63,6 @@ def write_javascript(file, rct_detailed_report):
     /* ==================== Bootstrap tooltips ==================== */
 
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {{
-      // ensure title exists so bootstrap doesn't throw
       if (el.getAttribute("title") == null) el.setAttribute("title", "");
       new bootstrap.Tooltip(el, {{ container: "body" }});
     }});
@@ -105,7 +104,6 @@ def write_javascript(file, rct_detailed_report):
       const baselineSourceEnergy = baselineUnregulatedSourceEnergy + baselineRegulatedSourceEnergy;
       const baselineGHGEmissions = baselineUnregulatedGHGEmissions + baselineRegulatedGHGEmissions;
 
-      // All getTextNumber() are safe (0 if missing) to avoid console null errors
       const proposedSiteEnergy = getTextNumber("pbp_nre_site_energy") - getTextNumber("proposed_site_energy_savings");
       const proposedSrcEnergy = proposedSourceEnergy - getTextNumber("proposed_source_energy_savings");
       const proposedGHG = proposedGHGEmissions - getTextNumber("proposed_ghg_savings");
@@ -118,7 +116,6 @@ def write_javascript(file, rct_detailed_report):
       const bpfSource = getTextNumber("bpf_source_energy");
       const bpfGHG = getTextNumber("bpf_ghg_emissions");
 
-      // write totals (as strings, because some targets might be ratios/percent strings elsewhere)
       setText("pbp_nre_source_energy", proposedSourceEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
       setText("pbp_nre_ghg", proposedGHGEmissions.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
       setText("pbp_site_energy", proposedSiteEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
@@ -132,7 +129,6 @@ def write_javascript(file, rct_detailed_report):
       setText("bbp_source_energy", baselineSourceEnergy.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
       setText("bbp_ghg", baselineGHGEmissions.toLocaleString(undefined, {{ maximumFractionDigits: 0 }}));
 
-      // PCIt ratios
       setRatio("pcit_site_energy",
         baselineUnregulatedSiteEnergy + bpfSite * baselineRegulatedSiteEnergy,
         baselineSiteEnergy
@@ -150,7 +146,6 @@ def write_javascript(file, rct_detailed_report):
       setRatio("pci_nre_source_energy", proposedSourceEnergy, baselineSourceEnergy);
       setRatio("pci_nre_ghg", proposedGHGEmissions, baselineGHGEmissions);
 
-      // PCI adjusted
       const capFraction = 0.05;
       const adjustedSiteSavings = Math.min(getTextNumber("proposed_site_energy_savings"), capFraction * baselineSiteEnergy);
       const adjustedSourceSavings = Math.min(getTextNumber("proposed_source_energy_savings"), capFraction * baselineSourceEnergy);
@@ -177,7 +172,6 @@ def write_javascript(file, rct_detailed_report):
       const proposedCost = getCost("pbp_cost");
       const proposedNRECost = getCost("pbp_nre_cost");
 
-      // % Improvement excluding renewables
       const cost_savings_nre = baselineCost ? ((baselineCost - proposedNRECost) / baselineCost) * 100 : 0;
       const site_savings_nre = baselineSiteEnergy ? ((baselineSiteEnergy - getTextNumber("pbp_nre_site_energy")) / baselineSiteEnergy) * 100 : 0;
       const source_savings_nre = baselineSourceEnergy ? ((baselineSourceEnergy - proposedSourceEnergy) / baselineSourceEnergy) * 100 : 0;
@@ -188,7 +182,6 @@ def write_javascript(file, rct_detailed_report):
       setText("source_savings_nre", source_savings_nre.toFixed(1) + "%");
       setText("ghg_savings_nre", ghg_savings_nre.toFixed(1) + "%");
 
-      // % Improvement including renewables
       const cost_savings = baselineCost ? ((baselineCost - proposedCost) / baselineCost) * 100 : 0;
       const site_savings = baselineSiteEnergy ? ((baselineSiteEnergy - getTextNumber("pbp_site_energy")) / baselineSiteEnergy) * 100 : 0;
       const source_savings = baselineSourceEnergy ? ((baselineSourceEnergy - proposedSrcEnergy) / baselineSourceEnergy) * 100 : 0;
@@ -200,7 +193,6 @@ def write_javascript(file, rct_detailed_report):
       setText("ghg_savings", ghg_savings.toFixed(1) + "%");
     }}
 
-    // wire energySourceTable inputs
     if (inputs && inputs.length) {{
       inputs.forEach(inp => inp.addEventListener("input", recalculateEnergyMetrics));
       recalculateEnergyMetrics();
@@ -395,10 +387,6 @@ def write_javascript(file, rct_detailed_report):
       }}
     }};
 
-    // Your original palette:
-    // elec: baseline blue, proposed green
-    // gas: baseline orange, proposed red
-    // energy: baseline maroon, proposed teal
     const COLORS = {{
       elec: {{
         baselineBg: "rgba(54, 162, 235, 0.7)",
@@ -419,6 +407,47 @@ def write_javascript(file, rct_detailed_report):
         proposedText: "rgb(0, 128, 128)"
       }}
     }};
+
+    const END_USE_ORDER = [
+      "Interior Lighting",
+      "Space Heating",
+      "Space Cooling",
+      "Fans Interior Ventilation",
+      "Pumps",
+      "Heat Rejection",
+      "Service Water Heating",
+      "Misc Equipment",
+      "Refrigeration Equipment"
+    ];
+
+    const END_USE_COLORS = {{
+      Space_Heating: "#d62728",
+      Heat_Pump_Supplemental_Heating: "#ff9896",
+      Space_Cooling: "#1f77b4",
+      Interior_Lighting: "#ffcc00",
+      Fans_Interior_Ventilation: "#9edae5",
+      Pumps: "#8c564b",
+      Service_Water_Heating: "#f28e2b",
+      Heat_Rejection: "#0f8b8d",
+      Refrigeration_Equipment: "#2ca02c",
+      Misc_Equipment: "#9467bd"
+    }};
+
+    function getEndUseColors(lbls) {{
+      return lbls.map(l => {{
+        const key = l.replace(/\\s+/g, "_");
+        return END_USE_COLORS[key] || "#cccccc";
+      }});
+    }}
+
+    function getOrderedEndUseIndexes(lbls) {{
+      return END_USE_ORDER
+        .map(name => {{
+          const idx = lbls.indexOf(name);
+          return idx >= 0 ? {{ name, idx }} : null;
+        }})
+        .filter(Boolean);
+    }}
 
     function makeChart(canvasId, title, unit, palette, dataPair) {{
       const canvas = $(canvasId);
@@ -479,6 +508,92 @@ def write_javascript(file, rct_detailed_report):
       }});
     }}
 
+    /* ==================== Pie Charts ==================== */
+
+    function buildSharedPieLegend(baselineData, proposedData) {{
+      const legendEl = $("pieLegend");
+      if (!legendEl) return;
+
+      legendEl.innerHTML = "";
+
+      const ordered = getOrderedEndUseIndexes(labels);
+
+      ordered.forEach(({{
+        name, idx
+      }}) => {{
+        const b = baselineData[idx] || 0;
+        const p = proposedData[idx] || 0;
+        if (b === 0 && p === 0) return;
+
+        const color = getEndUseColors([name])[0];
+
+        const item = document.createElement("div");
+        item.className = "d-flex align-items-center gap-2 small";
+        item.innerHTML = `
+          <span style="
+            width:14px;
+            height:14px;
+            background:${{color}};
+            display:inline-block;
+            border-radius:3px;
+          "></span>
+          <span>${{name}}</span>
+        `;
+        legendEl.appendChild(item);
+      }});
+    }}
+
+    function makePie(canvasId, titleFn, unitFn, data) {{
+      const canvas = $(canvasId);
+      if (!canvas) return null;
+
+      const ordered = getOrderedEndUseIndexes(labels);
+      const orderedLabels = ordered.map(o => o.name);
+      const orderedData = ordered.map(o => data[o.idx]);
+
+      return new Chart(canvas, {{
+        type: "pie",
+        data: {{
+          labels: orderedLabels,
+          datasets: [{{
+            data: orderedData,
+            backgroundColor: getEndUseColors(orderedLabels),
+            borderColor: "#ffffff",
+            borderWidth: 1
+          }}]
+        }},
+        options: {{
+          responsive: true,
+          plugins: {{
+            legend: {{ display: false }},
+            title: {{
+              display: true,
+              get text() {{ return titleFn(); }}
+            }},
+            tooltip: {{
+              callbacks: {{
+                label: (ctx) => {{
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const val = ctx.raw;
+                  const pct = total ? (val / total * 100).toFixed(1) : 0;
+                  return `${{ctx.label}}: ${{Math.round(val).toLocaleString()}} ${{unitFn()}} (${{pct}}%)`;
+                }}
+              }}
+            }}
+          }}
+        }}
+      }});
+    }}
+
+    const elecPieBaseline = makePie("elecPieBaseline", () => "Baseline – Electricity End Use Share", () => "kWh", elecDataRaw.consumption.baseline);
+    const elecPieProposed = makePie("elecPieProposed", () => "Proposed – Electricity End Use Share", () => "kWh", elecDataRaw.consumption.proposed);
+
+    const gasPieBaseline = makePie("gasPieBaseline", () => "Baseline – Gas End Use Share", () => "Therms", gasDataRaw.consumption.baseline);
+    const gasPieProposed = makePie("gasPieProposed", () => "Proposed – Gas End Use Share", () => "Therms", gasDataRaw.consumption.proposed);
+
+    const energyPieBaseline = makePie("energyPieBaseline", () => "Baseline – Total Energy End Use Share", () => "kBtu", energyDataRaw.consumption.baseline);
+    const energyPieProposed = makePie("energyPieProposed", () => "Proposed – Total Energy End Use Share", () => "kBtu", energyDataRaw.consumption.proposed);
+
     const elecChart = makeChart("elecByEndUse", "Electricity By End Use", "kWh", COLORS.elec, elecDataRaw.consumption);
     const gasChart = makeChart("gasByEndUse", "Natural Gas By End Use", "Therms", COLORS.gas, gasDataRaw.consumption);
     const energyChart = makeChart("energyByEndUse", "Total Site Energy By End Use", "kBtu", COLORS.energy, energyDataRaw.consumption);
@@ -489,6 +604,12 @@ def write_javascript(file, rct_detailed_report):
       elec: $("elecChartContainer"),
       gas: $("gasChartContainer"),
       energy: $("energyChartContainer")
+    }};
+
+    const pieContainers = {{
+      elec: $("elecPieContainer"),
+      gas: $("gasPieContainer"),
+      energy: $("energyPieContainer")
     }};
 
     function unitType() {{
@@ -559,11 +680,37 @@ def write_javascript(file, rct_detailed_report):
         el.classList.toggle("d-none", k !== type);
       }});
 
-      // Some browsers/containers need a tick before resize renders correctly
+      Object.entries(pieContainers).forEach(([k, el]) => {{
+        if (!el) return;
+        el.classList.toggle("d-none", k !== type);
+      }});
+
+      if (type === "elec") {{
+        buildSharedPieLegend(elecDataRaw.consumption.baseline, elecDataRaw.consumption.proposed);
+      }}
+      if (type === "gas") {{
+        buildSharedPieLegend(gasDataRaw.consumption.baseline, gasDataRaw.consumption.proposed);
+      }}
+      if (type === "energy") {{
+        buildSharedPieLegend(energyDataRaw.consumption.baseline, energyDataRaw.consumption.proposed);
+      }}
+
       setTimeout(() => {{
-        if (type === "elec" && elecChart) elecChart.resize();
-        if (type === "gas" && gasChart) gasChart.resize();
-        if (type === "energy" && energyChart) energyChart.resize();
+        if (type === "elec") {{
+          if (elecChart) elecChart.resize();
+          if (elecPieBaseline) elecPieBaseline.resize();
+          if (elecPieProposed) elecPieProposed.resize();
+        }}
+        if (type === "gas") {{
+          if (gasChart) gasChart.resize();
+          if (gasPieBaseline) gasPieBaseline.resize();
+          if (gasPieProposed) gasPieProposed.resize();
+        }}
+        if (type === "energy") {{
+          if (energyChart) energyChart.resize();
+          if (energyPieBaseline) energyPieBaseline.resize();
+          if (energyPieProposed) energyPieProposed.resize();
+        }}
       }}, 0);
 
       updateTotals();
@@ -587,8 +734,6 @@ def write_javascript(file, rct_detailed_report):
         }});
       }}
       if (labelEl) {{
-        // Some Bootstrap btn-check setups don't reliably fire "change" in all cases;
-        // clicking label always works.
         labelEl.addEventListener("click", () => showChart(type));
       }}
     }};
@@ -601,7 +746,6 @@ def write_javascript(file, rct_detailed_report):
       unitToggle.addEventListener("change", updateChartsForUnits);
     }}
 
-    // Init (default checked is elec)
     showChart("elec");
     updateChartsForUnits();
 

@@ -7,6 +7,12 @@ from rctreportviewer.summarizers.terminals import summarize_rmd_terminal_data
 def summarize_rmd_zone_data(rct_report_viewer, building_segment, rmd_building_summary):
     for zone in building_segment.get("zones", []):
         rmd_building_summary["space_count"] += len(zone.get("spaces", []))
+        rmd_building_summary["space_count_by_building_segment"].setdefault(
+            building_segment["id"], 0
+        )
+        rmd_building_summary["space_count_by_building_segment"][
+            building_segment["id"]
+        ] += len(zone.get("spaces", []))
 
         infiltration = zone.get("infiltration")
         if infiltration and "flow_rate" in infiltration:

@@ -14,7 +14,8 @@ def write_html_file(rct_detailed_report):
     """
 
     with open(rct_detailed_report.output_file_path, "w", encoding="utf-8") as file:
-        file.write("""
+        file.write(
+            """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,16 +48,19 @@ def write_html_file(rct_detailed_report):
     </style>
 </head>
 <body>
-""")
+"""
+        )
 
-        file.write("""
+        file.write(
+            """
 <div class="container-fluid px-3 py-2">
   <div class="mx-auto" style="max-width: 1600px;">
 
     <header class="mb-4">
       <h2 class="text-center mb-1">Model Report</h2>
     </header>
-""")
+"""
+        )
 
         write_component_summary(file, rct_detailed_report)
         write_compliance_calculations(file, rct_detailed_report)
@@ -66,7 +70,8 @@ def write_html_file(rct_detailed_report):
         write_hvac_summary(file, rct_detailed_report)
         write_swh_summary(file, rct_detailed_report)
 
-        file.write("""
+        file.write(
+            """
   </div>
 </div>
 
@@ -77,11 +82,14 @@ def write_html_file(rct_detailed_report):
     style="opacity:0; visibility:hidden; z-index:1050;">
     ↑
 </button>
-""")
+"""
+        )
 
         write_javascript(file, rct_detailed_report)
 
-        file.write("""
+        file.write(
+            """
 </body>
 </html>
-""")
+"""
+        )

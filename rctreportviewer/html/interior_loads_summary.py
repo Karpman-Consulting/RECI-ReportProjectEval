@@ -1,12 +1,15 @@
 import math
-from rctreportviewer.html.interior_lighting_details import write_interior_lighting_details
+from rctreportviewer.html.interior_lighting_details import (
+    write_interior_lighting_details,
+)
 
 
 def write_interior_loads_summary(file, rct_detailed_report):
     baseline = rct_detailed_report.baseline_model_summary
     proposed = rct_detailed_report.proposed_model_summary
 
-    file.write("""
+    file.write(
+        """
 <section class="mb-4">
   <div class="card shadow-sm">
 
@@ -44,7 +47,8 @@ def write_interior_loads_summary(file, rct_detailed_report):
               </tr>
             </thead>
             <tbody class="small">
-""")
+"""
+    )
 
     for space_type, area in baseline["total_floor_area_by_space_type"].items():
         occupants_b = baseline["total_occupants_by_space_type"].get(space_type, 0)
@@ -53,17 +57,27 @@ def write_interior_loads_summary(file, rct_detailed_report):
         occ_density_b = area / (occupants_b or math.inf)
         occ_density_p = area / (occupants_p or math.inf)
 
-        eqp_density_b = baseline["total_miscellaneous_equipment_power_by_space_type"].get(space_type, 0) / (area or math.inf)
-        eqp_density_p = proposed["total_miscellaneous_equipment_power_by_space_type"].get(space_type, 0) / (area or math.inf)
+        eqp_density_b = baseline[
+            "total_miscellaneous_equipment_power_by_space_type"
+        ].get(space_type, 0) / (area or math.inf)
+        eqp_density_p = proposed[
+            "total_miscellaneous_equipment_power_by_space_type"
+        ].get(space_type, 0) / (area or math.inf)
 
         lpd_allowed_b = (
-            rct_detailed_report.baseline_lighting_power_allowance_by_space_type
-            .get(space_type, 0)
+            rct_detailed_report.baseline_lighting_power_allowance_by_space_type.get(
+                space_type, 0
+            )
         )
-        lpd_b = baseline["total_lighting_power_by_space_type"].get(space_type, 0) / (area or math.inf)
-        lpd_p = proposed["total_lighting_power_by_space_type"].get(space_type, 0) / (area or math.inf)
+        lpd_b = baseline["total_lighting_power_by_space_type"].get(space_type, 0) / (
+            area or math.inf
+        )
+        lpd_p = proposed["total_lighting_power_by_space_type"].get(space_type, 0) / (
+            area or math.inf
+        )
 
-        file.write(f"""
+        file.write(
+            f"""
 <tr>
   <td>{space_type.replace("_", " ").title()}</td>
   <td>{round(area):,}</td>
@@ -75,9 +89,11 @@ def write_interior_loads_summary(file, rct_detailed_report):
   <td>{round(eqp_density_p, 2)}</td>
   <td>{round(lpd_p, 2)}</td>
 </tr>
-""")
+"""
+        )
 
-    file.write(f"""
+    file.write(
+        f"""
 <tr class="fw-bold border-top">
   <td>Total</td>
   <td>{round(baseline["total_floor_area"]):,}</td>
@@ -116,11 +132,13 @@ def write_interior_loads_summary(file, rct_detailed_report):
               </tr>
             </thead>
             <tbody class="small">
-""")
+"""
+    )
 
     for sched_id, base_sched in baseline["schedule_summaries"].items():
         prop_sched = proposed["schedule_summaries"].get(sched_id, {})
-        file.write(f"""
+        file.write(
+            f"""
 <tr>
   <td>{sched_id}</td>
   <td>{round(base_sched.get("EFLH", 0)):,}</td>
@@ -134,9 +152,11 @@ def write_interior_loads_summary(file, rct_detailed_report):
   <td>{round(prop_sched.get("percent_total_equipment_power", 0), 1)}</td>
   <td>{round(prop_sched.get("associated_peak_internal_gain", 0), 1)}</td>
 </tr>
-""")
+"""
+        )
 
-    file.write("""
+    file.write(
+        """
             </tbody>
           </table>
         </div>
@@ -144,14 +164,17 @@ def write_interior_loads_summary(file, rct_detailed_report):
         <p class="small text-muted mt-2">
           * Peak Internal Gain occurs when schedule fraction equals 1.0
         </p>
-""")
+"""
+    )
 
     # === INTERIOR LIGHTING DETAILS (EMBEDDED) ===
     write_interior_lighting_details(file, rct_detailed_report)
 
-    file.write("""
+    file.write(
+        """
       </div>
     </div>
   </div>
 </section>
-""")
+"""
+    )

@@ -1,4 +1,5 @@
 import re
+import ast
 
 
 section_titles_with_colors = {
@@ -63,6 +64,24 @@ def split_evaluations(rule_data):
     return standard, missing
 
 
+def format_value_for_html(value):
+    # Try to parse strings into native Python types (list/dict/etc.)
+    if isinstance(value, str):
+        try:
+            parsed = ast.literal_eval(value)
+            value = parsed
+        except (ValueError, SyntaxError):
+            pass
+
+    if isinstance(value, dict):
+        return "<br>".join(f"{k}: {v}" for k, v in value.items())
+
+    if isinstance(value, list):
+        return "<br>".join(str(v) for v in value)
+
+    return str(value)
+
+
 def write_evaluations_section(file, rct_detailed_report):
     rule_categories = {
         "Failing": rct_detailed_report.rules_failed,
@@ -71,6 +90,20 @@ def write_evaluations_section(file, rct_detailed_report):
         + rct_detailed_report.appl_eval_rules_undetermined,
         "N/A": rct_detailed_report.rules_not_applicable,
         "Missing Data": rct_detailed_report.rules_undetermined_missing_data,
+    }
+
+    outcome_order = {
+        "FAILED": 0,
+        "UNDETERMINED": 1,
+        "PASS": 2,
+        "NOT_APPLICABLE": 3,
+    }
+
+    styles = {
+        "FAILED": "background-color:#ffcccc;color:black;font-weight:bold;padding-left:10px;border-radius:8px;border:2px solid #ff0000;",
+        "PASS": "background-color:#ccffcc;color:black;font-weight:bold;padding-left:10px;border-radius:8px;border:2px solid #008000;",
+        "UNDETERMINED": "background-color:#ffffcc;color:black;font-weight:bold;padding-left:10px;border-radius:8px;border:2px solid #ffcc00;",
+        "DEFAULT": "padding-left:10px;border:2px solid #ccc;border-radius:8px;",
     }
 
     for category, rules in rule_categories.items():
@@ -86,600 +119,177 @@ def write_evaluations_section(file, rct_detailed_report):
             else "btn-secondary"
         )
 
+        collapse_id = category.replace(" ", "_")
+
         file.write(
             f"""
-                <div class="mb-3">
-                    <button class="btn {btn_class} w-100 text-start sticky-top" 
-                        type="button" data-bs-toggle="collapse" data-bs-target="#collapse_fully_{category.replace(' ', '_')}">
-                        <strong>{category} Rules ({len(rules)})</strong>
-                    </button>
-                    <div class="collapse mx-4" id="collapse_fully_{category.replace(' ', '_')}">
-            """
+        <div class="mb-3">
+            <button class="btn {btn_class} w-100 text-start sticky-top"
+                type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapse_fully_{collapse_id}">
+                <strong>{category} Rules ({len(rules)})</strong>
+            </button>
+            <div class="collapse mx-4" id="collapse_fully_{collapse_id}">
+        """
         )
+
         if category == "Undetermined":
-            file.write(
-                f"""
-                <h3 class="mt-4">Rules Fully Evaluated</h3>
-                """
-            )
+            file.write("<h3 class='mt-4'>Rules Fully Evaluated</h3>")
+
         file.write(
-            f"""
-                        <table class="table table-bordered table-striped mt-2">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th rowspan='2'>Rule ID</th>
-                                    <th>Description</th>
-                                    <th>Standard Section</th>
-                                    <th>Outcome Counts</th>
-                                </tr>
-                                <tr><th colspan='3'>Evaluations</th></tr>
-                            </thead>
-                            <tbody>
-                """
+            """
+        <table class="table table-bordered table-striped mt-2">
+            <thead class="table-dark">
+                <tr>
+                    <th rowspan="2">Rule ID</th>
+                    <th>Description</th>
+                    <th>Standard Section</th>
+                    <th>Outcome Counts</th>
+                </tr>
+                <tr><th colspan="3">Evaluations</th></tr>
+            </thead>
+            <tbody>
+        """
         )
 
-        if category == "Missing Data":
-            sections_seen = set()
+        sections_seen = set()
 
-            for rule_id in rules:
-                rule_data = next(
-                    rule
-                    for rule in rct_detailed_report.evaluation_data["rules"]
-                    if rule["rule_id"] == rule_id
-                )
+        for rule_id in rules:
+            rule_data = next(
+                r
+                for r in rct_detailed_report.evaluation_data["rules"]
+                if r["rule_id"] == rule_id
+            )
 
-                # Split evaluations
-                _, missing_evals = split_evaluations(rule_data)
+            standard_evals, missing_evals = split_evaluations(rule_data)
 
-                # Skip rules with no missing-data evaluations
-                if not missing_evals:
+            if category == "Missing Data":
+                evaluations = missing_evals
+                if not evaluations:
                     continue
+            else:
+                evaluations = standard_evals
 
-                section = rule_id.split("-")[0]
-                if section not in sections_seen:
-                    sections_seen.add(section)
-                    section_title, section_color = section_titles_with_colors.get(
-                        int(section), ("Unknown Section", "#eeeeee")
-                    )
-                    file.write(
-                        f"""
-                        </tbody>
-                            <thead class="table-group-divider">
-                                <tr>
-                                    <th colspan="4"
-                                        class="section-title sticky-top sticky-top-2"
-                                        style="background-color: {section_color} !important;">
-                                        {section_title}
-                                    </th>
-                                </tr>
-                            </thead>
-                        <tbody>
-                        """
-                    )
-
-                description = rule_data.get("description", "N/A")
-                standard_section = rule_data.get("standard_section", "N/A")
-
+            section = rule_id.split("-")[0]
+            if section not in sections_seen:
+                sections_seen.add(section)
+                title, color = section_titles_with_colors.get(
+                    int(section), ("Unknown Section", "#eeeeee")
+                )
                 file.write(
                     f"""
-                        <tr>
-                            <td class="rule-id" rowspan="2">{rule_id}</td>
-                            <td>{description}</td>
-                            <td>{standard_section}</td>
-                            <td class="outcome-summary">{len(missing_evals)}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3">
-                                <button class="btn btn-primary"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#eval_missing_{rule_id}">
-                                    View Missing Data Evaluations
-                                </button>
-                                <div class="collapse" id="eval_missing_{rule_id}">
-                                    <ul>
-                    """
+                </tbody>
+                <thead class="table-group-divider">
+                    <tr>
+                        <th colspan="4" class="section-title sticky-top sticky-top-2"
+                            style="background-color:{color}!important;">
+                            {title}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                """
                 )
 
-                outcome_order = {
-                    "FAILED": 0,
-                    "UNDETERMINED": 1,
-                    "PASS": 2,
-                    "NOT_APPLICABLE": 3,
-                }
+            description = rule_data.get("description", "N/A")
+            standard_section = rule_data.get("standard_section", "N/A")
+            outcome_summary = " | ".join(
+                f"{k}: {v}"
+                for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
+                    rule_id
+                ].items()
+            )
 
-                sorted_evaluations = sorted(
-                    missing_evals,
-                    key=lambda e: outcome_order.get(e["outcome"], 3),
-                )
-
-                for evaluation in sorted_evaluations:
-                    has_any_units = False
-                    styles = {
-                        "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                        "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                        "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                        "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                    }
-
-                    li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
-
-                    file.write(
-                        f"""
-                            <li style="{li_style}" class="p-2 m-1">
-                                {evaluation["data_group_id"]}
-                                <ul>
-                                    <li><strong>Outcome:</strong> {evaluation["outcome"]}</li>
-                        """
-                    )
-
-                    if evaluation.get("messages"):
-                        msgs = set()
-                        if isinstance(evaluation["messages"], str):
-                            msgs.add(evaluation["messages"])
-                        elif isinstance(evaluation["messages"], dict):
-                            for k, v in evaluation["messages"].items():
-                                msgs.add(f"{k}: {v}")
-                        elif isinstance(evaluation["messages"], list):
-                            for m in evaluation["messages"]:
-                                msgs.add(m)
-
-                        file.write(
-                            f"<li><strong>Messages:</strong> {', '.join(msgs)}</li>"
-                        )
-
-                    if evaluation.get("calculated_values"):
-                        file.write(
-                            """
-                                <li><strong>Calculated Values:</strong>
-                                    <table class="mb-2 me-2 table table-sm table-bordered">
-                                        <thead>
-                                            <tr><th>Variable</th><th>Value</th>
-                            """
-                        )
-                        if any(
-                            cv.get("unit") for cv in evaluation["calculated_values"]
-                        ):
-                            has_any_units = True
-                            file.write("<th>Unit</th>")
-                        file.write("</tr></thead><tbody>")
-
-                        for cv in evaluation["calculated_values"]:
-                            file.write(
-                                f"""
-                                <tr>
-                                    <td>{cv["variable"]}</td>
-                                    <td>{cv["value"][0] if len(cv["value"]) == 1 else cv["value"]}</td>
-                                """
-                            )
-                            if cv.get("unit"):
-                                file.write(f"<td>{cv['unit']}</td>")
-                            elif has_any_units:
-                                file.write("<td></td>")
-                            file.write("</tr>")
-
-                        file.write("</tbody></table></li>")
-
-                    file.write("</ul></li>")
-
-                file.write("</ul></div></td></tr>")
-
-        elif category == "Undetermined":
-            sections_seen = set()
-            for rule_id in rct_detailed_report.full_eval_rules_undetermined:
-                rule_data = next(
-                    rule
-                    for rule in rct_detailed_report.evaluation_data["rules"]
-                    if rule["rule_id"] == rule_id
-                )
-                standard_evals, missing_evals = split_evaluations(rule_data)
-
-                if not standard_evals:
-                    continue
-
-                section = rule_id.split("-")[0]
-                if section not in sections_seen:
-                    sections_seen.add(section)
-                    section_title = section_titles_with_colors.get(int(section))[0]
-                    section_color = section_titles_with_colors.get(int(section))[1]
-                    file.write(
-                        f"""
-                        </tbody>
-                            <thead class="table-group-divider">
-                                <tr>
-                                    <td colspan="4" class="section-title sticky-top sticky-top-2" style="background-color: {section_color} !important;">{section_title}</td>
-                                </tr>
-                            </thead>
-                        <tbody>
-                        """
-                    )
-
-                description = rule_data.get("description", "N/A")
-                standard_section = rule_data.get("standard_section", "N/A")
-                outcome_summary = " | ".join(
-                    [
-                        f"{k}: {v}"
-                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
-                            rule_id
-                        ].items()
-                    ]
-                )
-
-                file.write(
-                    f"""
-                        <tr>
-                            <td class="rule-id" rowspan='2'>{rule_id}</td>
-                            <td>{description}</td>
-                            <td>{standard_section}</td>
-                            <td class="outcome-summary">{outcome_summary}</td>
-                        </tr>
-                        <tr>
-                            <td colspan='3'>
-                                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#eval_{rule_id}">
-                                    View Evaluations
-                                </button>
-                                <div class="collapse" id="eval_{rule_id}">
-                                    <ul>
-                    """
-                )
-                outcome_order = {
-                    "FAILED": 0,
-                    "UNDETERMINED": 1,
-                    "PASS": 2,
-                    "NOT_APPLICABLE": 3,
-                }
-
-                # Sort evaluations based on outcome priority
-                sorted_evaluations = sorted(
-                    standard_evals,
-                    key=lambda e: outcome_order.get(e["outcome"], 3),
-                )
-
-                for evaluation in sorted_evaluations:
-                    has_any_units = False
-                    styles = {
-                        "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                        "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                        "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                        "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                    }
-
-                    # Select the appropriate style based on outcome
-                    li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
-                    file.write(
-                        f"""
-                            <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
-                                <ul>
-                                    <li><strong>Outcome:</strong> {evaluation['outcome']}</li>
-                            """
-                    )
-                    if evaluation["messages"]:
-                        messages = set()
-                        if isinstance(evaluation["messages"], str):
-                            messages.add(evaluation["messages"])
-                        if isinstance(evaluation["messages"], dict):
-                            for key, message in evaluation["messages"].items():
-                                messages.add(f"{key}: {message}")
-                        if isinstance(evaluation["messages"], list):
-                            for message in evaluation["messages"]:
-                                messages.add(message)
-                        file.write(
-                            f"<li><strong>Messages:</strong> {', '.join(messages)}</li>"
-                        )
-                    if evaluation["calculated_values"]:
-                        file.write(
-                            """
-                                <li><strong>Calculated Values:</strong>
-                                    <table class="mb-2 me-2 table table-sm table-bordered">
-                                        <thead>
-                                            <tr><th>Variable</th><th>Value</th>
-                            """
-                        )
-                        if any(
-                            cv.get("unit") for cv in evaluation["calculated_values"]
-                        ):
-                            has_any_units = True
-                            file.write("<th>Unit</th>")
-                        file.write("</tr></thead><tbody>")
-
-                        for calculated_value in evaluation["calculated_values"]:
-                            file.write(
-                                f"""
-                                <tr>
-                                <td>{calculated_value['variable']}</td>
-                                <td>{calculated_value['value'][0] if len(calculated_value['value']) == 1
-                                else calculated_value['value']}
-                                </td>
-                                """
-                            )
-                            if calculated_value.get("unit"):
-                                file.write(f"<td>{calculated_value['unit']}</td>")
-                            elif has_any_units:
-                                file.write("<td></td>")
-                            file.write("</tr>")
-                        file.write("</tbody></table></li>")
-                    file.write("</ul></li>")
-                file.write("</ul></div></td></tr>")
             file.write(
                 f"""
-                    </tbody>
-                    </table>
-                    <h3 class="mt-4">Rules Evaluated for Applicability Only</h3>
-                    <table class="table table-bordered table-striped mt-2">
-                        <thead class="table-dark">
-                            <tr>
-                                <th rowspan='2'>Rule ID</th>
-                                <th>Description</th>
-                                <th>Standard Section</th>
-                                <th>Outcome Counts</th>
-                            </tr>
-                            <tr><th colspan='3'>Evaluations</th></tr>
-                        </thead>
-                        <tbody>
-                """
+            <tr>
+                <td class="rule-id" rowspan="2">{rule_id}</td>
+                <td>{description}</td>
+                <td>{standard_section}</td>
+                <td class="outcome-summary">{outcome_summary}</td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <button class="btn btn-primary" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#eval_{rule_id}">
+                        View Evaluations
+                    </button>
+                    <div class="collapse" id="eval_{rule_id}">
+                        <ul>
+            """
             )
-            sections_seen = set()
-            for rule_id in rct_detailed_report.appl_eval_rules_undetermined:
-                rule_data = next(
-                    rule
-                    for rule in rct_detailed_report.evaluation_data["rules"]
-                    if rule["rule_id"] == rule_id
-                )
-                section = rule_id.split("-")[0]
-                if section not in sections_seen:
-                    sections_seen.add(section)
-                    section_title = section_titles_with_colors.get(int(section))[0]
-                    section_color = section_titles_with_colors.get(int(section))[1]
-                    file.write(
-                        f"""
-                        </tbody>
-                            <thead class="table-group-divider">
-                                <tr>
-                                    <td colspan="4" class="section-title sticky-top sticky-top-2" style="background-color: {section_color} !important;">{section_title}</td>
-                                </tr>
-                            </thead>
-                        <tbody>
-                        """
-                    )
 
-                description = rule_data.get("description", "N/A")
-                standard_section = rule_data.get("standard_section", "N/A")
-                outcome_summary = " | ".join(
-                    [
-                        f"{k}: {v}"
-                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
-                            rule_id
-                        ].items()
-                    ]
-                )
-
+            for ev in sorted(
+                evaluations, key=lambda e: outcome_order.get(e["outcome"], 3)
+            ):
+                li_style = styles.get(ev["outcome"], styles["DEFAULT"])
                 file.write(
                     f"""
-                        <tr>
-                            <td class="rule-id" rowspan='2'>{rule_id}</td>
-                            <td>{description}</td>
-                            <td>{standard_section}</td>
-                            <td class="outcome-summary">{outcome_summary}</td>
-                        </tr>
-                        <tr>
-                            <td colspan='3'>
-                                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#eval_{rule_id}">
-                                    View Evaluations
-                                </button>
-                                <div class="collapse" id="eval_{rule_id}">
-                                    <ul>
-                        """
-                )
-                outcome_order = {
-                    "FAILED": 0,
-                    "UNDETERMINED": 1,
-                    "PASS": 2,
-                    "NOT_APPLICABLE": 3,
-                }
-
-                # Sort evaluations based on outcome priority
-                standard_evals, missing_evals = split_evaluations(rule_data)
-                sorted_evaluations = sorted(
-                    standard_evals,
-                    key=lambda e: outcome_order.get(e["outcome"], 3),
+                <li style="{li_style}" class="p-2 m-1">
+                    {ev["data_group_id"]}
+                    <ul>
+                        <li><strong>Outcome:</strong> {ev["outcome"]}</li>
+                """
                 )
 
-                for evaluation in sorted_evaluations:
-                    has_any_units = False
-                    styles = {
-                        "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                        "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                        "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                        "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                    }
+                if ev.get("messages"):
+                    msgs = set()
+                    if isinstance(ev["messages"], str):
+                        msgs.add(ev["messages"])
+                    elif isinstance(ev["messages"], dict):
+                        msgs |= {f"{k}: {v}" for k, v in ev["messages"].items()}
+                    else:
+                        msgs |= set(ev["messages"])
+                    file.write(f"<li><strong>Messages:</strong> {', '.join(msgs)}</li>")
 
-                    # Select the appropriate style based on outcome
-                    li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
+                if ev.get("calculated_values"):
                     file.write(
-                        f"""
-                            <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
-                                <ul>
-                                    <li><strong>Outcome:</strong> {evaluation['outcome']}</li>
-                            """
-                    )
-                    if evaluation["messages"]:
-                        messages = set()
-                        if isinstance(evaluation["messages"], str):
-                            messages.add(evaluation["messages"])
-                        if isinstance(evaluation["messages"], dict):
-                            for key, message in evaluation["messages"].items():
-                                messages.add(f"{key}: {message}")
-                        if isinstance(evaluation["messages"], list):
-                            for message in evaluation["messages"]:
-                                messages.add(message)
-                        file.write(
-                            f"<li><strong>Messages:</strong> {', '.join(messages)}</li>"
-                        )
-                    if evaluation["calculated_values"]:
-                        file.write(
-                            """
-                                <li><strong>Calculated Values:</strong>
-                                    <table class="mb-2 me-2 table table-sm table-bordered">
-                                        <thead>
-                                            <tr><th>Variable</th><th>Value</th>
-                            """
-                        )
-                        if any(
-                            cv.get("unit") for cv in evaluation["calculated_values"]
-                        ):
-                            has_any_units = True
-                            file.write("<th>Unit</th>")
-                        file.write("</tr></thead><tbody>")
-
-                        for calculated_value in evaluation["calculated_values"]:
-                            file.write(
-                                f"""
-                                <tr>
-                                <td>{calculated_value['variable']}</td>
-                                <td>{calculated_value['value'][0] if len(calculated_value['value']) == 1
-                                else calculated_value['value']}
-                                </td>
-                                """
-                            )
-                            if calculated_value.get("unit"):
-                                file.write(f"<td>{calculated_value['unit']}</td>")
-                            elif has_any_units:
-                                file.write("<td></td>")
-                            file.write("</tr>")
-                        file.write("</tbody></table></li>")
-                    file.write("</ul></li>")
-                file.write("</ul></div></td></tr>")
-        else:
-            sections_seen = set()
-            for rule_id in rules:
-                rule_data = next(
-                    rule
-                    for rule in rct_detailed_report.evaluation_data["rules"]
-                    if rule["rule_id"] == rule_id
-                )
-                section = rule_id.split("-")[0]
-                if section not in sections_seen:
-                    sections_seen.add(section)
-                    section_title = section_titles_with_colors.get(int(section))[0]
-                    section_color = section_titles_with_colors.get(int(section))[1]
-                    file.write(
-                        f"""
-                        </tbody>
-                            <thead class="table-group-divider">
-                                <tr>
-                                    <th colspan="4" class="section-title sticky-top sticky-top-2" style="background-color: {section_color} !important;">{section_title}</th>
-                                </tr>
-                            </thead>
-                        <tbody>
                         """
-                    )
-
-                description = rule_data.get("description", "N/A")
-                standard_section = rule_data.get("standard_section", "N/A")
-                outcome_summary = " | ".join(
-                    [
-                        f"{k}: {v}"
-                        for k, v in rct_detailed_report.rule_evaluation_outcome_counts[
-                            rule_id
-                        ].items()
-                    ]
-                )
-
-                file.write(
-                    f"""
-                        <tr>
-                            <td class="rule-id" rowspan='2'>{rule_id}</td>
-                            <td>{description}</td>
-                            <td>{standard_section}</td>
-                            <td class="outcome-summary">{outcome_summary}</td>
-                        </tr>
-                        <tr>
-                            <td colspan='3'>
-                                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#eval_{rule_id}">
-                                    View Evaluations
-                                </button>
-                                <div class="collapse" id="eval_{rule_id}">
-                                    <ul>
+                    <li><strong>Calculated Values:</strong>
+                        <table class="mb-2 me-2 table table-sm table-bordered">
+                            <thead>
+                                <tr><th>Variable</th><th>Value</th>
                     """
-                )
-                outcome_order = {
-                    "FAILED": 0,
-                    "UNDETERMINED": 1,
-                    "PASS": 2,
-                    "NOT_APPLICABLE": 3,
-                }
-
-                # Sort evaluations based on outcome priority
-                standard_evals, missing_evals = split_evaluations(rule_data)
-                sorted_evaluations = sorted(
-                    standard_evals,
-                    key=lambda e: outcome_order.get(e["outcome"], 3),
-                )
-
-                for evaluation in sorted_evaluations:
-                    has_any_units = False
-                    styles = {
-                        "FAILED": "background-color: #ffcccc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ff0000;",
-                        "PASS": "background-color: #ccffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #008000;",
-                        "UNDETERMINED": "background-color: #ffffcc; color: black; font-weight: bold; padding-left: 10px; border-radius: 8px; border: 2px solid #ffcc00;",
-                        "DEFAULT": "padding-left: 10px; border: 2px solid #ccc; border-radius: 8px;",
-                    }
-
-                    # Select the appropriate style based on outcome
-                    li_style = styles.get(evaluation["outcome"], styles["DEFAULT"])
-                    file.write(
-                        f"""
-                            <li style=\"{li_style}\"  class=\"p-2 m-1\">{evaluation['data_group_id']}
-                                <ul>
-                                    <li><strong>Outcome:</strong> {evaluation['outcome']}</li>
-                            """
                     )
-                    if evaluation["messages"]:
-                        messages = set()
-                        if isinstance(evaluation["messages"], str):
-                            messages.add(evaluation["messages"])
-                        if isinstance(evaluation["messages"], dict):
-                            for key, message in evaluation["messages"].items():
-                                messages.add(f"{key}: {message}")
-                        if isinstance(evaluation["messages"], list):
-                            for message in evaluation["messages"]:
-                                messages.add(message)
-                        file.write(
-                            f"<li><strong>Messages:</strong> {', '.join(messages)}</li>"
-                        )
-                    if evaluation["calculated_values"]:
-                        file.write(
-                            """
-                                <li><strong>Calculated Values:</strong>
-                                    <table class="mb-2 me-2 table table-sm table-bordered">
-                                        <thead>
-                                            <tr><th>Variable</th><th>Value</th>
-                            """
-                        )
-                        if any(
-                            cv.get("unit") for cv in evaluation["calculated_values"]
-                        ):
-                            has_any_units = True
-                            file.write("<th>Unit</th>")
-                        file.write("</tr></thead><tbody>")
 
-                        for calculated_value in evaluation["calculated_values"]:
-                            file.write(
-                                f"""
-                                <tr>
-                                <td>{calculated_value['variable']}</td>
-                                <td>{calculated_value['value'][0] if len(calculated_value['value']) == 1
-                                else calculated_value['value']}
-                                </td>
-                                """
-                            )
-                            if calculated_value.get("unit"):
-                                file.write(f"<td>{calculated_value['unit']}</td>")
-                            elif has_any_units:
-                                file.write("<td></td>")
-                            file.write("</tr>")
-                        file.write("</tbody></table></li>")
-                    file.write("</ul></li>")
-                file.write("</ul></div></td></tr>")
+                    has_units = any(cv.get("unit") for cv in ev["calculated_values"])
+                    if has_units:
+                        file.write("<th>Unit</th>")
+                    file.write("</tr></thead><tbody>")
 
-        file.write("</tbody></table></div></div>")
+                    for cv in ev["calculated_values"]:
+                        file.write(
+                            f"""
+                        <tr>
+                            <td>{cv["variable"]}</td>
+                            <td>{format_value_for_html(cv["value"])}</td>
+                        """
+                        )
+                        if cv.get("unit"):
+                            file.write(f"<td>{cv['unit']}</td>")
+                        elif has_units:
+                            file.write("<td></td>")
+                        file.write("</tr>")
+
+                    file.write("</tbody></table></li>")
+
+                file.write("</ul></li>")
+
+            file.write(
+                """
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            """
+            )
+
+        file.write(
+            """
+            </tbody>
+        </table>
+        </div>
+        </div>
+        """
+        )
