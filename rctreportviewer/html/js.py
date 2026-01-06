@@ -197,6 +197,66 @@ def write_javascript(file, rct_detailed_report):
       inputs.forEach(inp => inp.addEventListener("input", recalculateEnergyMetrics));
       recalculateEnergyMetrics();
     }}
+    
+    /* ==================== Sortable interior lighting details table ==================== */
+    const table = document.getElementById("interior-lighting-table");
+    if (table) {{
+      const thead = table.querySelector("thead");
+      const headerRow = thead.querySelector("tr:last-child");  // bottom header row only
+      const headers = Array.from(headerRow.querySelectorAll("th.sortable"));
+    
+      const clearIcons = () => {{
+        headers.forEach(h => {{
+          h.classList.remove("sort-asc", "sort-desc");
+          const icon = h.querySelector(".sort-icon");
+          if (icon) icon.innerHTML = "";
+        }});
+      }};
+    
+      headers.forEach(th => {{
+        th.addEventListener("click", () => {{
+          const tbody = table.querySelector("tbody");
+          const rows = Array.from(tbody.rows);
+          const type = th.dataset.type || "string";
+    
+          // Column index relative to bottom header row (matches tbody cells)
+          const colIndex = Array.from(headerRow.children).indexOf(th);
+    
+          // First click = descending, then toggle
+          const descending = !th.classList.contains("sort-desc");
+    
+          clearIcons();
+          th.classList.add(descending ? "sort-desc" : "sort-asc");
+    
+          const icon = th.querySelector(".sort-icon");
+          if (icon) {{
+            icon.innerHTML = descending
+            ? '<i class="bi bi-caret-up-fill"></i>'
+            : '<i class="bi bi-caret-down-fill"></i>';
+          }}
+    
+          rows.sort((a, b) => {{
+            let A = a.cells[colIndex]?.innerText ?? "";
+            let B = b.cells[colIndex]?.innerText ?? "";
+    
+            A = A.replace(/[, %]/g, "").trim();
+            B = B.replace(/[, %]/g, "").trim();
+    
+            if (type === "number") {{
+              const nA = parseFloat(A) || 0;
+              const nB = parseFloat(B) || 0;
+              return descending ? (nB - nA) : (nA - nB);
+            }}
+    
+            return descending
+              ? B.localeCompare(A, undefined, {{ numeric: true }})
+              : A.localeCompare(B, undefined, {{ numeric: true }});
+          }});
+    
+          rows.forEach(r => tbody.appendChild(r));
+        }});
+      }});
+    }}
 
     /* ==================== Energy performance metrics ==================== */
 

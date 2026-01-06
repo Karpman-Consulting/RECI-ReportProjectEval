@@ -11,6 +11,15 @@ def write_interior_lighting_details(file, rct_detailed_report):
         """
 <hr>
 
+<style>
+#interior-lighting-table th.sortable {
+  position: relative;
+  padding-right: 1.25rem;
+}
+#interior-lighting-table th.sortable { cursor: pointer; white-space: nowrap; }
+#interior-lighting-table .sort-icon i { font-size: 0.85em; opacity: 0.9; }
+</style>
+
 <div class="card shadow-sm mb-3">
   <div class="card-header bg-light d-flex align-items-center"
        role="button"
@@ -24,7 +33,7 @@ def write_interior_lighting_details(file, rct_detailed_report):
 
 <div id="collapse-interior-lighting-details" class="collapse mt-3">
 <div class="table-responsive">
-<table class="table table-sm align-middle">
+<table id="interior-lighting-table" class="table table-sm align-middle">
 <thead class="table-light text-center border-bottom">
 <tr>
   <th colspan="2"></th>
@@ -41,34 +50,34 @@ def write_interior_lighting_details(file, rct_detailed_report):
   <th></th>
 </tr>
 <tr class="small align-middle">
-  <th>Interior Lighting ID</th>
-  <th class="vertical-header">Floor Area<br>(ft²)</th>
+  <th class="sortable" data-type="string">Interior Lighting ID<span class="sort-icon ms-1"></span></th>
+  <th class="sortable vertical-header" data-type="number">Floor Area<br><span class="sort-icon ms-1"></span>(ft²)</th>
 
-  <th class="vertical-header">General</th>
-  <th class="vertical-header">Decorative</th>
-  <th class="vertical-header">Retail</th>
-  <th class="vertical-header">Exempt</th>
-  <th class="vertical-header">Total</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>General</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Decorative</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Retail</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Exempt</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Total</th>
 
-  <th class="vertical-header">General</th>
-  <th class="vertical-header">Decorative</th>
-  <th class="vertical-header">Retail</th>
-  <th class="vertical-header">Exempt</th>
-  <th class="vertical-header">Total</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>General</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Decorative</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Retail</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Exempt</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Total</th>
 
-  <th class="vertical-header">General</th>
-  <th class="vertical-header">Decorative</th>
-  <th class="vertical-header">Retail</th>
-  <th class="vertical-header">Exempt</th>
-  <th class="vertical-header">Total</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>General</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Decorative</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Retail</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Exempt</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Total</th>
 
-  <th class="vertical-header">General</th>
-  <th class="vertical-header">Decorative</th>
-  <th class="vertical-header">Retail</th>
-  <th class="vertical-header">Exempt</th>
-  <th class="vertical-header">Total</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>General</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Decorative</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Retail</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Exempt</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>Total</th>
 
-  <th class="vertical-header">% Savings</th>
+  <th class="sortable vertical-header" data-type="number"><span class="sort-icon ms-1"></span>% Savings</th>
 </tr>
 </thead>
 <tbody class="small text-center">
