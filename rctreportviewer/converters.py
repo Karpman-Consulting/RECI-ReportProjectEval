@@ -16,7 +16,7 @@ def convert_compliance_summary_energies(summary: dict):
 
 
 def convert_int_ltg_summary_units(summary: dict):
-    for int_ltg_summary in summary.get("interior_lighting_summaries", {}).values():
+    for int_ltg_summary in summary.get("int_ltg_summaries", {}).values():
         if "floor_area" in int_ltg_summary:
             int_ltg_summary["floor_area"] = convert_unit(
                 int_ltg_summary["floor_area"], "m2", "ft2"
