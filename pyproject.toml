@@ -10,6 +10,7 @@ packages = [
 
 include = [
     "rctreportviewer/BPFs.json",
+    "rctreportviewer/LPDs.json",
     "rctreportviewer/unit_registry.txt"
 ]
 
