@@ -30,21 +30,18 @@ def write_html_file(rct_detailed_report):
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body {
-            overflow-x: hidden;
-        }
-
-        td.rule-id {
+        .vertical-header {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
             white-space: nowrap;
         }
+        td.rule-id { white-space: nowrap; }
+        td.outcome-summary { white-space: pre-wrap; }
 
-        td.outcome-summary {
-            white-space: pre-wrap;
-        }
-
-        .sticky-top-2 {
-            top: 37px;
-            z-index: 1029;
+        td {
+            font-size: 0.95rem;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.4;
         }
     </style>
 </head>
